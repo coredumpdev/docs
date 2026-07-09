@@ -93,7 +93,7 @@
   tabsize=4,
   columns=fullflexible,
   keepspaces=true,
-  morekeywords={mov,int,org,bits,hlt,jmp,cli,sti,lea,push,pop,call,ret,add,sub,inc,dec,cmp,je,jne,jz,jnz,jl,jg,jle,jge,ja,jb,jae,jbe,jc,jnc,loop,xor,and,or,not,neg,shl,shr,sal,sar,rol,ror,in,out,rep,repe,repne,stosb,stosw,lodsb,lodsw,movsb,movsw,scasb,cld,std,db,dw,dd,dq,times,equ,section,global,syscall,mul,imul,div,idiv,test,lgdt,lidt,movzx,movsx,pusha,popa,iret,nop,resb,resw,cdq,addps,movups}
+  morekeywords={mov,int,org,bits,hlt,jmp,cli,sti,lea,push,pop,call,ret,add,sub,inc,dec,cmp,je,jne,jz,jnz,jl,jg,jle,jge,ja,jb,jae,jbe,jc,jnc,loop,xor,and,or,not,neg,shl,shr,sal,sar,rol,ror,in,out,rep,repe,repne,stosb,stosw,lodsb,lodsw,movsb,movsw,scasb,cld,std,db,dw,dd,dq,times,equ,section,global,syscall,mul,imul,div,idiv,test,lgdt,lidt,movzx,movsx,pusha,popa,iret,nop,resb,resw,cdq,addps,movups,fld,fst,fstp,fadd,faddp,fsub,fsubp,fmul,fmulp,fdiv,fdivp,fsqrt,fild,fist,fistp,fldz,fld1,fldpi,fchs,fabs,fcom,fcomp,fcomi,fxch,finit,fninit,fscale,movss,movsd,addss,subss,mulss,divss,sqrtss,sqrtps,mulps,subps,cvtsi2ss,cvttss2si,cvtss2sd,comiss,ucomiss,movaps,xorps,rsqrtss,resd,resq}
 }
 \lstset{style=asmstyle}
 
@@ -651,6 +651,228 @@ movups [sonuc], xmm0
 Skaler kodda 4 ayrı toplama gerekirken SSE bunu tek komutta yapar -- bu
 \emph{paralellik} SIMD'in gücüdür.
 \end{ornekkutu}
+
+% =====================================================================
+\section{Kayan Nokta (Floating Point) Örnekleri}
+% =====================================================================
+
+Ondalıklı sayılarla (\kod{3.14}, \kod{-0.5} gibi) işlem yapmak için iki yol
+vardır: eski \textbf{x87 FPU} (yığın tabanlı) ve modern \textbf{SSE} (register
+tabanlı). Bugün derleyiciler neredeyse her zaman SSE kullanır çünkü daha hızlı
+ve daha basittir; ama x87'yi bilmek eski kodları anlamak için gereklidir.
+
+\begin{bilgikutu}
+Kayan nokta sayıları IEEE 754 standardında saklanır: \textbf{tek duyarlık}
+(float, 32-bit) ve \textbf{çift duyarlık} (double, 64-bit). SSE'de \kod{ss}
+soneki "scalar single" (tek float), \kod{ps} "packed single" (4 float),
+\kod{sd} ise "scalar double" anlamına gelir. Örneğin \kod{addss} tek float
+toplar, \kod{addps} dört float'ı paralel toplar.
+\end{bilgikutu}
+
+\subsection{x87 FPU -- Yığın Tabanlı Model}
+
+x87, 8 register'ı (\reg{ST0}--\reg{ST7}) bir \emph{yığın} gibi kullanır.
+\kod{fld} (float load) bir sayıyı yığının tepesine (\reg{ST0}) iter; önceki
+değerler aşağı kayar. İşlemler tepedeki değerler üzerinde yapılır.
+
+\begin{ornekkutu}[x87 ile iki double toplama: 3.5 + 2.25]
+\begin{lstlisting}
+section .data
+    a   dq 3.5         ; 64-bit double
+    b   dq 2.25
+    sonuc dq 0.0
+
+section .text
+    finit             ; FPU'yu baslat/sifirla
+    fld qword [a]     ; ST0 = 3.5        (yigin: [3.5])
+    fld qword [b]     ; ST0 = 2.25, ST1 = 3.5  (yigin: [2.25, 3.5])
+    faddp             ; ST1 = ST1+ST0, sonra pop -> ST0 = 5.75
+    fstp qword [sonuc]; sonuc = 5.75, yigindan cek
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{notkutu}
+\kod{faddp} (add and pop) iki tepe değeri toplar ve sonucu yığında tek değer
+olarak bırakır -- böylece yığın taşmasını önler. \kod{fstp} (store and pop)
+sonucu belleğe yazıp yığından çıkarır. "p" soneki hep "pop" (yığından çek)
+demektir. İşlem sonunda yığının boş kalması önemlidir.
+\end{notkutu}
+
+\begin{ornekkutu}[x87 ile bir sayının karekökü: sqrt(2.0)]
+\begin{lstlisting}
+section .data
+    x   dq 2.0
+    kok dq 0.0
+
+section .text
+    finit
+    fld qword [x]     ; ST0 = 2.0
+    fsqrt             ; ST0 = sqrt(2.0) = 1.41421...
+    fstp qword [kok]  ; kok = 1.41421
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{SSE -- Skaler (Tek) Kayan Nokta}
+
+Modern yöntem. \reg{XMM} register'larını doğrudan kullanır, yığın yoktur.
+Her işlem tek bir komuttur ve okunması çok daha kolaydır.
+
+\begin{ornekkutu}[SSE ile dört temel işlem (tek float)]
+\begin{lstlisting}
+section .data
+    a  dd 10.0        ; 32-bit float
+    b  dd 4.0
+    r  dd 0.0
+
+section .text
+    movss xmm0, [a]   ; XMM0 = 10.0  (scalar single yukle)
+    movss xmm1, [b]   ; XMM1 = 4.0
+
+    addss xmm0, xmm1  ; XMM0 = 10.0 + 4.0 = 14.0
+    ; subss xmm0, xmm1 -> cikarma
+    ; mulss xmm0, xmm1 -> carpma (40.0)
+    ; divss xmm0, xmm1 -> bolme  (2.5)
+
+    movss [r], xmm0   ; sonucu bellege yaz
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Tamsayı ↔ Kayan Nokta Dönüşümü}
+
+Bir tamsayıyı float'a veya float'ı tamsayıya çevirmek özel komutlar gerektirir;
+doğrudan \kod{mov} işe yaramaz çünkü bit düzenleri farklıdır.
+
+\begin{ornekkutu}[int → float ve float → int dönüşümü]
+\begin{lstlisting}
+section .data
+    tam   dd 7         ; tamsayi 7
+    flt   dd 3.9       ; float 3.9
+
+section .text
+    ; --- tamsayi -> float ---
+    cvtsi2ss xmm0, [tam]   ; XMM0 = 7.0 (float olarak)
+
+    ; --- float -> tamsayi (kesme/truncate) ---
+    cvttss2si eax, [flt]   ; EAX = 3  (ondalik atilir, YUVARLAMAZ)
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+\kod{cvttss2si} (iki 't' ile) ondalık kısmı \textbf{atar} (truncate): 3.9 $\to$ 3.
+Tek 't'li \kod{cvtss2si} ise \textbf{yuvarlar}: 3.9 $\to$ 4. Karıştırılması çok
+yaygın bir hatadır. C dilindeki \kod{(int)} dönüşümü truncate yapar, yani
+\kod{cvttss2si}'ye karşılık gelir.
+\end{uyarikutu}
+
+\subsection{Kayan Nokta Karşılaştırma ve Dallanma}
+
+Float'lar normal \kod{cmp} ile karşılaştırılamaz. \kod{comiss} (compare
+scalar single) iki float'ı karşılaştırıp normal bayrakları (\reg{ZF},
+\reg{CF}) ayarlar; ardından \emph{işaretsiz} atlama komutları (\kod{ja},
+\kod{jb}, \kod{je}) kullanılır.
+
+\begin{ornekkutu}[İki float'ı karşılaştırıp büyüğe dallanma]
+\begin{lstlisting}
+    movss xmm0, [a]
+    movss xmm1, [b]
+    comiss xmm0, xmm1  ; XMM0 ile XMM1'i karsilastir, bayraklari ayarla
+    ja  a_buyuk        ; a > b ise atla (isaretsiz atlama kullan!)
+    jb  b_buyuk        ; a < b ise
+    ; buraya gelindiyse esitler
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{ipucukutu}
+Kayan nokta karşılaştırmasında \textbf{işaretsiz} atlamalar (\kod{ja}/\kod{jb})
+kullanılır, işaretli olanlar (\kod{jg}/\kod{jl}) değil. Bunun nedeni
+\kod{comiss}'in sonucu \reg{CF} ve \reg{ZF} bayraklarına yazmasıdır. Ayrıca
+NaN (Not a Number) değerleri \reg{PF} (parity) bayrağını set eder.
+\end{ipucukutu}
+
+\subsection{Pratik Örnek: İki Nokta Arası Uzaklık}
+
+Öklid uzaklık formülü $d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}$ -- oyunlarda ve
+grafik programlamada temel bir hesaptır. Tüm kayan nokta kavramlarını
+birleştirir.
+
+\begin{ornekkutu}[SSE ile mesafe hesabı: dx, dy verili]
+\begin{lstlisting}
+section .data
+    dx  dd 3.0         ; x2 - x1
+    dy  dd 4.0         ; y2 - y1
+    mesafe dd 0.0
+
+section .text
+hesapla_mesafe:
+    movss xmm0, [dx]   ; XMM0 = dx = 3.0
+    mulss xmm0, xmm0   ; XMM0 = dx*dx = 9.0
+
+    movss xmm1, [dy]   ; XMM1 = dy = 4.0
+    mulss xmm1, xmm1   ; XMM1 = dy*dy = 16.0
+
+    addss xmm0, xmm1   ; XMM0 = 9.0 + 16.0 = 25.0
+    sqrtss xmm0, xmm0  ; XMM0 = sqrt(25.0) = 5.0
+
+    movss [mesafe], xmm0  ; mesafe = 5.0
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Pratik Örnek: Bir Dizinin Ortalaması}
+
+\begin{ornekkutu}[Float dizisinin ortalamasını hesaplama]
+\begin{lstlisting}
+section .data
+    dizi  dd 2.0, 4.0, 6.0, 8.0   ; 4 float
+    adet  dd 4
+    ort   dd 0.0
+
+section .text
+ortalama:
+    xorps xmm0, xmm0       ; XMM0 = 0.0 (toplam biriktirici)
+    mov   ecx, 4           ; eleman sayisi
+    mov   esi, dizi        ; ESI = dizi baslangici
+.dongu:
+    movss xmm1, [esi]      ; siradaki elemani al
+    addss xmm0, xmm1       ; toplama ekle
+    add   esi, 4           ; sonraki float (4 bayt)
+    loop  .dongu           ; ECX-- , sifir degilse devam
+
+    cvtsi2ss xmm1, [adet]  ; XMM1 = 4.0 (adedi float yap)
+    divss xmm0, xmm1       ; XMM0 = toplam / adet = 20.0/4.0 = 5.0
+    movss [ort], xmm0
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{notkutu}
+\kod{xorps xmm0, xmm0} bir XMM register'ını sıfırlamanın en hızlı yoludur --
+tıpkı tamsayılarda \kod{xor eax, eax} gibi. Bir register'ı kendisiyle XOR'lamak
+daima 0 verir. Bu, toplam biriktirici için temiz bir başlangıç sağlar.
+\end{notkutu}
+
+\subsection{x87 vs SSE Karşılaştırması}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{x87 FPU} & \color{white}\textbf{SSE} \\
+\midrule
+Yığın tabanlı (ST0--ST7) & Register tabanlı (XMM0--XMM15) \\
+\rowcolor{acikGri} 80-bit iç duyarlık & 32/64-bit \\
+Karmaşık, yığın yönetimi gerekir & Basit, doğrudan register \\
+\rowcolor{acikGri} Tek değer üzerinde çalışır & Paralel (4$\times$ veya 8$\times$) çalışabilir \\
+Eski kod, gömülü sistemler & Modern kod, varsayılan \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}
+Yeni kod yazıyorsanız \textbf{SSE kullanın}. x87 yalnızca eski programları
+okurken veya 80-bit genişletilmiş duyarlık kesinlikle gerektiğinde tercih
+edilir. 64-bit modda System V çağrı kuralı zaten float parametreleri
+\reg{XMM0}--\reg{XMM7} register'larında geçirir.
+\end{ipucukutu}
 
 % =====================================================================
 \section{Kontrol ve Özel Register'lar}
