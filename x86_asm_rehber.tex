@@ -1,0 +1,2250 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (xelatex) ====================
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{turkish}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{hyperref}
+\usepackage{fontawesome5}
+
+% ==================== FONTLAR ====================
+\setmainfont{Latin Modern Roman}
+\newfontfamily\codefont{Consolas}[Scale=0.90]
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+\definecolor{satirRenk}{HTML}{F0F4F8}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=vurguMavi,
+  urlcolor=vurguMavi,
+  pdftitle={x86 Assembly Register ve BIOS Interrupt Rehberi},
+  pdfauthor={Assembly Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ ====================
+\titleformat{\section}
+  {\color{anaMavi}\Large\bfseries}
+  {\thesection.}{0.6em}{}
+  [\vspace{2pt}{\color{turuncu}\titlerule[1.6pt]}]
+\titleformat{\subsection}
+  {\color{vurguMavi}\large\bfseries}
+  {\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}
+  {\color{koyuGri}\normalsize\bfseries}
+  {\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}x86 Assembly Rehberi}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME ====================
+\lstdefinestyle{asmstyle}{
+  language={[x86masm]Assembler},
+  basicstyle=\codefont\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{acikGri!80!ortaGri},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  morekeywords={mov,int,org,bits,hlt,jmp,cli,sti,lea,push,pop,call,ret,add,sub,inc,dec,cmp,je,jne,jz,jnz,jl,jg,jle,jge,ja,jb,jae,jbe,jc,jnc,loop,xor,and,or,not,neg,shl,shr,sal,sar,rol,ror,in,out,rep,repe,repne,stosb,stosw,lodsb,lodsw,movsb,movsw,scasb,cld,std,db,dw,dd,dq,times,equ,section,global,syscall,mul,imul,div,idiv,test,lgdt,lidt,movzx,movsx,pusha,popa,iret,nop,resb,resw,cdq,addps,movups}
+}
+\lstset{style=asmstyle}
+
+% ==================== ÖZEL KUTULAR ====================
+\newtcolorbox{bilgikutu}[1][]{
+  colback=acikMavi, colframe=vurguMavi, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faInfoCircle~~Bilgi}, #1
+}
+\newtcolorbox{ipucukutu}[1][]{
+  colback=acikYesil, colframe=yesil, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faLightbulb~~İpucu}, #1
+}
+\newtcolorbox{uyarikutu}[1][]{
+  colback=kirmizi!8, colframe=kirmizi, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faExclamationTriangle~~Dikkat}, #1
+}
+\newtcolorbox{ornekkutu}[1][Örnek]{
+  colback=acikGri, colframe=ortaGri!60, boxrule=0.7pt, arc=2pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{koyuGri}, coltitle=koyuGri,
+  title={\faCode~~#1}
+}
+\newtcolorbox{notkutu}[1][Not]{
+  colback=acikMor, colframe=mor, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faStickyNote~~#1}
+}
+
+% Yardımcı komutlar
+\newcommand{\reg}[1]{\texttt{\color{anaMavi}\textbf{#1}}}
+\newcommand{\hx}[1]{\texttt{\color{turuncu}#1}}
+\newcommand{\kod}[1]{\texttt{\color{koyuGri}#1}}
+
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[6pt]
+{\color{anaMavi}\Huge\bfseries x86 Assembly}\\[10pt]
+{\color{vurguMavi}\LARGE Register \& BIOS Interrupt Rehberi}\\[8pt]
+{\color{ortaGri}\large 16-bit \textbullet\ 32-bit \textbullet\ 64-bit Kapsamlı Cheat Sheet}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.6cm]
+
+\begin{tcolorbox}[width=0.88\textwidth,colback=acikMavi,colframe=vurguMavi,arc=4pt,boxrule=1pt]
+\centering\large
+Bu belge x86 mimarisindeki tüm register (yazmaç) ailelerini, adresleme
+modlarını, bayrakları, SIMD/FPU birimlerini ve en sık kullanılan BIOS
+kesmelerini \textbf{çok sayıda çalışan kod örneğiyle} detaylı biçimde açıklar.
+\end{tcolorbox}
+
+\vspace{0.9cm}
+\begin{tcolorbox}[width=0.88\textwidth,colback=acikGri,colframe=ortaGri!50,arc=3pt,boxrule=0.6pt]
+\small
+\textbf{Kapsam:} Genel amaçlı register'lar \textbullet\ adresleme modları \textbullet\
+segment/işaretçi register'ları \textbullet\ FLAGS \& koşullu atlamalar \textbullet\
+MMX/SSE/AVX/x87 \textbullet\ kontrol register'ları \textbullet\ komut referansı \textbullet\
+INT 10h/13h/15h/16h/1Ah \textbullet\ tam iki aşamalı önyükleyici \textbullet\
+korumalı moda geçiş
+\end{tcolorbox}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 9 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Gerçek Mod / Korumalı Mod / Uzun Mod}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% =====================================================================
+\section{Giriş: x86 Mimarisine Genel Bakış}
+% =====================================================================
+
+x86, Intel'in 1978'de çıkardığı 8086 işlemcisinden gelişerek bugüne ulaşmış
+bir işlemci mimarisidir. Mimari, geriye dönük uyumluluğu (backward
+compatibility) sayesinde 45 yıl önceki 16-bit kodları hâlâ çalıştırabilir.
+Register'lar da bu evrimi yansıtır: her yeni nesil, öncekinin register'larını
+\emph{genişleterek} üzerine ekleme yapmıştır.
+
+\begin{bilgikutu}
+\textbf{Register (Yazmaç) nedir?} İşlemcinin \emph{içinde} bulunan, RAM'den çok
+daha hızlı erişilen küçük hafıza hücreleridir. İşlemci aritmetik, mantık ve veri
+taşıma işlemlerini doğrudan register'lar üzerinde yapar. RAM erişimi onlarca
+nanosaniye sürerken register erişimi tek bir saat çevriminin küçük bir
+kısmında gerçekleşir. Bu yüzden performans kritik kodlarda "veriyi
+register'da tutmak" temel bir prensiptir.
+\end{bilgikutu}
+
+\subsection{İşlemci Çalışma Modları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X c@{}}
+\toprule
+\rowcolor{acikMavi} \color{anaMavi}\textbf{Mod} & \color{anaMavi}\textbf{Açıklama} & \color{anaMavi}\textbf{Genişlik} \\
+\midrule
+Gerçek Mod & 8086 uyumlu, segment:offset adresleme, doğrudan donanım \& BIOS erişimi. Açılışta işlemci burada başlar. & 16-bit \\
+\rowcolor{acikGri} Korumalı Mod & Sanal bellek, bellek koruması, koruma halkaları (ring 0--3), GDT/IDT tabloları & 32-bit \\
+Uzun Mod & 64-bit, düz bellek modeli, geniş adres alanı, modern işletim sistemleri & 64-bit \\
+\rowcolor{acikGri} Sanal 8086 & Korumalı mod içinde 16-bit programları çalıştırma alt modu & 16-bit \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}
+Bilgisayar açıldığında işlemci \textbf{daima gerçek modda (16-bit)} başlar.
+BIOS kesmeleri yalnızca gerçek modda kullanılabilir. Önyükleyici (bootloader)
+önce BIOS kesmeleriyle çekirdeği belleğe yükler, sonra korumalı/uzun moda
+geçiş yapar. Geçişten sonra BIOS kesmeleri artık kullanılamaz.
+\end{ipucukutu}
+
+\subsection{Sözdizimi: Intel vs AT\&T}
+
+Bu rehberde \textbf{Intel sözdizimi} (NASM tarzı) kullanılır çünkü daha okunaklıdır
+ve önyükleyici geliştirmede standarttır. Farkı bilmek yararlıdır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Intel (NASM)} & \color{anaMavi}\textbf{AT\&T (GAS)} \\
+\midrule
+\kod{mov eax, 5} & \kod{movl \$5, \%eax} \\
+\rowcolor{acikGri} \kod{mov eax, [ebx]} & \kod{movl (\%ebx), \%eax} \\
+Hedef solda: \kod{mov hedef, kaynak} & Hedef sağda: \kod{mov kaynak, hedef} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{notkutu}[Intel sözdizimi kuralı]
+\kod{komut hedef, kaynak} — yani \textbf{sol taraf hedeftir}. \kod{mov ax, bx}
+"bx'i ax'e kopyala" demektir. Köşeli parantez \kod{[ ]} bellek erişimi anlamına
+gelir: \kod{[ebx]} "ebx'in gösterdiği adresteki değer" demektir.
+\end{notkutu}
+
+% =====================================================================
+\section{Genel Amaçlı Register'lar}
+% =====================================================================
+
+x86'da 64-bit modda 16 adet genel amaçlı register vardır. Bunların 8 tanesi
+tarihsel köke sahiptir ve isimlerinin baş harfleri işlevlerinden gelir.
+
+\subsection{Register Boyut Hiyerarşisi}
+
+Aynı fiziksel register, farklı isimlerle farklı bit genişliklerinde
+kullanılabilir. Örneğin \reg{RAX} 64-bit'in tamamıdır; alt 32 biti \reg{EAX},
+alt 16 biti \reg{AX}, \reg{AX}'in üst baytı \reg{AH}, alt baytı \reg{AL}'dir.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\rowcolor{anaMavi}\multicolumn{4}{|c|}{\color{white}\textbf{RAX -- 64 bit (bit 63 \dots 0)}}\\
+\hline
+\multicolumn{2}{|c|}{\cellcolor{acikGri}\textit{(üst 32 bit -- ayrı ismi yok)}} & \multicolumn{2}{c|}{\cellcolor{acikMavi}\textbf{EAX -- 32 bit}}\\
+\hline
+\multicolumn{3}{|c|}{\cellcolor{acikGri}} & \multicolumn{1}{c|}{\cellcolor{acikYesil}\textbf{AX -- 16 bit}}\\
+\hline
+\multicolumn{3}{|c|}{\cellcolor{acikGri}} & \cellcolor{turuncu!25}\textbf{AH (üst 8)}\ \textbar\ \cellcolor{yesil!25}\textbf{AL (alt 8)}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}
+\color{white}\textbf{64-bit} & \color{white}\textbf{32-bit} & \color{white}\textbf{16-bit} & \color{white}\textbf{8-bit} & \color{white}\textbf{Geleneksel Amaç} \\
+\midrule
+\reg{RAX} & \reg{EAX} & \reg{AX} & \reg{AH}/\reg{AL} & \textbf{Accumulator} -- aritmetik, çarpma/bölme, syscall dönüş değeri \\
+\rowcolor{acikGri}
+\reg{RBX} & \reg{EBX} & \reg{BX} & \reg{BH}/\reg{BL} & \textbf{Base} -- bellek adreslemede taban işaretçisi \\
+\reg{RCX} & \reg{ECX} & \reg{CX} & \reg{CH}/\reg{CL} & \textbf{Counter} -- döngü ve string işlemlerinde sayaç \\
+\rowcolor{acikGri}
+\reg{RDX} & \reg{EDX} & \reg{DX} & \reg{DH}/\reg{DL} & \textbf{Data} -- G/Ç portları, çarpma/bölmede yüksek bölüm \\
+\reg{RSI} & \reg{ESI} & \reg{SI} & \reg{SIL} & \textbf{Source Index} -- string kopyalamada kaynak \\
+\rowcolor{acikGri}
+\reg{RDI} & \reg{EDI} & \reg{DI} & \reg{DIL} & \textbf{Destination Index} -- string kopyalamada hedef \\
+\reg{RBP} & \reg{EBP} & \reg{BP} & \reg{BPL} & \textbf{Base Pointer} -- yığın çerçevesi (stack frame) tabanı \\
+\rowcolor{acikGri}
+\reg{RSP} & \reg{ESP} & \reg{SP} & \reg{SPL} & \textbf{Stack Pointer} -- yığının tepesini gösterir \\
+\midrule
+\reg{R8}--\reg{R15} & \reg{R8D}--\reg{R15D} & \reg{R8W}--\reg{R15W} & \reg{R8B}--\reg{R15B} & 64-bit modda eklenen 8 ek register (özel amacı yok) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{uyarikutu}
+64-bit modda bir register'ın 32-bit parçasına yazmak (örn. \reg{EAX}), üst 32
+biti \textbf{otomatik olarak sıfırlar}. Ancak 16-bit (\reg{AX}) veya 8-bit
+(\reg{AL}) parçasına yazmak üst bitleri \textbf{korur}. Örnek: \reg{RAX}=\hx{0xFFFFFFFFFFFFFFFF}
+iken \kod{mov eax, 0} yaparsanız \reg{RAX}=\hx{0} olur; ama \kod{mov ax, 0}
+yaparsanız \reg{RAX}=\hx{0xFFFFFFFFFFFF0000} kalır. Bu, çok yaygın bir hata
+kaynağıdır.
+\end{uyarikutu}
+
+\subsection{Her Register'ın Detaylı İşlevi ve Örnekleri}
+
+\subsubsection{RAX / EAX / AX -- Accumulator (Biriktirici)}
+Aritmetik işlemlerin favori register'ıdır. \kod{MUL} ve \kod{DIV} komutları
+örtük olarak bu register'ı kullanır. Linux'ta \kod{syscall} numarası buraya
+yazılır ve dönüş değeri buradan okunur.
+
+\begin{lstlisting}
+mov eax, 5        ; EAX = 5
+add eax, 3        ; EAX = 8
+imul eax, 4       ; EAX = 32  (isaretli carpma)
+mov al, 0xFF      ; sadece alt bayti degistir
+                  ; EAX'in ust 24 biti korunur: EAX = 0x000000FF
+\end{lstlisting}
+
+\subsubsection{RBX / EBX / BX -- Base (Taban)}
+Genellikle bir bellek bloğunun/dizinin başlangıç adresini tutmak için kullanılır.
+Gerçek modda dolaylı adreslemede sık kullanılır.
+
+\begin{lstlisting}
+mov bx, dizi      ; BX = dizinin baslangic adresi
+mov al, [bx]      ; AL = dizinin ilk elemani
+inc bx            ; sonraki elemana gec
+mov al, [bx]      ; AL = ikinci eleman
+\end{lstlisting}
+
+\subsubsection{RCX / ECX / CX -- Counter (Sayaç)}
+\kod{LOOP} komutu her çalıştığında \reg{CX}/\reg{ECX}'i bir azaltır ve sıfır
+olana kadar döngüye devam eder. \kod{REP} önekiyle string komutlarında tekrar
+sayısını, \kod{SHL}/\kod{SHR} komutlarında ise kaydırma miktarını belirler.
+
+\begin{lstlisting}
+mov ecx, 5        ; 5 kez donecek
+etiket:
+    ; ... yapilacak is ...
+    loop etiket   ; ECX--, sifir degilse etiket'e don
+
+; SHL/SHR icin CL kullanimi:
+mov al, 1
+mov cl, 4
+shl al, cl        ; AL = 1 << 4 = 16
+\end{lstlisting}
+
+\subsubsection{RDX / EDX / DX -- Data (Veri)}
+Çarpma ve bölmede 64/128-bit sonucun \emph{yüksek} yarısını tutar. Ayrıca
+G/Ç port numarası \reg{DX}'te tutulur.
+
+\begin{ornekkutu}[32-bit çarpma ve bölme -- RDX:RAX çifti]
+\begin{lstlisting}
+; CARPMA: EAX * EBX -> sonuc 64-bit olarak EDX:EAX
+mov eax, 0x10000000
+mov ebx, 16
+mul ebx           ; EDX:EAX = EAX * EBX
+                  ; EDX = ust 32 bit, EAX = alt 32 bit
+
+; BOLME: EDX:EAX / EBX -> bolum EAX, kalan EDX
+mov edx, 0        ; ONEMLI: bolmeden once EDX'i temizle!
+mov eax, 100
+mov ebx, 7
+div ebx           ; EAX = 100/7 = 14,  EDX = 100 mod 7 = 2
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+\kod{DIV} komutundan önce \reg{EDX} (veya 16-bit'te \reg{DX}) mutlaka
+temizlenmelidir; aksi halde işlemci temizlenmemiş yüksek biti bölmeye dahil
+eder ve genellikle "bölme taşması" (divide overflow) kesmesi (\hx{INT 0}) oluşur.
+İşaretli bölmede \kod{CDQ} komutu \reg{EAX}'in işaretini \reg{EDX}'e yayar.
+\end{uyarikutu}
+
+\subsubsection{RSP \& RBP -- Yığın (Stack) Yönetimi}
+\reg{RSP} yığının tepesini gösterir; \kod{PUSH} ile azalır, \kod{POP} ile
+artar (yığın yukarıdan aşağıya büyür). \reg{RBP} ise bir fonksiyon içindeki
+yerel değişkenlere ve parametrelere sabit bir referans noktası sağlar.
+
+\begin{ornekkutu}[Standart fonksiyon prologu ve epilogu]
+\begin{lstlisting}
+topla:
+    push rbp          ; 1) eski taban isaretcisini sakla
+    mov rbp, rsp      ; 2) yeni cerceve tabani olustur
+    sub rsp, 16       ; 3) 16 bayt yerel degisken alani ayir
+
+    mov [rbp-8], rdi  ; ilk parametreyi yerel degiskene koy
+    mov rax, [rbp-8]
+    add rax, rsi      ; RAX = param1 + param2
+
+    mov rsp, rbp      ; 4) yerel alani geri al
+    pop rbp           ; 5) eski tabani geri yukle
+    ret               ; 6) fonksiyondan don (donus degeri RAX'te)
+\end{lstlisting}
+\end{ornekkutu}
+
+% =====================================================================
+\section{Adresleme Modları}
+% =====================================================================
+
+Bir komutun operandına nasıl ulaşacağını "adresleme modu" belirler. x86'nın
+esnek adresleme modları, dizilere ve yapılara erişimi kolaylaştırır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Mod} & \color{white}\textbf{Örnek} & \color{white}\textbf{Anlamı} \\
+\midrule
+Anlık (immediate) & \kod{mov ax, 5} & Sabit değer doğrudan komutun içinde \\
+\rowcolor{acikGri} Register & \kod{mov ax, bx} & Değer bir register'dan alınır \\
+Doğrudan (direct) & \kod{mov ax, [1234h]} & Belirli bir bellek adresi \\
+\rowcolor{acikGri} Register dolaylı & \kod{mov ax, [bx]} & BX'in gösterdiği adresteki değer \\
+Taban + yer değiştirme & \kod{mov ax, [bx+4]} & Yapı alanlarına erişim \\
+\rowcolor{acikGri} Taban + indeks & \kod{mov ax, [bx+si]} & İki register toplamı \\
+Ölçekli indeks (SIB) & \kod{mov eax, [ebx+esi*4]} & Dizi elemanına erişim (4 baytlık) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Ölçekli indeks ile bir int dizisinde gezinme]
+\begin{lstlisting}
+; int32 dizisi[i] elemanina erisim: adres = taban + i*4
+mov ebx, dizi     ; EBX = dizinin baslangici
+mov esi, 3        ; ESI = istenen indeks (i = 3)
+mov eax, [ebx+esi*4]  ; EAX = dizi[3]
+                      ; olcek 4 cunku her eleman 4 bayt
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{bilgikutu}
+Genel formül: \kod{[taban + indeks*ölçek + yer\_değiştirme]}. Ölçek yalnızca
+1, 2, 4 veya 8 olabilir (byte, word, dword, qword eleman boyutlarına karşılık
+gelir). Bu tek komut, C dilindeki \kod{dizi[i]} ifadesinin doğrudan
+karşılığıdır.
+\end{bilgikutu}
+
+\begin{ipucukutu}
+\kod{LEA} (Load Effective Address) komutu, adresi \emph{hesaplar} ama belleğe
+gitmez; sadece hesaplanan adresi register'a yazar. Bu yüzden hızlı aritmetik
+için de kullanılır: \kod{lea eax, [ebx+ebx*4]} aslında \kod{EAX = EBX*5}
+yapar, üstelik bayrakları değiştirmeden!
+\end{ipucukutu}
+
+% =====================================================================
+\section{Segment Register'ları}
+% =====================================================================
+
+Segment register'ları 16-bit'tir ve gerçek modda belleği 64\,KB'lık bloklara
+(segment) böler. Fiziksel adres \kod{segment $\times$ 16 + offset} formülüyle
+hesaplanır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{Açılım} & \color{anaMavi}\textbf{İşlev} \\
+\midrule
+CS & Code Segment & Çalışan kodun bulunduğu segment (IP ile eşleşir) \\
+\rowcolor{acikGri} DS & Data Segment & Varsayılan veri segmenti \\
+SS & Stack Segment & Yığının bulunduğu segment (SP/BP ile eşleşir) \\
+\rowcolor{acikGri} ES & Extra Segment & Ek veri segmenti (string hedefi için DI ile) \\
+FS & -- & Ek segment (modern OS'lerde thread-local storage) \\
+\rowcolor{acikGri} GS & -- & Ek segment (64-bit'te çekirdek veri yapıları) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Fiziksel Adres Hesabı ve segment kurulumu]
+\reg{DS} = \hx{0x1000}, offset = \hx{0x0234} ise\\
+Fiziksel adres = \hx{0x1000} $\times$ 16 + \hx{0x0234} = \hx{0x10000} + \hx{0x0234} = \hx{0x10234}
+\begin{lstlisting}
+; Onyukleyicide segmentleri guvenli bir sekilde ayarlama
+xor ax, ax        ; AX = 0
+mov ds, ax        ; DS = 0  (segmentlere dogrudan sabit yazilamaz,
+mov es, ax        ; ES = 0   once bir register'a koymak gerekir)
+mov ss, ax        ; SS = 0
+mov sp, 0x7C00    ; yigin onyukleyicinin hemen altinda
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{bilgikutu}
+Korumalı ve uzun modda segment register'ları artık bellek bölme için değil,
+\textbf{segment seçici (selector)} olarak kullanılır ve GDT/LDT tablolarındaki
+tanımlayıcıları işaret eder. 64-bit'te \reg{FS} ve \reg{GS} dışındaki
+segmentlerin tabanı genellikle 0 kabul edilir (flat / düz model).
+\end{bilgikutu}
+
+% =====================================================================
+\section{İşaretçi ve İndeks Register'ları}
+% =====================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{Ad} & \color{anaMavi}\textbf{İşlev} \\
+\midrule
+IP / EIP / RIP & Instruction Pointer & Bir sonraki çalıştırılacak komutun adresi \\
+\rowcolor{acikGri} SP / ESP / RSP & Stack Pointer & Yığının tepesi \\
+BP / EBP / RBP & Base Pointer & Yığın çerçevesi tabanı \\
+\rowcolor{acikGri} SI / ESI / RSI & Source Index & String/dizi kaynağı \\
+DI / EDI / RDI & Destination Index & String/dizi hedefi \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{SI ve DI ile String İşlemleri}
+
+\reg{SI} ve \reg{DI}, \kod{MOVSB}, \kod{LODSB}, \kod{STOSB} gibi string
+komutlarında otomatik olarak kullanılır. Bu komutlar \reg{DF} (Direction Flag)
+bayrağına göre indeksleri otomatik artırır/azaltır.
+
+\begin{ornekkutu}[Bir bellek bloğunu kopyalama (memcpy)]
+\begin{lstlisting}
+cld               ; DF=0 -> SI ve DI artacak (ileri yon)
+mov si, kaynak    ; DS:SI = kaynak adres
+mov di, hedef     ; ES:DI = hedef adres
+mov cx, 100       ; 100 bayt kopyalanacak
+rep movsb         ; CX kez: [ES:DI] <- [DS:SI], SI++, DI++, CX--
+\end{lstlisting}
+Tek satırlık \kod{rep movsb} ile 100 baytlık kopyalama tamamlanır. Bu, C'deki
+\kod{memcpy(hedef, kaynak, 100)} ile eşdeğerdir.
+\end{ornekkutu}
+
+\begin{ornekkutu}[Bir alanı sabit değerle doldurma (memset)]
+\begin{lstlisting}
+cld
+mov di, tampon    ; ES:DI = doldurulacak alan
+mov al, 0         ; doldurulacak deger (0)
+mov cx, 256       ; 256 bayt
+rep stosb         ; CX kez: [ES:DI] <- AL, DI++, CX--
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+\reg{RIP} (Instruction Pointer) doğrudan \kod{mov} ile değiştirilemez.
+Yalnızca \kod{jmp}, \kod{call}, \kod{ret} gibi akış komutlarıyla dolaylı olarak
+değişir. 64-bit modda \reg{RIP}-göreli adresleme (RIP-relative), konumdan
+bağımsız kod (PIC) yazmak için kullanılır.
+\end{uyarikutu}
+
+% =====================================================================
+\section{Bayrak Register'ı (FLAGS / EFLAGS / RFLAGS)}
+% =====================================================================
+
+Bayrak register'ı, işlemcinin durum bilgilerini tutan tekil bitlerden oluşur.
+Aritmetik/mantık komutları bu bayrakları günceller; koşullu atlamalar
+(\kod{JE}, \kod{JG}, vb.) bunları okuyarak karar verir.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}c l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}
+\color{white}\textbf{Bit} & \color{white}\textbf{Kısa} & \color{white}\textbf{Ad} & \color{white}\textbf{Anlamı} \\
+\midrule
+0 & CF & Carry Flag & Elde/ödünç oluştuğunda 1 (işaretsiz taşma) \\
+\rowcolor{acikGri} 2 & PF & Parity Flag & Sonucun düşük baytında çift sayıda 1 biti varsa set \\
+4 & AF & Auxiliary Carry & BCD aritmetiğinde yarım-bayt eldesi \\
+\rowcolor{acikGri} 6 & ZF & Zero Flag & Sonuç sıfır ise 1 \\
+7 & SF & Sign Flag & Sonucun en yüksek biti (negatiflik) \\
+\rowcolor{acikGri} 8 & TF & Trap Flag & Tek adım (single-step) hata ayıklama modu \\
+9 & IF & Interrupt Enable & Donanım kesmeleri açık (1) / kapalı (0) \\
+\rowcolor{acikGri} 10 & DF & Direction Flag & String işlemleri yönü: 0 artan, 1 azalan \\
+11 & OF & Overflow Flag & İşaretli aritmetikte taşma oluştuğunda 1 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Koşullu Atlama Komutları}
+
+Karşılaştırmadan (\kod{CMP} veya \kod{TEST}) sonra kullanılan atlama komutları.
+İşaretli ve işaretsiz sayılar için ayrı komutlar olduğuna dikkat edin.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l l l@{}}
+\toprule
+\rowcolor{anaMavi}
+\color{white}\textbf{Komut} & \color{white}\textbf{Koşul} & \color{white}\textbf{Bayrak} & \color{white}\textbf{Tür} \\
+\midrule
+JE / JZ & Eşit / Sıfır & ZF=1 & -- \\
+\rowcolor{acikGri} JNE / JNZ & Eşit değil & ZF=0 & -- \\
+JG / JNLE & Büyük & ZF=0 ve SF=OF & işaretli \\
+\rowcolor{acikGri} JL / JNGE & Küçük & SF$\neq$OF & işaretli \\
+JGE / JNL & Büyük eşit & SF=OF & işaretli \\
+\rowcolor{acikGri} JLE / JNG & Küçük eşit & ZF=1 veya SF$\neq$OF & işaretli \\
+JA / JNBE & Büyük (above) & CF=0 ve ZF=0 & işaretsiz \\
+\rowcolor{acikGri} JB / JC & Küçük (below) & CF=1 & işaretsiz \\
+JAE / JNC & Büyük eşit & CF=0 & işaretsiz \\
+\rowcolor{acikGri} JBE / JNA & Küçük eşit & CF=1 veya ZF=1 & işaretsiz \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Karşılaştırma ve dallanma -- basit if/else]
+\begin{lstlisting}
+mov eax, [sayi]
+cmp eax, 10       ; EAX - 10 hesapla, bayraklari ayarla
+jg  buyuk         ; isaretli "buyuk mu?" -> EAX > 10 ise atla
+    ; buraya gelindiyse EAX <= 10
+    mov ebx, 0
+    jmp bitti
+buyuk:
+    mov ebx, 1    ; EAX > 10 durumu
+bitti:
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{ipucukutu}
+\kod{TEST eax, eax} bir sayının sıfır olup olmadığını kontrol etmenin en hızlı
+yoludur (\kod{cmp eax, 0}'dan daha verimli). \kod{CLI}/\kod{STI} kesmeleri
+kapatır/açar; \kod{CLD}/\kod{STD} ise string yönünü kontrol eder.
+\end{ipucukutu}
+
+% =====================================================================
+\section{SIMD ve FPU Register'ları}
+% =====================================================================
+
+Modern işlemciler, tek komutla birden fazla veri üzerinde işlem yapan
+(SIMD -- Single Instruction Multiple Data) özel register setlerine sahiptir.
+Bunlar grafik, ses, bilimsel hesaplama ve şifrelemede yoğun kullanılır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Set} & \color{white}\textbf{Register'lar} & \color{white}\textbf{Açıklama} \\
+\midrule
+x87 FPU & ST0--ST7 (80-bit) & Kayan noktalı (floating point) yığın tabanlı hesaplama \\
+\rowcolor{acikGri} MMX & MM0--MM7 (64-bit) & Tamsayı SIMD (FPU register'larıyla örtüşür) \\
+SSE & XMM0--XMM15 (128-bit) & 4$\times$float veya 2$\times$double paralel işlem \\
+\rowcolor{acikGri} AVX & YMM0--YMM15 (256-bit) & 8$\times$float paralel işlem \\
+AVX-512 & ZMM0--ZMM31 (512-bit) & 16$\times$float, maske register'ları (K0--K7) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{bilgikutu}
+XMM, YMM ve ZMM register'ları iç içedir: XMM0, YMM0'ın alt 128 biti; YMM0 da
+ZMM0'ın alt 256 bitidir. Tıpkı AX'in EAX'in içinde olması gibi. Örneğin bir
+\kod{addps xmm0, xmm1} komutu, iki register'daki 4'er float değeri
+\emph{aynı anda} toplar.
+\end{bilgikutu}
+
+\begin{ornekkutu}[SSE ile 4 float'ı aynı anda toplama]
+\begin{lstlisting}
+; a[4] ve b[4] float dizilerini topla -> sonuc[4]
+movups xmm0, [a]  ; XMM0 = {a0, a1, a2, a3}  (128-bit yukle)
+movups xmm1, [b]  ; XMM1 = {b0, b1, b2, b3}
+addps  xmm0, xmm1 ; XMM0 = {a0+b0, a1+b1, a2+b2, a3+b3} tek komutta!
+movups [sonuc], xmm0
+\end{lstlisting}
+Skaler kodda 4 ayrı toplama gerekirken SSE bunu tek komutta yapar -- bu
+\emph{paralellik} SIMD'in gücüdür.
+\end{ornekkutu}
+
+% =====================================================================
+\section{Kontrol ve Özel Register'lar}
+% =====================================================================
+
+Bunlar işletim sistemi seviyesinde, işlemcinin çalışma modunu ve bellek
+yönetimini kontrol eden ayrıcalıklı register'lardır (yalnızca ring 0).
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{İşlev} \\
+\midrule
+CR0 & Korumalı moda geçiş (bit 0 = PE), sayfalama (bit 31 = PG), önbellek kontrolü \\
+\rowcolor{acikGri} CR2 & Sayfa hatası (page fault) oluştuğunda erişilmeye çalışılan adres \\
+CR3 & Sayfa dizini taban adresi (PDBR) -- sanal bellek haritası \\
+\rowcolor{acikGri} CR4 & PAE, PSE, SSE, PCID gibi gelişmiş özelliklerin etkinleştirilmesi \\
+CR8 & (64-bit) Görev önceliği register'ı (TPR) \\
+\rowcolor{acikGri} GDTR / IDTR & Global / Interrupt tanımlayıcı tablo adres ve boyutları \\
+DR0--DR7 & Donanım kesme noktaları (hardware breakpoints) için hata ayıklama register'ları \\
+MSR & Model'e özel register'lar (\kod{rdmsr}/\kod{wrmsr} ile erişilir) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Yaygın Komut Hızlı Referansı}
+% =====================================================================
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Komut} & \color{white}\textbf{İşlev} & \color{white}\textbf{Komut} & \color{white}\textbf{İşlev} \\
+\midrule
+MOV & Değer taşı & CMP & Karşılaştır (çıkar, bayrak ayarla) \\
+\rowcolor{acikGri} ADD/SUB & Topla / Çıkar & TEST & Bit AND (bayrak ayarla) \\
+INC/DEC & 1 artır / azalt & AND/OR/XOR & Bit işlemleri \\
+\rowcolor{acikGri} MUL/IMUL & İşaretsiz / işaretli çarpma & NOT/NEG & Bit tümleyeni / negatif \\
+DIV/IDIV & İşaretsiz / işaretli bölme & SHL/SHR & Sola / sağa kaydırma \\
+\rowcolor{acikGri} PUSH/POP & Yığına at / çek & ROL/ROR & Döndürme (rotate) \\
+CALL/RET & Fonksiyon çağır / dön & LEA & Etkin adres yükle \\
+\rowcolor{acikGri} JMP & Koşulsuz atlama & MOVZX/MOVSX & Sıfır / işaret genişletmeli taşıma \\
+INT & Yazılım kesmesi & NOP & Boş işlem \\
+\rowcolor{acikGri} IN/OUT & G/Ç portundan oku/yaz & HLT & İşlemciyi durdur \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Bit işlemleriyle yaygın hileler]
+\begin{lstlisting}
+xor eax, eax      ; EAX = 0  (en hizli sifirlama yontemi)
+test eax, eax     ; EAX sifir mi? -> ZF ayarlanir
+and al, 0x0F      ; sadece alt 4 biti tut (maskeleme)
+or  al, 0x80      ; en yuksek biti 1 yap
+shl eax, 1        ; 2 ile carp (sola 1 kaydir)
+shr eax, 2        ; 4 e bol (saga 2 kaydir, isaretsiz)
+\end{lstlisting}
+\end{ornekkutu}
+
+% =====================================================================
+\section{BIOS Interrupt (Kesme) Sistemi}
+% =====================================================================
+
+BIOS (Basic Input/Output System), anakarttaki bir çip üzerinde bulunan ve
+donanıma en alt seviyede erişim sağlayan bir yazılımdır. \textbf{Kesmeler}
+(interrupt), donanım hizmetlerine erişmek için standartlaştırılmış giriş
+noktalarıdır.
+
+\subsection{Kesme Nasıl Çalışır? -- Kesme Vektör Tablosu}
+
+Bir yazılım kesmesi \kod{INT n} komutuyla tetiklenir. İşlemci, belleğin en
+başında (\hx{0x0000}) bulunan \textbf{Kesme Vektör Tablosu}'na (IVT) bakar.
+Bu tabloda her girdi 4 bayttır (2 bayt offset + 2 bayt segment). İşlemci
+\kod{n$\times$4} adresindeki segment:offset değerine atlar.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\rowcolor{anaMavi}\multicolumn{4}{|c|}{\color{white}\textbf{Kesme Vektör Tablosu (IVT) -- adres 0x0000}}\\
+\hline
+\cellcolor{acikMavi}\textbf{Girdi} & \cellcolor{acikMavi}\textbf{Adres} & \cellcolor{acikMavi}\textbf{İçerik} & \cellcolor{acikMavi}\textbf{Kesme} \\
+\hline
+0 & 0x0000 & offset:segment & INT 0 (bölme hatası) \\
+\hline
+1 & 0x0004 & offset:segment & INT 1 (tek adım) \\
+\hline
+\dots & \dots & \dots & \dots \\
+\hline
+16 & 0x0040 & offset:segment & INT 10h (video) \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{bilgikutu}
+\textbf{Genel Kullanım Deseni:} Kesme numarası hangi \emph{cihazı/hizmeti}
+seçer. \reg{AH} register'ı ise o hizmet içindeki hangi \emph{alt fonksiyonun}
+çağrılacağını belirler. Diğer register'lar (\reg{AL}, \reg{BX}, \reg{CX},
+\reg{DX}) parametreleri taşır. Sonuç genellikle register'larda ve/veya
+\reg{CF} (Carry) bayrağında döner: \kod{CF=1} çoğunlukla "hata oluştu"
+anlamına gelir.
+\end{bilgikutu}
+
+\subsection{Önemli BIOS Kesmelerine Genel Bakış}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}
+\color{white}\textbf{INT} & \color{white}\textbf{Hizmet} & \color{white}\textbf{Açıklama} \\
+\midrule
+\hx{10h} & Video Servisleri & Ekrana yazı yazma, piksel çizme, mod ayarı, imleç \\
+\rowcolor{acikGri} \hx{11h} & Ekipman Listesi & Takılı donanımların bit maskesi \\
+\hx{12h} & Bellek Boyutu & Kullanılabilir taban bellek (KB) \\
+\rowcolor{acikGri} \hx{13h} & Disk Servisleri & Sektör okuma/yazma, disk resetleme, LBA \\
+\hx{14h} & Seri Port & RS-232 haberleşme \\
+\rowcolor{acikGri} \hx{15h} & Sistem Servisleri & Genişletilmiş bellek haritası (E820), A20, APM \\
+\hx{16h} & Klavye Servisleri & Tuş okuma, klavye durumu \\
+\rowcolor{acikGri} \hx{17h} & Yazıcı Servisleri & Paralel port yazıcı \\
+\hx{19h} & Bootstrap & Yeniden önyükleme \\
+\rowcolor{acikGri} \hx{1Ah} & Saat Servisleri & Sistem saati, RTC okuma \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{INT 10h -- Video Servisleri (Detaylı)}
+% =====================================================================
+
+Ekranla ilgili tüm işlemler bu kesme üzerinden yapılır.
+
+\subsection{AH=0Eh -- Teletype Modunda Karakter Yazma}
+
+Bu fonksiyon, imleci otomatik ilerleterek tek bir karakteri ekrana basar.
+Önyükleyicilerde "Hello World" yazdırmanın standart yoludur.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Giriş} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{AH} = \hx{0Eh} & Fonksiyon: teletype yazma \\
+\reg{AL} = karakter & Yazdırılacak ASCII karakter kodu \\
+\reg{BH} = sayfa & Görüntü sayfası (genellikle 0) \\
+\reg{BL} = renk & Grafik modunda ön plan rengi \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Null ile biten metin yazan yeniden kullanılabilir rutin]
+\begin{lstlisting}
+yaz_metin:            ; giris: SI = metnin adresi
+    push ax
+    mov ah, 0x0E      ; teletype fonksiyonu
+.dongu:
+    lodsb             ; DS:SI'daki bayti AL'e yukle, SI++
+    test al, al       ; AL == 0 mi? (metin sonu)
+    jz  .bitti
+    int 0x10          ; karakteri ekrana yaz
+    jmp .dongu
+.bitti:
+    pop ax
+    ret
+
+; kullanimi:
+mov si, mesaj
+call yaz_metin
+mesaj: db "Merhaba, Assembly Dunyasi!", 0x0D, 0x0A, 0
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{notkutu}[Satır sonu karakterleri]
+\hx{0x0D} (Carriage Return -- satır başı) ve \hx{0x0A} (Line Feed -- alt satır)
+birlikte kullanılır. Sadece \hx{0x0A} imleci alt satıra indirir ama başa
+getirmez; bu yüzden ikisi birlikte gerekir.
+\end{notkutu}
+
+\subsection{AH=00h -- Video Modu Ayarlama}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{AL} & \color{anaMavi}\textbf{Mod} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+\hx{03h} & 80$\times$25 metin & 16 renkli standart metin modu \\
+\rowcolor{acikGri} \hx{12h} & 640$\times$480 & 16 renkli grafik (VGA) \\
+\hx{13h} & 320$\times$200 & 256 renkli grafik (oyunların klasiği) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+mov ah, 0x00      ; video modu ayarla
+mov al, 0x03      ; 80x25 metin modu (ekrani da temizler)
+int 0x10
+\end{lstlisting}
+
+\subsection{AH=02h -- İmleç Konumu Ayarlama}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Giriş} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{AH}=\hx{02h}, \reg{BH}=sayfa & İmleç konumu ayarla \\
+\reg{DH} = satır & 0--24 arası (üstten) \\
+\reg{DL} = sütun & 0--79 arası (soldan) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[İmleci 10. satır, 20. sütuna taşıma]
+\begin{lstlisting}
+mov ah, 0x02
+mov bh, 0         ; sayfa 0
+mov dh, 10        ; satir 10
+mov dl, 20        ; sutun 20
+int 0x10
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{AH=09h -- Karakteri Renkli ve Tekrarlı Yazma}
+
+İmleci ilerletmeden, belirtilen karakteri belirtilen renkte ve sayıda yazar.
+Renkli arayüzler çizmek için idealdir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Giriş} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{AH}=\hx{09h}, \reg{AL}=karakter & Yazılacak karakter \\
+\reg{BH}=sayfa, \reg{BL}=öznitelik & Renk: alt 4 bit ön plan, üst 4 bit arka plan \\
+\reg{CX} = tekrar sayısı & Kaç kez yazılacak \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Beyaz zemin üzerine kırmızı 10 yıldız]
+\begin{lstlisting}
+mov ah, 0x09
+mov al, '*'       ; yildiz karakteri
+mov bh, 0         ; sayfa 0
+mov bl, 0xF4      ; F=beyaz arka plan, 4=kirmizi on plan
+mov cx, 10        ; 10 kez
+int 0x10
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{bilgikutu}
+\textbf{Renk kodları (4-bit):}
+0=Siyah, 1=Mavi, 2=Yeşil, 3=Cyan, 4=Kırmızı, 5=Magenta, 6=Kahve, 7=Açık gri,
+8=Koyu gri, 9=Açık mavi, A=Açık yeşil, B=Açık cyan, C=Açık kırmızı,
+D=Açık magenta, E=Sarı, F=Beyaz.
+\end{bilgikutu}
+
+\subsection{AH=06h -- Ekranı Kaydırma / Temizleme}
+
+Bir pencere alanını yukarı kaydırır. \reg{AL}=0 verildiğinde tüm alanı
+temizler -- ekranı belirli renkle temizlemenin yaygın yolu.
+
+\begin{ornekkutu}[Tüm ekranı mavi zeminle temizleme]
+\begin{lstlisting}
+mov ah, 0x06      ; yukari kaydir / temizle
+mov al, 0         ; 0 = tum pencereyi temizle
+mov bh, 0x1F      ; renk: 1=mavi arka, F=beyaz on plan
+mov cx, 0x0000    ; sol-ust kose (satir 0, sutun 0)
+mov dx, 0x184F    ; sag-alt kose (satir 24=0x18, sutun 79=0x4F)
+int 0x10
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{AH=0Ch -- Piksel Çizme (Grafik Modu)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Giriş} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{AH}=\hx{0Ch}, \reg{AL}=renk & Renk numarası (0--255) \\
+\reg{CX} = X koordinatı & Sütun \\
+\reg{DX} = Y koordinatı & Satır \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Grafik modda yatay bir kırmızı çizgi çizme]
+\begin{lstlisting}
+mov ah, 0x00      ; once grafik moduna gec
+mov al, 0x13      ; 320x200, 256 renk
+int 0x10
+
+mov ah, 0x0C      ; piksel ciz
+mov al, 4         ; renk: kirmizi
+mov dx, 100       ; Y = 100 (sabit satir)
+mov cx, 0         ; X = 0 den basla
+.ciz:
+    int 0x10      ; (CX, DX) noktasina piksel koy
+    inc cx        ; X++
+    cmp cx, 320   ; ekran genisligine ulastik mi?
+    jl  .ciz      ; hayirsa devam
+\end{lstlisting}
+\end{ornekkutu}
+
+% =====================================================================
+\section{INT 16h -- Klavye Servisleri (Detaylı)}
+% =====================================================================
+
+\subsection{AH=00h -- Tuş Bekle ve Oku (Bloke Eder)}
+
+Bir tuşa basılana kadar programı bekletir. \reg{AL}'de ASCII kodu, \reg{AH}'de
+tarama kodu (scan code) döner.
+
+\begin{ornekkutu}[Kullanıcıdan tuş bekleyip ekrana yankılama (echo terminali)]
+\begin{lstlisting}
+bekle_tus:
+    mov ah, 0x00  ; tus bekle ve oku
+    int 0x16      ; AL = basilan tusun ASCII kodu
+
+    cmp al, 0x0D  ; Enter'a mi basildi?
+    je  yeni_satir
+
+    mov ah, 0x0E  ; teletype yazma
+    int 0x10      ; okunan tusu ekrana yaz
+    jmp bekle_tus
+
+yeni_satir:
+    mov ah, 0x0E
+    mov al, 0x0D
+    int 0x10
+    mov al, 0x0A
+    int 0x10
+    jmp bekle_tus
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{AH=01h -- Tuş Var mı? (Bloke Etmez)}
+
+Tampon boşsa \reg{ZF}=1 döner (tuş yok); doluysa \reg{ZF}=0 olur ve \reg{AL}'de
+tuş bilgisi bulunur ama \emph{tampondan silinmez}. Oyun döngülerinde giriş
+kontrolü için idealdir.
+
+\begin{ornekkutu}[Oyun döngüsünde bloke etmeden tuş kontrolü]
+\begin{lstlisting}
+oyun_dongusu:
+    ; ... oyun mantigini guncelle, ekrani ciz ...
+
+    mov ah, 0x01  ; tampon dolu mu?
+    int 0x16
+    jz  oyun_dongusu  ; ZF=1 -> tus yok, donguye devam
+
+    ; buraya gelindiyse bir tus var, simdi tampondan al
+    mov ah, 0x00
+    int 0x16      ; AL = tus
+    cmp al, 'q'   ; cikis tusu mu?
+    jne oyun_dongusu
+    ; q'ya basildi -> oyundan cik
+\end{lstlisting}
+\end{ornekkutu}
+
+% =====================================================================
+\section{INT 13h -- Disk Servisleri (Detaylı)}
+% =====================================================================
+
+Diskten sektör okuma, önyükleyicinin çekirdeği (kernel) belleğe yüklemesi için
+kritiktir. Adresleme CHS (Cylinder-Head-Sector) veya modern LBA yöntemiyle
+yapılır.
+
+\subsection{AH=00h -- Disk Sistemini Resetleme}
+
+Okuma hatalarından sonra sürücüyü sıfırlamak için kullanılır. Yeniden deneme
+mantığının parçasıdır.
+
+\begin{lstlisting}
+mov ah, 0x00      ; disk sistemini resetle
+mov dl, 0x80      ; ilk sabit disk
+int 0x13
+\end{lstlisting}
+
+\subsection{AH=02h -- Sektör Okuma (CHS)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Giriş} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{AH}=\hx{02h} & Sektör oku fonksiyonu \\
+\reg{AL} & Okunacak sektör sayısı \\
+\reg{CH} & Silindir (cylinder) numarası \\
+\reg{CL} & Sektör numarası (\textbf{1'den başlar!}) \\
+\reg{DH} & Kafa (head) numarası \\
+\reg{DL} & Sürücü (\hx{00h}=disket, \hx{80h}=ilk HDD) \\
+\reg{ES:BX} & Verinin yükleneceği bellek adresi \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Çıkış} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{CF}=0 & Başarılı, \reg{AL}=okunan sektör sayısı \\
+\reg{CF}=1 & Hata, \reg{AH}=hata kodu \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[Yeniden deneme mantığıyla sağlam sektör okuma]
+\begin{lstlisting}
+disk_oku:             ; ES:BX hedef, sektor bilgileri ayarli varsayilir
+    mov di, 3         ; en fazla 3 kez dene
+.dene:
+    mov ah, 0x02      ; sektor oku
+    mov al, 1         ; 1 sektor
+    mov ch, 0         ; silindir 0
+    mov cl, 2         ; sektor 2 (1. sektor onyukleyicidir)
+    mov dh, 0         ; kafa 0
+    mov dl, 0x80      ; ilk sabit disk
+    int 0x13
+    jnc .basarili     ; CF=0 -> okuma tamam
+
+    ; hata olustu: diski resetle ve tekrar dene
+    xor ah, ah        ; AH=0 -> reset fonksiyonu
+    int 0x13
+    dec di
+    jnz .dene         ; deneme hakki kaldiysa tekrar
+    jmp disk_hatasi   ; 3 deneme de basarisiz
+
+.basarili:
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+Sektör numarası (\reg{CL}) \textbf{1'den başlar}, 0'dan değil! İlk sektör (LBA 0)
+CHS'de silindir 0, kafa 0, sektör \textbf{1}'dir. Ayrıca gerçek diskler ara
+sıra okuma hatası verir; bu yüzden profesyonel önyükleyiciler daima yeniden
+deneme (retry) döngüsü kullanır.
+\end{uyarikutu}
+
+\subsection{AH=42h -- Genişletilmiş Okuma (LBA)}
+
+Modern büyük diskler için CHS yetersizdir. LBA (Logical Block Addressing)
+sektörleri 0'dan başlayan tek bir numarayla adresler. Parametreler bir
+"Disk Adres Paketi" (DAP) yapısı üzerinden geçer.
+
+\begin{ornekkutu}[LBA ile sektör okuma ve DAP yapısı]
+\begin{lstlisting}
+    mov ah, 0x42      ; genisletilmis okuma
+    mov dl, 0x80      ; disk
+    mov si, dap       ; DS:SI = adres paketi
+    int 0x13
+    jc  disk_hatasi
+
+; Disk Adres Paketi (16 bayt)
+dap:
+    db 0x10           ; paket boyutu (16)
+    db 0              ; ayrilmis (0)
+    dw 1              ; okunacak sektor sayisi
+    dw 0x8000         ; hedef offset
+    dw 0x0000         ; hedef segment
+    dq 1              ; baslangic LBA numarasi (64-bit)
+\end{lstlisting}
+\end{ornekkutu}
+
+% =====================================================================
+\section{INT 15h, 1Ah, 12h -- Diğer Önemli Servisler}
+% =====================================================================
+
+\subsection{INT 15h, EAX=E820h -- Bellek Haritası}
+
+Modern işletim sistemlerinin RAM haritasını öğrenmesinin standart yoludur.
+Her çağrı, bir bellek bölgesini tanımlayan 20/24 baytlık bir yapı döndürür ve
+\reg{EBX}'i bir sonraki bölge için günceller. \reg{EBX}=0 olunca liste biter.
+
+\begin{ornekkutu}[E820 bellek haritası okuma döngüsü]
+\begin{lstlisting}
+bellek_haritasi:
+    mov di, tampon    ; ES:DI = sonucun yazilacagi yer
+    xor ebx, ebx      ; ilk cagri icin EBX = 0
+    mov edx, 0x534D4150  ; 'SMAP' imzasi (sabit)
+.dongu:
+    mov eax, 0xE820   ; her cagrida yeniden ayarla
+    mov ecx, 24       ; bir girdinin boyutu (bayt)
+    int 0x15
+    jc  .bitti        ; CF=1 -> hata veya liste sonu
+
+    add di, 24        ; sonraki girdi icin ilerle
+    test ebx, ebx     ; EBX=0 -> son girdiydi
+    jnz .dongu
+.bitti:
+    ; tampon artik bellek bolgelerinin listesini icerir
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{bilgikutu}
+Her E820 girdisi şunları içerir: 8 bayt taban adres, 8 bayt uzunluk, 4 bayt
+tür (1=kullanılabilir RAM, 2=rezerve, 3=ACPI, 4=NVS). İşletim sistemi bu
+haritayı kullanarak hangi bellek bölgelerini güvenle kullanabileceğini belirler.
+\end{bilgikutu}
+
+\subsection{INT 15h, AX=E801h -- Genişletilmiş Bellek Boyutu}
+
+E820'den daha basit bir alternatiftir. 15\,MB üstündeki belleği iki register
+çiftinde döndürür: 1--16\,MB arası ve 16\,MB üstü.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Çıkış} & \color{anaMavi}\textbf{Anlam} \\
+\midrule
+\reg{AX} / \reg{CX} & 1--16\,MB arası bellek (1\,KB birimlerle) \\
+\reg{BX} / \reg{DX} & 16\,MB üstü bellek (64\,KB birimlerle) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ornekkutu}[E801 ile toplam RAM'i hesaplama]
+\begin{lstlisting}
+    xor cx, cx        ; CX ve BX'i temizle (bazi BIOS'lar AX/BX,
+    xor bx, bx        ;   digerleri CX/DX kullanir)
+    mov ax, 0xE801
+    int 0x15
+    jc  .hata
+    ; Bazi BIOS'lar sonucu AX:BX, bazilari CX:DX doner.
+    ; CX=0 ise AX/BX'i kullan:
+    test cx, cx
+    jnz .cxdx
+    mov [dusuk_mem], ax   ; 1-16MB (KB cinsinden)
+    mov [yuksek_mem], bx  ; 16MB ustu (64KB cinsinden)
+    jmp .son
+.cxdx:
+    mov [dusuk_mem], cx
+    mov [yuksek_mem], dx
+.son:
+.hata:
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{INT 15h, AH=88h -- Genişletilmiş Bellek (Basit)}
+
+En eski ve en basit yöntem. \reg{AX}'te 1\,MB üstündeki bellek miktarını KB
+cinsinden döndürür. Yalnızca 64\,MB'a kadar ölçeklenir, bu yüzden modern
+sistemlerde E820/E801 tercih edilir.
+
+\begin{lstlisting}
+mov ah, 0x88
+int 0x15          ; AX = 1MB ustundeki bellek (KB), en fazla ~64MB
+\end{lstlisting}
+
+\subsection{INT 15h, AX=2401h -- A20 Hattını Açma}
+
+A20 adres hattı, 1\,MB üstündeki belleğe erişim için açılmalıdır (tarihsel bir
+8086 uyumluluk kısıtı). BIOS üzerinden açmak en temiz yoldur.
+
+\begin{ornekkutu}[A20 hattını BIOS ile açma ve doğrulama]
+\begin{lstlisting}
+    mov ax, 0x2403    ; once A20 destegi var mi diye sor
+    int 0x15
+    jc  .desteklenmiyor
+
+    mov ax, 0x2402    ; A20 mevcut durumunu oku
+    int 0x15
+    cmp al, 1
+    je  .zaten_acik   ; AL=1 ise zaten aciktir
+
+    mov ax, 0x2401    ; A20 hattini ETKINLESTIR
+    int 0x15
+    jc  .hata
+.zaten_acik:
+.desteklenmiyor:
+.hata:
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{bilgikutu}
+A20 açık değilse, 1\,MB sınırının üstündeki adresler "sarılır" (wrap-around) ve
+0'dan başlar gibi davranır. Korumalı moda geçmeden \textbf{önce} A20'nin açık
+olması şarttır; aksi halde çekirdeğiniz yüksek bellekte doğru çalışmaz. BIOS
+yöntemi başarısız olursa alternatifler klavye denetleyicisi (port \hx{0x64})
+veya "Fast A20" (port \hx{0x92}) üzerinden açmaktır.
+\end{bilgikutu}
+
+\subsection{INT 15h, AH=86h -- Mikrosaniye Cinsinden Bekleme}
+
+Belirtilen süre kadar (\reg{CX:DX} mikrosaniye) programı bekletir. Gecikme
+oluşturmanın hassas yoludur.
+
+\begin{ornekkutu}[Tam olarak 500 milisaniye bekleme]
+\begin{lstlisting}
+    mov ah, 0x86
+    mov cx, 0x0007    ; CX:DX = 500000 mikrosaniye
+    mov dx, 0xA120    ;   (0x0007A120 = 500000)
+    int 0x15          ; ~0.5 saniye bekle
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{INT 1Ah, AH=00h -- Sistem Saatini Okuma}
+
+BIOS, saniyede yaklaşık 18.2 kez artan bir sayaç tutar. \reg{CX:DX} çiftinde
+geri döner; bu değer basit zamanlama veya rastgele sayı tohumu (random seed)
+için kullanılabilir.
+
+\begin{ornekkutu}[Sistem tik sayacını okuyup gecikme oluşturma]
+\begin{lstlisting}
+; Baslangic zamanini oku
+mov ah, 0x00
+int 0x1A          ; CX:DX = gun basindan beri gecen tik sayisi
+mov [baslangic], dx
+
+bekle:
+    mov ah, 0x00
+    int 0x1A
+    mov ax, dx
+    sub ax, [baslangic]
+    cmp ax, 18     ; ~18 tik = ~1 saniye
+    jl  bekle      ; 1 saniye gecene kadar bekle
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{INT 12h -- Taban Bellek Boyutu}
+
+Parametre almaz; \reg{AX}'te kullanılabilir taban bellek boyutunu KB cinsinden
+döndürür (tipik olarak 640).
+
+\begin{lstlisting}
+int 0x12          ; AX = KB cinsinden taban bellek
+; AX genellikle 640 (0x280) doner
+\end{lstlisting}
+
+% =====================================================================
+\section{BIOS Örneklerinde Kullanılan Register'ların Açıklaması}
+% =====================================================================
+
+Bu bölüm, yukarıdaki BIOS kesme örneklerinde geçen her register'ın o çağrıda
+\emph{neden} kullanıldığını tek tek açıklar. Böylece rehberin ilk yarısındaki
+register bilgisi ile ikinci yarısındaki kesme örnekleri birbirine bağlanır.
+
+\begin{bilgikutu}
+\textbf{Hatırlatma -- genel desen:} Neredeyse tüm BIOS çağrılarında \reg{AH}
+\emph{fonksiyon seçicisidir} (hangi alt işlemin çalışacağını belirler).
+\reg{AL}, \reg{BX}, \reg{CX}, \reg{DX} \emph{parametreleri} taşır. Sonuç
+register'larda ve/veya \reg{CF} (Carry) bayrağında döner. \reg{ES:BX},
+\reg{DS:SI}, \reg{ES:DI} gibi \emph{çiftler} ise bir bellek adresini
+(segment:offset) gösterir.
+\end{bilgikutu}
+
+% ---------------------------------------------------------------
+\subsection{INT 10h, AH=0Eh -- Teletype Karakter Yazma}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x0E} yazılır -- "teletype yazma" fonksiyonunu seçer \\
+\rowcolor{acikGri} \reg{AL} & giriş & Ekrana basılacak karakterin ASCII kodu (\kod{lodsb} her seferinde buraya bir bayt yükler) \\
+\reg{SI} & giriş & Metnin başlangıç adresi; \kod{lodsb} bunu okuyup otomatik artırır \\
+\rowcolor{acikGri} \reg{BH} & giriş & Görüntü sayfası (0); genelde önemsizdir \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{notkutu}
+Örnekte \kod{lodsb} komutu şu üç işi tek adımda yapar: \reg{DS:SI}'nin
+gösterdiği baytı \reg{AL}'ye yükler, sonra \reg{SI}'yi bir artırır. Yani
+\reg{AL} ve \reg{SI} birlikte çalışır: \reg{SI} "nerede olduğumuzu", \reg{AL}
+"o an hangi karakteri yazdığımızı" tutar. \kod{test al, al} ile \reg{AL}=0
+(metin sonu) kontrol edilir.
+\end{notkutu}
+
+% ---------------------------------------------------------------
+\subsection{INT 10h, AH=00h -- Video Modu Ayarlama}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x00} -- "video modu ayarla" fonksiyonu \\
+\rowcolor{acikGri} \reg{AL} & giriş & İstenen mod numarası (örn. \hx{0x13} = 320$\times$200, 256 renk) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+Burada yalnızca \reg{AX} kullanılır: \reg{AH} ne yapılacağını, \reg{AL} hangi
+modun seçileceğini söyler. Çağrı ekranı da temizler.
+
+% ---------------------------------------------------------------
+\subsection{INT 10h, AH=02h -- İmleç Konumu}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x02} -- "imleç konumu ayarla" \\
+\rowcolor{acikGri} \reg{BH} & giriş & Görüntü sayfası (0) \\
+\reg{DH} & giriş & Hedef satır (0--24) -- \reg{DX}'in üst baytı \\
+\rowcolor{acikGri} \reg{DL} & giriş & Hedef sütun (0--79) -- \reg{DX}'in alt baytı \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}
+Burada \reg{DH} ve \reg{DL}'nin ayrı ayrı kullanılması, tek bir 16-bit
+register'ın (\reg{DX}) iki 8-bit parçaya bölünmesinin klasik örneğidir:
+satır ve sütun tek bir register'da paketlenmiştir. \reg{DH}=satır, \reg{DL}=sütun.
+\end{ipucukutu}
+
+% ---------------------------------------------------------------
+\subsection{INT 10h, AH=09h -- Renkli/Tekrarlı Karakter}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x09} -- "renkli karakter yaz" \\
+\rowcolor{acikGri} \reg{AL} & giriş & Yazılacak karakter (\kod{'*'}) \\
+\reg{BH} & giriş & Görüntü sayfası (0) \\
+\rowcolor{acikGri} \reg{BL} & giriş & Renk özniteliği: üst 4 bit arka plan, alt 4 bit ön plan (\hx{0xF4} = beyaz zemin/kırmızı) \\
+\reg{CX} & giriş & Karakterin kaç kez tekrarlanacağı (10) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+Burada \reg{CX}'in "sayaç" rolü belirgindir: kaç kopya yazılacağını o tutar.
+\reg{BL} ise tek bir baytta iki renk bilgisini (ön/arka) paketler.
+
+% ---------------------------------------------------------------
+\subsection{INT 10h, AH=06h -- Ekranı Kaydır/Temizle}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x06} -- "yukarı kaydır / temizle" \\
+\rowcolor{acikGri} \reg{AL} & giriş & Kaydırılacak satır sayısı; \hx{0} = tüm pencereyi temizle \\
+\reg{BH} & giriş & Yeni boş alanın renk özniteliği (\hx{0x1F} = mavi/beyaz) \\
+\rowcolor{acikGri} \reg{CH}/\reg{CL} & giriş & \reg{CX} = pencerenin sol-üst köşesi (satır/sütun) \\
+\reg{DH}/\reg{DL} & giriş & \reg{DX} = pencerenin sağ-alt köşesi (\hx{0x184F} = 24/79) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+Burada \reg{CX} ve \reg{DX}, her biri iki 8-bitlik parçaya bölünerek bir
+dikdörtgenin iki köşesini (4 koordinat) toplam iki register'da taşır.
+
+% ---------------------------------------------------------------
+\subsection{INT 10h, AH=0Ch -- Piksel Çizme}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x0C} -- "piksel yaz" \\
+\rowcolor{acikGri} \reg{AL} & giriş & Pikselin renk numarası (0--255) \\
+\reg{CX} & giriş & X koordinatı (sütun) -- döngüde \kod{inc cx} ile artırılır \\
+\rowcolor{acikGri} \reg{DX} & giriş & Y koordinatı (satır) -- sabit tutulur \\
+\bottomrule
+\end{tabularx}
+\end{center}
+Çizgi çizme örneğinde \reg{DX} (Y) sabit kalırken \reg{CX} (X) her turda
+artırılır; böylece yatay bir çizgi oluşur. Bu, register'ların bir döngü
+değişkeni olarak nasıl kullanıldığını gösterir.
+
+% ---------------------------------------------------------------
+\subsection{INT 16h, AH=00h ve AH=01h -- Klavye}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x00} = tuş bekle, \hx{0x01} = tuş var mı kontrol et \\
+\rowcolor{acikGri} \reg{AL} & \textbf{çıkış} & Basılan tuşun ASCII kodu (BIOS doldurur) \\
+\reg{AH} & \textbf{çıkış} & Tuşun tarama kodu (scan code) \\
+\rowcolor{acikGri} \reg{ZF} & \textbf{çıkış} & (Yalnızca AH=01h) tampon boşsa 1, doluysa 0 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{notkutu}
+Bu örnek, register'ların hem \emph{giriş} hem \emph{çıkış} taşıyabildiğini
+gösterir: çağrıdan önce \reg{AH}'ye fonksiyon numarasını yazarız, çağrıdan
+sonra \emph{aynı} \reg{AX} register'ının içinde BIOS bize sonucu (\reg{AL}=ASCII,
+\reg{AH}=scancode) geri verir. AH=01h'de asıl sonuç \reg{ZF} bayrağındadır --
+bu yüzden çağrıdan hemen sonra \kod{jz} ile kontrol edilir.
+\end{notkutu}
+
+% ---------------------------------------------------------------
+\subsection{INT 13h, AH=02h -- Diskten Sektör Okuma}
+
+Bu, en çok register kullanan örnektir. Her biri CHS adreslemesinin bir
+parçasını taşır:
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x02} -- "sektör oku" fonksiyonu \\
+\rowcolor{acikGri} \reg{AL} & giriş & Kaç sektör okunacağı (1) \\
+\reg{CH} & giriş & Silindir (cylinder) numarası \\
+\rowcolor{acikGri} \reg{CL} & giriş & Sektör numarası (\textbf{1'den başlar!}) \\
+\reg{DH} & giriş & Kafa (head) numarası \\
+\rowcolor{acikGri} \reg{DL} & giriş & Sürücü numarası (\hx{0x80} = ilk sabit disk) \\
+\reg{ES:BX} & giriş & Okunan verinin yükleneceği bellek adresi (segment:offset) \\
+\rowcolor{acikGri} \reg{CF} & \textbf{çıkış} & 0 = başarılı, 1 = hata \\
+\reg{AH} & \textbf{çıkış} & Hata durumunda hata kodu \\
+\reg{DI} & yerel & Örnekteki yeniden deneme sayacı (BIOS kullanmaz, biz kullanırız) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}
+Dikkat: \reg{CX} register'ı burada tek başına bir sayı değil, \emph{iki ayrı
+bilgiye} bölünmüştür -- \reg{CH} silindiri, \reg{CL} sektörü taşır. Benzer
+şekilde \reg{DX} de \reg{DH} (kafa) ve \reg{DL} (sürücü) olarak ikiye ayrılır.
+\reg{ES:BX} çifti ise "veriyi belleğin neresine koyayım?" sorusunu yanıtlar.
+Örnekteki \reg{DI} ise BIOS'a ait değildir; biz onu yeniden deneme sayacı
+olarak kullanırız.
+\end{ipucukutu}
+
+% ---------------------------------------------------------------
+\subsection{INT 13h, AH=42h -- LBA Okuma}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Rolü} \\
+\midrule
+\reg{AH} & giriş & \hx{0x42} -- "genişletilmiş okuma" \\
+\rowcolor{acikGri} \reg{DL} & giriş & Sürücü numarası (\hx{0x80}) \\
+\reg{DS:SI} & giriş & Disk Adres Paketi'nin (DAP) adresi \\
+\rowcolor{acikGri} \reg{CF} & \textbf{çıkış} & 0 = başarılı, 1 = hata \\
+\bottomrule
+\end{tabularx}
+\end{center}
+CHS'nin aksine burada tüm parametreler (sektör sayısı, hedef, LBA numarası)
+\reg{DS:SI}'nin gösterdiği bellekteki bir \emph{yapıda} durur; register'lar
+sadece o yapıyı işaret eder. Bu, çok sayıda parametreyi az register'la
+geçirmenin yaygın yöntemidir.
+
+% ---------------------------------------------------------------
+\subsection{INT 15h, EAX=E820h -- Bellek Haritası}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{Yön} & \color{white}\textbf{Bu örnekteki rolü} \\
+\midrule
+\reg{EAX} & giriş/çıkış & Girişte \hx{0xE820}; her çağrıda yeniden ayarlanır. Çıkışta \kod{'SMAP'} imzası döner \\
+\rowcolor{acikGri} \reg{EBX} & giriş/çıkış & "Devam" göstergesi: girişte 0, her çağrıda bir sonraki bölge için güncellenir; 0 olunca liste biter \\
+\reg{ECX} & giriş & Bir girdinin bayt cinsinden boyutu (24) \\
+\rowcolor{acikGri} \reg{EDX} & giriş & Sabit \hx{0x534D4150} imzası (\kod{'SMAP'}) \\
+\reg{ES:DI} & giriş & Bölge tanımının yazılacağı tampon adresi \\
+\rowcolor{acikGri} \reg{CF} & \textbf{çıkış} & 1 = hata veya listenin sonu \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{notkutu}
+Bu, \reg{EBX}'in "durum taşıyıcı" olarak kullanıldığı güzel bir örnektir:
+BIOS \reg{EBX}'e her seferinde kaldığı yeri yazar, biz de onu değiştirmeden
+bir sonraki çağrıya veririz. Yani \reg{EBX} çağrılar arasında \emph{iterator}
+(yineleyici) görevi görür. \reg{EAX} ve \reg{ECX}'in her turda yeniden
+ayarlanması gerekir çünkü BIOS bunların üzerine yazar.
+\end{notkutu}
+
+% ---------------------------------------------------------------
+\subsection{Diğer INT 15h Fonksiyonları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Fonksiyon} & \color{white}\textbf{Register} & \color{white}\textbf{Rolü} \\
+\midrule
+E801h & \reg{AX}=\hx{0xE801} & Fonksiyon seçici \\
+\rowcolor{acikGri} & \reg{AX}/\reg{CX} (çıkış) & 1--16\,MB arası bellek (KB) \\
+& \reg{BX}/\reg{DX} (çıkış) & 16\,MB üstü bellek (64\,KB birim) \\
+\midrule
+88h & \reg{AH}=\hx{0x88} & Fonksiyon seçici \\
+\rowcolor{acikGri} & \reg{AX} (çıkış) & 1\,MB üstü bellek (KB) \\
+\midrule
+2401h & \reg{AX}=\hx{0x2401} & A20'yi aç; \reg{CF} çıkışta hata durumu \\
+\midrule
+\rowcolor{acikGri} 86h & \reg{AH}=\hx{0x86} & Bekleme fonksiyonu \\
+& \reg{CX:DX} & Mikrosaniye cinsinden süre (32-bit değer iki register'a bölünür) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}
+\reg{CX:DX} çiftinde 32-bit bir sayının nasıl taşındığına dikkat edin:
+\reg{CX} üst 16 biti, \reg{DX} alt 16 biti tutar. 16-bit modda 32-bit değer
+tek register'a sığmadığı için bu "register çifti" tekniği kullanılır --
+tıpkı çarpma sonucunun \reg{DX:AX}'te dönmesi gibi.
+\end{ipucukutu}
+
+% ---------------------------------------------------------------
+\subsection{INT 1Ah (Saat) ve INT 12h (Bellek)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Kesme} & \color{white}\textbf{Register} & \color{white}\textbf{Rolü} \\
+\midrule
+INT 1Ah & \reg{AH}=\hx{0x00} & Fonksiyon: sayacı oku \\
+\rowcolor{acikGri} & \reg{CX:DX} (çıkış) & Gün başından beri geçen tik sayısı (32-bit, çift register) \\
+\midrule
+INT 12h & (giriş yok) & Parametre almaz \\
+\rowcolor{acikGri} & \reg{AX} (çıkış) & Taban bellek boyutu (KB) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+INT 12h, hiç giriş parametresi almayan nadir bir kesmedir; sonucu doğrudan
+\reg{AX}'te verir. INT 1Ah ise saat değerini yine bir \reg{CX:DX} çiftinde
+döndürür.
+
+% ---------------------------------------------------------------
+\subsection{Özet: Register'ların BIOS Çağrılarındaki Rolleri}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Register} & \color{white}\textbf{BIOS çağrılarındaki tipik rolü} \\
+\midrule
+\reg{AH} & Neredeyse her zaman \textbf{fonksiyon seçici} (hangi alt işlem) \\
+\rowcolor{acikGri} \reg{AL} & Karakter, mod numarası, sektör sayısı gibi tekil parametre; sık sık çıkışta da kullanılır \\
+\reg{BX} / \reg{BH} / \reg{BL} & Sayfa, renk özniteliği veya hedef offset (\reg{ES:BX}) \\
+\rowcolor{acikGri} \reg{CX} / \reg{CH} / \reg{CL} & Sayaç, tekrar sayısı veya CHS'de silindir+sektör \\
+\reg{DX} / \reg{DH} / \reg{DL} & Sürücü, koordinat, kafa veya \reg{CX:DX}'te 32-bit değerin alt yarısı \\
+\rowcolor{acikGri} \reg{SI} / \reg{DI} & Bellek işaretçisi (metin, DAP, tampon adresi) \\
+\reg{ES} / \reg{DS} & \reg{BX}/\reg{SI}/\reg{DI} ile birlikte adresin segment kısmı \\
+\rowcolor{acikGri} \reg{CF} (bayrak) & Çıkışta \textbf{hata göstergesi} (1 = hata) \\
+\reg{ZF} (bayrak) & Bazı çağrılarda durum çıkışı (örn. klavye tamponu boş mu) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Tam Örnek: İki Aşamalı Önyükleyici}
+% =====================================================================
+
+Aşağıdaki tam çalışan örnek, bir önyükleyicinin tipik görevlerini bir arada
+gösterir: segmentleri kur, mesaj yazdır, diskten ikinci aşamayı yükle ve ona
+atla. Bu, gerçek işletim sistemlerinin önyükleme mantığının basitleştirilmiş
+hâlidir.
+
+\begin{lstlisting}
+bits 16               ; 16-bit gercek mod
+org 0x7C00            ; BIOS onyukleyiciyi buraya yukler
+
+start:
+    ; --- 1. Segmentleri ve yigini guvenli sekilde ayarla ---
+    cli               ; kesmeleri kapat (kurulum sirasinda)
+    xor ax, ax
+    mov ds, ax        ; DS = 0
+    mov es, ax        ; ES = 0
+    mov ss, ax        ; SS = 0
+    mov sp, 0x7C00    ; yigin onyukleyicinin altinda
+    sti               ; kesmeleri geri ac
+
+    ; --- 2. Karsilama mesaji yazdir ---
+    mov si, mesaj
+    call yaz_metin
+
+    ; --- 3. Diskten ikinci asamayi yukle (sektor 2) ---
+    mov di, 3         ; 3 deneme hakki
+.oku:
+    mov ah, 0x02      ; sektor oku
+    mov al, 1         ; 1 sektor
+    mov ch, 0         ; silindir 0
+    mov cl, 2         ; sektor 2
+    mov dh, 0         ; kafa 0
+    mov dl, 0x80      ; ilk sabit disk
+    mov bx, 0x8000    ; ES:BX = 0000:8000 hedef adres
+    int 0x13
+    jnc .yuklendi
+    xor ah, ah        ; hata -> diski resetle
+    int 0x13
+    dec di
+    jnz .oku
+    mov si, hata_msj  ; 3 deneme basarisiz -> hata mesaji
+    call yaz_metin
+    jmp dur
+
+.yuklendi:
+    ; --- 4. Ikinci asamaya atla ---
+    jmp 0x0000:0x8000 ; 0x8000 adresindeki koda gec
+
+dur:
+    hlt
+    jmp dur
+
+; --- Yardimci rutin: SI'daki null-terminated metni yazar ---
+yaz_metin:
+    mov ah, 0x0E
+.dongu:
+    lodsb
+    test al, al
+    jz  .son
+    int 0x10
+    jmp .dongu
+.son:
+    ret
+
+mesaj:    db "Onyukleyici basladi, kernel yukleniyor...", 0x0D, 0x0A, 0
+hata_msj: db "DISK HATASI!", 0x0D, 0x0A, 0
+
+times 510-($-$$) db 0 ; 510. bayta kadar sifirla doldur
+dw 0xAA55             ; onyukleme imzasi (son 2 bayt)
+\end{lstlisting}
+
+\begin{notkutu}[Önyükleme sektörü kuralları]
+Önyükleme sektörü \textbf{tam 512 bayt} olmalı ve son 2 baytı \hx{0xAA55}
+imzasını içermelidir; BIOS bu imzayı görmezse diski önyüklenebilir kabul etmez.
+\kod{times 510-(\$-\$\$) db 0} ifadesi, kodun bittiği yerden 510. bayta kadar
+olan boşluğu sıfırla doldurur (\kod{\$} mevcut konum, \kod{\$\$} bölüm başıdır).
+\end{notkutu}
+
+% =====================================================================
+\section{Korumalı Moda Geçiş}
+% =====================================================================
+
+Önyükleyicinin son görevi, 16-bit gerçek moddan 32-bit korumalı moda geçmektir.
+Bunun için bir GDT (Global Descriptor Table) hazırlanır ve \reg{CR0}'ın PE
+biti set edilir.
+
+\begin{ornekkutu}[Gerçek moddan korumalı moda geçiş]
+\begin{lstlisting}
+    cli               ; kesmeleri kapat (IDT henuz hazir degil)
+    lgdt [gdt_tanim]  ; GDT'yi islemciye tanit
+
+    mov eax, cr0
+    or  eax, 1        ; PE bitini (bit 0) set et
+    mov cr0, eax      ; artik korumali moddayiz!
+
+    ; boru hattini temizlemek icin uzak atlama sart:
+    jmp 0x08:korumali_mod  ; 0x08 = GDT'deki kod segmenti secici
+
+bits 32               ; artik 32-bit kod
+korumali_mod:
+    mov ax, 0x10      ; 0x10 = veri segmenti secici
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov esp, 0x90000  ; yeni 32-bit yigin
+    ; ... 32-bit cekirdek kodu buradan devam eder ...
+
+; --- Global Descriptor Table ---
+gdt_baslangic:
+    dq 0x0000000000000000  ; null tanimlayici (zorunlu)
+gdt_kod:
+    dq 0x00CF9A000000FFFF  ; kod segmenti (taban=0, limit=4GB)
+gdt_veri:
+    dq 0x00CF92000000FFFF  ; veri segmenti (taban=0, limit=4GB)
+gdt_son:
+
+gdt_tanim:
+    dw gdt_son - gdt_baslangic - 1  ; GDT boyutu - 1
+    dd gdt_baslangic                ; GDT adresi
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+\reg{CR0}'ın PE bitini set ettikten hemen sonra \textbf{uzak atlama} (far jump)
+yapmak zorunludur. Bu, işlemcinin komut boru hattını (pipeline) temizler ve
+\reg{CS} register'ını yeni 32-bit segment seçicisiyle yükler. Bu adım
+atlanırsa işlemci tanımsız duruma girer.
+\end{uyarikutu}
+
+% =====================================================================
+\section{Sayfalama (Paging)}
+% =====================================================================
+
+Sayfalama, sanal adresleri fiziksel adreslere çeviren donanım mekanizmasıdır.
+Bellek 4\,KB'lık "sayfa"lara bölünür; bir sayfa tablosu her sanal sayfayı bir
+fiziksel çerçeveye eşler. Bu sayede her programa kendi izole adres alanı verilir.
+
+\subsection{Sayfa Tablosu Hiyerarşisi}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Mod} & \color{white}\textbf{Seviye} & \color{white}\textbf{Yapı} \\
+\midrule
+32-bit & 2 seviye & Sayfa Dizini (PD) $\rightarrow$ Sayfa Tablosu (PT) \\
+\rowcolor{acikGri} 32-bit PAE & 3 seviye & PDPT $\rightarrow$ PD $\rightarrow$ PT \\
+64-bit & 4 seviye & PML4 $\rightarrow$ PDPT $\rightarrow$ PD $\rightarrow$ PT \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{bilgikutu}
+Bir sanal adres, tablo seviyelerine bölünerek çözümlenir. 32-bit'te 32 bitlik
+adres şöyle ayrışır: üst 10 bit sayfa dizini indeksi, ortadaki 10 bit sayfa
+tablosu indeksi, alt 12 bit ise sayfa içi offset (4\,KB = $2^{12}$). İşlemci
+bu çeviriyi otomatik yapar; TLB (Translation Lookaside Buffer) sık kullanılan
+çevirileri önbelleğe alarak hızlandırır.
+\end{bilgikutu}
+
+\subsection{32-bit Sayfalamayı Etkinleştirme}
+
+Aşağıdaki örnek, ilk 4\,MB'lık belleği birebir (identity mapping) eşler --
+yani sanal adres = fiziksel adres. Çekirdeğin kendi kodunu çalıştırmaya devam
+edebilmesi için bu şarttır.
+
+\begin{ornekkutu}[Birebir eşlemeli sayfa tablosu kurma (32-bit)]
+\begin{lstlisting}
+bits 32
+kur_sayfalama:
+    ; --- 1. Sayfa tablosunu birebir eslemeyle doldur ---
+    mov edi, 0x101000     ; sayfa tablosunun adresi (PT)
+    mov cr3, edi          ; ileride PD adresini yazacagiz
+    mov eax, 0x00000003   ; ilk sayfa: adres=0, bayrak=Present+RW
+    mov ecx, 1024         ; 1024 girdi = 4MB kapsam
+.doldur:
+    mov [edi], eax        ; girdiyi yaz
+    add eax, 0x1000       ; sonraki 4KB sayfaya gec
+    add edi, 4            ; sonraki girdi (her girdi 4 bayt)
+    loop .doldur
+
+    ; --- 2. Sayfa dizinini kur (tek girdi PT'yi gosterir) ---
+    mov edi, 0x100000     ; sayfa dizini (PD) adresi
+    mov eax, 0x101003     ; PT adresi | Present | RW
+    mov [edi], eax
+    mov dword [edi+4], 0  ; diger PD girdileri bos (Present=0)
+
+    ; --- 3. CR3'e sayfa dizini adresini yukle ---
+    mov eax, 0x100000
+    mov cr3, eax
+
+    ; --- 4. CR0'in PG bitini (bit 31) set ederek sayfalamayi ac ---
+    mov eax, cr0
+    or  eax, 0x80000000
+    mov cr0, eax          ; sayfalama artik AKTIF
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Sayfa Tablosu Girdisi (PTE) Bayrakları}
+
+Her sayfa tablosu girdisinin alt 12 biti kontrol bayraklarıdır (adresin alt 12
+biti zaten 0 olduğu için bu bitler boştur ve bayrak olarak kullanılır).
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Bit} & \color{white}\textbf{Ad} & \color{white}\textbf{Anlamı} \\
+\midrule
+0 & P (Present) & Sayfa bellekte mevcut mu? 0 ise erişim page fault üretir \\
+\rowcolor{acikGri} 1 & R/W & 1=yazılabilir, 0=salt okunur \\
+2 & U/S & 1=kullanıcı (ring 3), 0=yalnızca çekirdek (ring 0) \\
+\rowcolor{acikGri} 3 & PWT & Write-through önbellekleme \\
+4 & PCD & Önbelleği devre dışı bırak \\
+\rowcolor{acikGri} 5 & A (Accessed) & İşlemci erişince otomatik set edilir \\
+6 & D (Dirty) & Sayfaya yazılınca set edilir (swap için kullanılır) \\
+\rowcolor{acikGri} 63 & NX & (64-bit) Bu sayfada kod çalıştırmayı yasakla \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{uyarikutu}
+Sayfalamayı açtıktan sonra, o an çalışan kodun bulunduğu adres birebir eşlenmiş
+\textbf{olmalıdır}. Aksi halde \reg{CR0}'a yazan komuttan sonraki komutu getirmeye
+çalışan işlemci geçersiz bir sanal adrese bakar ve tripla hata (triple fault)
+ile yeniden başlar. Bu yüzden önce identity mapping yapılır.
+\end{uyarikutu}
+
+\begin{ipucukutu}
+Bir sayfa tablosu girdisini değiştirdiğinizde TLB'deki eski çeviri hâlâ
+geçerli olabilir. \kod{invlpg [adres]} komutuyla ilgili TLB girdisini
+geçersizleştirebilir, ya da \reg{CR3}'ü yeniden yükleyerek tüm TLB'yi
+temizleyebilirsiniz.
+\end{ipucukutu}
+
+% =====================================================================
+\section{Kesme İşleyici (ISR) Yazma}
+% =====================================================================
+
+Şimdiye kadar BIOS'un \emph{sağladığı} kesmeleri kullandık. Bir işletim sistemi
+ise kendi kesme işleyicilerini (ISR -- Interrupt Service Routine) yazar.
+Korumalı modda bunun için \textbf{IDT} (Interrupt Descriptor Table) kurulur.
+
+\subsection{IDT -- Kesme Tanımlayıcı Tablosu}
+
+Gerçek moddaki basit IVT'nin yerini korumalı modda IDT alır. IDT'de her girdi
+8 bayttır ve bir kesme işleyicisinin adresini, segment seçicisini ve tipini
+tutar.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Alan} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+Offset (0--15) & İşleyici adresinin alt 16 biti \\
+Seçici & Kod segmenti seçicisi (genellikle \hx{0x08}) \\
+Tip \& öznitelik & Kapı tipi: \hx{0x8E}=kesme kapısı (ring 0) \\
+Offset (16--31) & İşleyici adresinin üst 16 biti \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Bir IDT Girdisi Ayarlama}
+
+\begin{ornekkutu}[Belirli bir kesme numarasına işleyici atama rutini]
+\begin{lstlisting}
+bits 32
+; Giris: AL = kesme numarasi, EBX = isleyici adresi
+idt_girdi_ayarla:
+    push edi
+    movzx edi, al         ; EDI = kesme numarasi
+    shl edi, 3            ; her girdi 8 bayt -> indeks*8
+    add edi, idt          ; IDT icindeki girdi adresi
+
+    mov [edi],   bx       ; offset bit 0-15
+    mov word [edi+2], 0x08 ; kod segmenti secicisi
+    mov byte [edi+4], 0    ; ayrilmis (0)
+    mov byte [edi+5], 0x8E ; tip: 32-bit kesme kapisi, ring 0
+    shr ebx, 16
+    mov [edi+6], bx       ; offset bit 16-31
+    pop edi
+    ret
+
+; IDT: 256 girdi x 8 bayt
+idt:      times 256*8 db 0
+idt_tanim:
+    dw 256*8 - 1          ; IDT boyutu - 1
+    dd idt                ; IDT adresi
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Basit Bir Kesme İşleyicisi}
+
+İşleyiciler \kod{iret} (interrupt return) ile bitmelidir; \kod{ret} değil.
+İşleyici, kullandığı tüm register'ları koruyup geri yüklemelidir.
+
+\begin{ornekkutu}[Ekrana nokta basan basit ISR (örneğin zamanlayıcı)]
+\begin{lstlisting}
+bits 32
+zamanlayici_isr:
+    pusha                 ; TUM genel register'lari sakla
+
+    ; --- isleyici govdesi: ekranin sol ustune '.' yaz ---
+    mov edi, 0xB8000      ; VGA metin belleginin adresi
+    mov byte [edi], '.'   ; karakter
+    mov byte [edi+1], 0x0A ; renk: acik yesil
+
+    ; --- PIC'e "kesme islendi" bildir (End Of Interrupt) ---
+    mov al, 0x20          ; EOI komutu
+    out 0x20, al          ; ana PIC'e gonder (port 0x20)
+
+    popa                  ; register'lari geri yukle
+    iret                  ; kesmeden don (EFLAGS + CS:EIP geri yuklenir)
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+Bir donanım kesmesi işleyicisinin sonunda \textbf{PIC'e EOI (End Of Interrupt)}
+sinyali göndermek zorunludur (\kod{out 0x20, al} ile \hx{0x20} değeri). Aksi
+halde PIC o kesme hattının daha fazla kesme göndermesini engeller ve sistem
+kilitlenir. Slave PIC'ten (IRQ 8--15) gelen kesmelerde hem \hx{0xA0} hem de
+\hx{0x20} portlarına EOI gönderilir.
+\end{uyarikutu}
+
+\subsection{PIC'i Yeniden Haritalama}
+
+Varsayılan olarak donanım kesmeleri (IRQ 0--15), işlemcinin istisna
+(exception) numaralarıyla (0--31) çakışır. Bu yüzden PIC (8259A denetleyici)
+yeniden programlanarak IRQ'lar \hx{0x20}--\hx{0x2F} aralığına taşınır.
+
+\begin{ornekkutu}[PIC'i 0x20 ofsetine yeniden haritalama]
+\begin{lstlisting}
+bits 32
+pic_yeniden_haritala:
+    mov al, 0x11          ; baslatma komutu (ICW1)
+    out 0x20, al          ; ana PIC'e
+    out 0xA0, al          ; slave PIC'e
+
+    mov al, 0x20          ; ICW2: ana PIC ofseti -> IRQ0 = int 0x20
+    out 0x21, al
+    mov al, 0x28          ; slave PIC ofseti -> IRQ8 = int 0x28
+    out 0xA1, al
+
+    mov al, 0x04          ; ICW3: ana-slave baglantisi (IRQ2)
+    out 0x21, al
+    mov al, 0x02
+    out 0xA1, al
+
+    mov al, 0x01          ; ICW4: 8086 modu
+    out 0x21, al
+    out 0xA1, al
+
+    mov al, 0x00          ; maskeyi temizle: tum kesmeler acik
+    out 0x21, al
+    out 0xA1, al
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Klavye Kesme İşleyicisi (IRQ1)}
+
+Klavye, IRQ1 (yeniden haritaladıktan sonra \hx{INT 0x21}) üretir. İşleyici,
+tarama kodunu port \hx{0x60}'tan okumalıdır.
+
+\begin{ornekkutu}[Klavyeden tarama kodu okuyan ISR]
+\begin{lstlisting}
+bits 32
+klavye_isr:
+    pusha
+    in  al, 0x60          ; klavye veri portundan tarama kodunu oku
+
+    ; AL simdi tarama kodunu icerir.
+    ; Ust bit 1 ise tus BIRAKILDI, 0 ise BASILDI:
+    test al, 0x80
+    jnz .birakildi
+
+    ; --- tusa basildi: burada isle ---
+    ; ornek: tarama kodunu bir tampona kaydet
+    mov [son_tus], al
+
+.birakildi:
+    mov al, 0x20          ; PIC'e EOI gonder
+    out 0x20, al
+    popa
+    iret
+
+son_tus: db 0
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{bilgikutu}
+Kurulum sırası önemlidir: (1) IDT'yi kur ve \kod{lidt} ile yükle, (2) PIC'i
+yeniden haritala, (3) işleyicileri IDT'ye kaydet, (4) \kod{sti} ile kesmeleri
+aç. Bu adımlardan biri atlanırsa ilk donanım kesmesinde sistem çöker. Klavye
+tarama kodu ASCII \emph{değildir}; bir çeviri tablosuyla (scancode$\rightarrow$ASCII)
+dönüştürülmelidir.
+\end{bilgikutu}
+
+% =====================================================================
+\section{Hızlı Referans: Register Kullanım Kalıpları}
+% =====================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X l@{}}
+\toprule
+\rowcolor{anaMavi}\color{white}\textbf{Amaç} & \color{white}\textbf{İlgili Register'lar} \\
+\midrule
+Fonksiyon dönüş değeri & \reg{RAX}/\reg{EAX} \\
+\rowcolor{acikGri} Döngü sayacı & \reg{RCX}/\reg{ECX} \\
+Çarpma/bölme (yüksek bölüm) & \reg{RDX}/\reg{EDX} \\
+\rowcolor{acikGri} String kaynak/hedef & \reg{RSI} / \reg{RDI} \\
+Yığın yönetimi & \reg{RSP} / \reg{RBP} \\
+\rowcolor{acikGri} BIOS kesme fonksiyon seçimi & \reg{AH} \\
+Kesme dönüş hata durumu & \reg{CF} bayrağı \\
+\rowcolor{acikGri} G/Ç port numarası & \reg{DX} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{System V AMD64 Çağrı Kuralı (Linux 64-bit)}
+
+Modern 64-bit Linux'ta fonksiyon parametreleri şu sırayla register'lardan geçer:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c c c c c c c@{}}
+\toprule
+\rowcolor{anaMavi}
+\color{white}\textbf{1.} & \color{white}\textbf{2.} & \color{white}\textbf{3.} & \color{white}\textbf{4.} & \color{white}\textbf{5.} & \color{white}\textbf{6.} & \color{white}\textbf{Dönüş} \\
+\midrule
+\reg{RDI} & \reg{RSI} & \reg{RDX} & \reg{RCX} & \reg{R8} & \reg{R9} & \reg{RAX} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{bilgikutu}
+Linux \kod{syscall} kuralında ise 4. parametre \reg{RCX} yerine \reg{R10}
+kullanır ve syscall numarası \reg{RAX}'e yazılır. Ayrıca \reg{RBX}, \reg{RBP},
+\reg{R12}--\reg{R15} "çağrı boyunca korunan" (callee-saved) register'lardır;
+bir fonksiyon bunları değiştirirse geri yüklemekle yükümlüdür.
+\end{bilgikutu}
+
+\begin{ornekkutu}[64-bit Linux'ta "Merhaba" yazan syscall örneği]
+\begin{lstlisting}
+section .data
+    mesaj db "Merhaba", 10   ; 10 = yeni satir
+    uzunluk equ $ - mesaj    ; metnin uzunlugu
+
+section .text
+    global _start
+_start:
+    mov rax, 1        ; sys_write cagri numarasi
+    mov rdi, 1        ; dosya tanimlayici: stdout
+    mov rsi, mesaj    ; tampon adresi
+    mov rdx, uzunluk  ; yazilacak bayt sayisi
+    syscall           ; cekirdegi cagir
+
+    mov rax, 60       ; sys_exit cagri numarasi
+    xor rdi, rdi      ; cikis kodu 0
+    syscall
+\end{lstlisting}
+\end{ornekkutu}
+
+% =====================================================================
+\section{Pratik Kod Örnekleri}
+% =====================================================================
+
+Bu bölüm, yukarıdaki kavramları birleştiren sık kullanılan rutinleri içerir.
+
+\subsection{String Uzunluğu (strlen)}
+
+Null ile biten bir metnin uzunluğunu sayar -- C'deki \kod{strlen} karşılığı.
+
+\begin{ornekkutu}[SI'daki metnin uzunluğunu CX'te döndürme]
+\begin{lstlisting}
+strlen:               ; giris: SI = metin,  cikis: CX = uzunluk
+    xor cx, cx        ; sayac = 0
+.dongu:
+    mov al, [si]      ; siradaki karakter
+    test al, al       ; null mu?
+    jz  .son
+    inc cx            ; uzunlugu artir
+    inc si            ; sonraki karaktere gec
+    jmp .dongu
+.son:
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{İki String'i Karşılaştırma (strcmp)}
+
+\begin{ornekkutu}[SCASB/CMPSB olmadan elle karşılaştırma]
+\begin{lstlisting}
+strcmp:               ; SI ve DI: iki metin.  Esitse ZF=1 doner
+.dongu:
+    mov al, [si]
+    mov bl, [di]
+    cmp al, bl
+    jne .farkli       ; karakterler farkli -> esit degil
+    test al, al       ; ikisi de null mu? (metin sonu)
+    jz  .esit         ; evet -> metinler ayni
+    inc si
+    inc di
+    jmp .dongu
+.farkli:
+    ; ZF=0 (cmp farkli oldugu icin)
+    ret
+.esit:
+    ; ZF=1
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Sayıyı Onlu (Decimal) Olarak Ekrana Yazma}
+
+Bir tamsayıyı ekrana rakamlarıyla basmak, sayıyı 10'a bölerek kalanları ters
+sırada toplamayı gerektirir. Klasik bir alçak seviye problemi.
+
+\begin{ornekkutu}[AX'teki işaretsiz sayıyı ekrana yazdırma (gerçek mod)]
+\begin{lstlisting}
+yaz_sayi:             ; giris: AX = yazdirilacak sayi
+    push bx
+    push cx
+    push dx
+    mov cx, 0         ; kac rakam yiginda oldugunu say
+    mov bx, 10        ; bolen (taban 10)
+.bol:
+    xor dx, dx        ; DX'i temizle (DX:AX / BX icin)
+    div bx            ; AX = AX/10,  DX = kalan (bir rakam)
+    add dl, '0'       ; rakami ASCII'ye cevir
+    push dx           ; yigina at (ters sirada birikir)
+    inc cx
+    test ax, ax       ; sayi bitti mi?
+    jnz .bol
+.yaz:
+    pop dx            ; rakamlari dogru sirada geri cek
+    mov ah, 0x0E
+    mov al, dl
+    int 0x10          ; ekrana yaz
+    loop .yaz
+    pop dx
+    pop cx
+    pop bx
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Baytı Onaltılık (Hex) Olarak Yazma}
+
+\begin{ornekkutu}[AL'deki baytı iki hex rakamı olarak yazma]
+\begin{lstlisting}
+yaz_hex:              ; giris: AL = bayt
+    push ax
+    mov ah, al        ; kopyala
+    shr al, 4         ; ust yarim-bayti al (yuksek nibble)
+    call .nibble
+    mov al, ah
+    and al, 0x0F      ; alt yarim-bayt (dusuk nibble)
+    call .nibble
+    pop ax
+    ret
+.nibble:              ; AL'deki 0-15 degerini hex rakamina cevir
+    cmp al, 10
+    jl  .rakam
+    add al, 'A' - 10  ; 10-15 -> 'A'-'F'
+    jmp .yaz
+.rakam:
+    add al, '0'       ; 0-9 -> '0'-'9'
+.yaz:
+    mov ah, 0x0E
+    int 0x10
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\subsection{Basit Gecikme Döngüsü (Busy-wait)}
+
+\begin{ornekkutu}[İç içe döngüyle kaba gecikme]
+\begin{lstlisting}
+gecikme:
+    mov cx, 0xFFFF    ; dis dongu sayaci
+.dis:
+    mov dx, 0xFFFF    ; ic dongu sayaci
+.ic:
+    dec dx
+    jnz .ic           ; ic dongu bitene kadar
+    dec cx
+    jnz .dis          ; dis dongu bitene kadar
+    ret
+\end{lstlisting}
+\end{ornekkutu}
+
+\begin{uyarikutu}
+Busy-wait gecikmeleri işlemci hızına bağlıdır ve her makinede farklı süre
+alır; bu yüzden gerçek uygulamalarda \kod{INT 15h AH=86h} (mikrosaniye) veya
+zamanlayıcı kesmesi tercih edilir. Yukarıdaki döngü yalnızca kaba testler
+içindir.
+\end{uyarikutu}
+
+% =====================================================================
+\section{Derleme ve Test}
+% =====================================================================
+
+\begin{ipucukutu}
+\textbf{Önyükleyici örneklerini test etmek} için NASM ile derleyip QEMU'da
+çalıştırabilirsiniz:
+\begin{lstlisting}[numbers=none]
+nasm -f bin onyukleyici.asm -o onyukleyici.bin
+qemu-system-x86_64 -drive format=raw,file=onyukleyici.bin
+\end{lstlisting}
+\textbf{64-bit Linux programını} derleyip çalıştırmak için:
+\begin{lstlisting}[numbers=none]
+nasm -f elf64 program.asm -o program.o
+ld program.o -o program
+./program
+\end{lstlisting}
+Hata ayıklama için QEMU'ya \kod{-s -S} ekleyip GDB ile \kod{target remote
+localhost:1234} bağlanabilirsiniz.
+\end{ipucukutu}
+
+% =====================================================================
+\section{Kapanış Notları}
+% =====================================================================
+
+Bu rehber, x86 register mimarisinin temel taşlarını, adresleme modlarını, SIMD
+birimlerini ve gerçek modda en çok kullanılan BIOS kesmelerini bol örnekle
+kapsadı. Özetle:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Register'lar} işlemcinin en hızlı çalışma belleğidir; her birinin
+        geleneksel bir amacı ve boyut hiyerarşisi (RAX$\to$EAX$\to$AX$\to$AL) vardır.
+  \item \textbf{Adresleme modları}, özellikle ölçekli indeks, dizilere ve
+        yapılara verimli erişim sağlar.
+  \item \textbf{Bayraklar} karar mekanizmasının kalbidir; \kod{CMP}+koşullu
+        atlama ikilisi tüm dallanmaların temelidir.
+  \item \textbf{BIOS kesmeleri}, gerçek modda donanıma açılan standart kapılardır;
+        \reg{AH} fonksiyonu, diğer register'lar parametreleri, \reg{CF} ise
+        hata durumunu taşır.
+  \item \textbf{Önyükleyici} bu parçaları birleştirir: segment kurulumu, mesaj,
+        disk okuma ve korumalı moda geçiş.
+\end{itemize}
+
+İkisini birlikte kavramak -- register'lar ve kesmeler -- önyükleyici yazmaktan
+işletim sistemi geliştirmeye kadar tüm alçak seviye programlamanın temelidir.
+
+\vspace{0.8cm}
+\begin{center}
+{\color{turuncu}\rule{0.5\textwidth}{1.5pt}}\\[6pt]
+{\color{ortaGri}\textit{Rehber sonu -- İyi çalışmalar!}}
+\end{center}
+
+\end{document}

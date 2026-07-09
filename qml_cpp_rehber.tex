@@ -1,0 +1,1367 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (xelatex) ====================
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{turkish}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{hyperref}
+\usepackage{fontawesome5}
+\setlength{\headheight}{13.6pt}
+
+% ==================== FONTLAR ====================
+\setmainfont{Latin Modern Roman}
+\newfontfamily\codefont{Consolas}[Scale=0.88]
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+\definecolor{satirRenk}{HTML}{F0F4F8}
+\definecolor{qtYesil}{HTML}{41CD52}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=vurguMavi,
+  urlcolor=vurguMavi,
+  pdftitle={QML ve C++ Entegrasyonu Kapsamlı Rehber},
+  pdfauthor={QML C++ Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ ====================
+\titleformat{\section}
+  {\color{anaMavi}\Large\bfseries}
+  {\thesection.}{0.6em}{}
+  [\vspace{2pt}{\color{turuncu}\titlerule[1.6pt]}]
+\titleformat{\subsection}
+  {\color{vurguMavi}\large\bfseries}
+  {\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}
+  {\color{koyuGri}\normalsize\bfseries}
+  {\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}QML \& C++ Entegrasyon Rehberi}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME: C++ ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\codefont\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{acikGri!80!ortaGri},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  morekeywords={Q_OBJECT,Q_PROPERTY,Q_INVOKABLE,Q_ENUM,Q_FLAG,Q_GADGET,
+    QML_ELEMENT,QML_SINGLETON,QML_UNCREATABLE,QML_NAMED_ELEMENT,QML_ANONYMOUS,
+    QML_FOREIGN,QML_ATTACHED,QML_VALUE_TYPE,signals,slots,Q_SIGNALS,Q_SLOTS,
+    emit,Q_EMIT,override,nullptr,constexpr,explicit,final,qmlRegisterType,
+    qmlRegisterSingletonType,setContextProperty,connect,MEMBER,NOTIFY,READ,
+    WRITE,CONSTANT,REQUIRED,FINAL,BINDABLE,qRegisterMetaType}
+}
+
+% ==================== KOD LİSTELEME: QML ====================
+\lstdefinelanguage{QML}{
+  morekeywords={import,property,signal,function,id,anchors,width,height,color,
+    Rectangle,Item,Text,MouseArea,Component,Window,ApplicationWindow,Column,Row,
+    ListView,ListModel,Repeater,Button,TextField,Connections,readonly,alias,
+    required,var,int,real,string,bool,true,false,null,on,Behavior,states,State,
+    Timer,Loader,pragma,QtQuick,onClicked,onCompleted,model,delegate},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]'
+}
+\lstdefinestyle{qmlstyle}{
+  language=QML,
+  basicstyle=\codefont\small\color{koyuGri},
+  keywordstyle=\color{mor}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{qtYesil!6},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{qtYesil!50!ortaGri},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true
+}
+\lstset{style=cppstyle}
+
+% ==================== ÖZEL KUTULAR ====================
+\newtcolorbox{bilgikutu}[1][Bilgi]{
+  colback=acikMavi, colframe=vurguMavi, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faInfoCircle~~#1}
+}
+\newtcolorbox{ipucukutu}[1][İpucu]{
+  colback=acikYesil, colframe=yesil, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faLightbulb~~#1}
+}
+\newtcolorbox{uyarikutu}[1][Dikkat]{
+  colback=kirmizi!8, colframe=kirmizi, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faExclamationTriangle~~#1}
+}
+\newtcolorbox{ornekkutu}[1][Örnek]{
+  colback=acikGri, colframe=ortaGri!60, boxrule=0.7pt, arc=2pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{koyuGri}, coltitle=koyuGri,
+  title={\faCode~~#1}
+}
+\newtcolorbox{notkutu}[1][Not]{
+  colback=acikMor, colframe=mor, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faStickyNote~~#1}
+}
+
+% Yardımcı komutlar
+\newcommand{\kls}[1]{\texttt{\color{anaMavi}\textbf{#1}}}
+\newcommand{\hx}[1]{\texttt{\color{turuncu}#1}}
+\newcommand{\kod}[1]{\texttt{\color{koyuGri}#1}}
+
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\color{qtYesil}\rule{\textwidth}{2pt}}\\[6pt]
+{\color{anaMavi}\Huge\bfseries QML \& C++ Entegrasyonu}\\[10pt]
+{\color{vurguMavi}\LARGE Kapsamlı Uygulama Rehberi}\\[8pt]
+{\color{ortaGri}\large Qt~6 \textbullet\ Modern CMake \textbullet\ Bol Çalışan Örnek}\\[6pt]
+{\color{qtYesil}\rule{\textwidth}{2pt}}\\[1.6cm]
+
+\begin{tcolorbox}[width=0.88\textwidth,colback=acikMavi,colframe=vurguMavi,arc=4pt,boxrule=1pt]
+\centering\large
+Bu belge, bir Qt uygulamasında \textbf{C++ arka ucu} ile \textbf{QML arayüzü}
+arasındaki köprüyü baştan sona anlatır: tip kaydı, özellikler (\kod{Q\_PROPERTY}),
+çağrılabilir metotlar, sinyal--slot bağları, enum'lar, tekil nesneler (singleton),
+liste modelleri ve iki yönlü iletişim. Her başlık \textbf{çok sayıda çalışan kod
+örneğiyle} desteklenmiştir.
+\end{tcolorbox}
+
+\vspace{0.9cm}
+\begin{tcolorbox}[width=0.88\textwidth,colback=acikGri,colframe=ortaGri!50,arc=3pt,boxrule=0.6pt]
+\small
+\textbf{Kapsam:} Meta-Object sistemi \textbullet\ CMake \& \kod{qt\_add\_qml\_module}
+\textbullet\ \kod{QML\_ELEMENT} ile tip kaydı \textbullet\ \kod{Q\_PROPERTY} \&
+NOTIFY \textbullet\ \kod{Q\_INVOKABLE} \& slotlar \textbullet\ sinyaller ve
+\kod{Connections} \textbullet\ \kod{Q\_ENUM} \textbullet\ context property
+\textbullet\ singleton'lar \textbullet\ \kod{QAbstractListModel} \textbullet\
+C++'tan QML'e erişim \textbullet\ değer tipleri \textbullet\ yaygın hatalar
+\end{tcolorbox}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 9 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Qt 6.x \textbullet\ C++17 \textbullet\ QtQuick}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% =====================================================================
+\section{Giriş: QML ile C++ Neden Birlikte Kullanılır?}
+% =====================================================================
+
+Qt Quick uygulamalarında görev dağılımı nettir: \textbf{QML} akıcı, animasyonlu
+ve deklaratif kullanıcı arayüzünü tanımlar; \textbf{C++} ise iş mantığını, veri
+işlemeyi, dosya/ağ erişimini ve performans kritik hesaplamaları üstlenir. İkisini
+birbirine bağlayan tutkal, Qt'nin \emph{Meta-Object} sistemidir.
+
+\begin{bilgikutu}
+\textbf{Neden ayrım?} QML yorumlanan (JavaScript motoru üzerinde çalışan) bir
+dildir; hızlı prototipleme ve arayüz için idealdir ama ağır hesaplama için
+uygun değildir. C++ ise derlenir ve çok hızlıdır. Doğru mimari: \emph{ince}
+bir QML arayüz katmanı + \emph{kalın} bir C++ mantık katmanı. Bu belge, bu iki
+katmanın nasıl konuşturulacağını gösterir.
+\end{bilgikutu}
+
+\subsection{Meta-Object Sistemi: Köprünün Temeli}
+
+C++ normalde derleme sonrası tip bilgisini kaybeder (\emph{static typing}). QML'in
+çalışma zamanında bir C++ nesnesinin özelliklerini okuması, metotlarını çağırması
+ve sinyallerine bağlanması için \textbf{çalışma zamanı tip bilgisine (introspection)}
+ihtiyaç vardır. Qt bunu \kls{QObject} taban sınıfı ve \kls{moc} (Meta-Object
+Compiler) ile sağlar.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi} \color{anaMavi}\textbf{Bileşen} & \color{anaMavi}\textbf{Görevi} \\
+\midrule
+QObject & Sinyal/slot, özellik ve nesne ağacının temel taban sınıfı. QML'e açılacak her tip bundan türer. \\
+\rowcolor{acikGri} Q\_OBJECT makrosu & Sınıfa meta-object desteği ekler. moc bu makroyu görünce ek kod üretir. \\
+moc & Başlık dosyalarını tarar, \kod{Q\_OBJECT} içeren sınıflar için \kod{moc\_*.cpp} üretir. CMake bunu otomatik çalıştırır. \\
+\rowcolor{acikGri} QML Engine & QML dosyalarını okur, JavaScript'i çalıştırır ve meta-object üzerinden C++ ile konuşur. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{uyarikutu}
+QML'e açtığınız her C++ sınıfı üç kurala uymalıdır: \textbf{(1)} \kls{QObject}'ten
+(veya türevinden) türemeli, \textbf{(2)} sınıfın en başında \kod{Q\_OBJECT}
+makrosu bulunmalı, \textbf{(3)} varsayılan (argümansız) kurucusu olmalı veya
+tekil/oluşturulamaz olarak işaretlenmeli. Bu üçü olmadan QML tarafı sınıfı
+göremez.
+\end{uyarikutu}
+
+\subsection{İki Yönlü İletişimin Dört Yolu}
+
+C++ ile QML arasındaki bilgi akışı dört mekanizmayla olur. Bu belgenin
+tamamı bu dört yolu derinleştirir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{vurguMavi}}l >{\raggedright\arraybackslash}X c@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Mekanizma} & \color{anaMavi}\textbf{Ne işe yarar} & \color{anaMavi}\textbf{Yön} \\
+\midrule
+Q\_PROPERTY & Veri açar; QML okur/yazar, değişince otomatik güncellenir & C++ $\leftrightarrow$ QML \\
+\rowcolor{acikGri} Q\_INVOKABLE / slot & C++ metodunu QML'den çağırma & QML $\rightarrow$ C++ \\
+Sinyal (signal) & C++'ta olay olunca QML'i haberdar etme & C++ $\rightarrow$ QML \\
+\rowcolor{acikGri} Metot/özellik erişimi & C++'tan QML nesnesine erişip metot çağırma & C++ $\rightarrow$ QML \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Proje Kurulumu: CMake ve QML Modülü}
+% =====================================================================
+
+Qt 6'da önerilen yol, C++ tiplerini bir \textbf{QML modülü} içinde toplamaktır.
+\kod{qt\_add\_qml\_module} komutu, tip kaydını otomatikleştirir ve QML derleyici
+(qmlcachegen, qmltc) optimizasyonlarını mümkün kılar.
+
+\subsection{Klasör Yapısı}
+
+\begin{lstlisting}[language=bash,basicstyle=\codefont\small,keywordstyle=\color{koyuGri}]
+MyApp/
+├── CMakeLists.txt
+├── main.cpp
+├── backend.h          # C++ sınıfı (başlık)
+├── backend.cpp        # C++ sınıfı (uygulama)
+└── Main.qml           # Arayüz
+\end{lstlisting}
+
+\subsection{CMakeLists.txt — Tam Örnek}
+
+\begin{lstlisting}[language=bash,morekeywords={cmake_minimum_required,project,find_package,qt_standard_project_setup,qt_add_executable,qt_add_qml_module,target_link_libraries,VERSION,COMPONENTS,REQUIRED,PRIVATE},keywordstyle=\color{vurguMavi}\bfseries]
+cmake_minimum_required(VERSION 3.16)
+project(MyApp VERSION 1.0 LANGUAGES CXX)
+
+# Qt 6 Quick modulunu bul
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+
+# AUTOMOC/AUTORCC ve C++ standardini ayarlar
+qt_standard_project_setup(REQUIRES 6.5)
+
+# Yurutulebilir hedef
+qt_add_executable(appMyApp main.cpp)
+
+# QML modulu: URI = "MyApp", surum = 1.0
+qt_add_qml_module(appMyApp
+    URI MyApp
+    VERSION 1.0
+    QML_FILES
+        Main.qml
+    SOURCES
+        backend.h
+        backend.cpp
+)
+
+target_link_libraries(appMyApp PRIVATE Qt6::Quick)
+\end{lstlisting}
+
+\begin{notkutu}[URI nedir?]
+\kod{URI MyApp} satırı, QML tarafında \kod{import MyApp} yazarak bu modüldeki
+tüm C++ tiplerine erişebileceğiniz anlamına gelir. Modül adı ile \kod{import}
+ifadesi \textbf{birebir aynı} olmalıdır.
+\end{notkutu}
+
+\subsection{main.cpp — Motoru Başlatma}
+
+\begin{lstlisting}
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
+
+    QQmlApplicationEngine engine;
+
+    // Modul icindeki ana QML dosyasini yukle:
+    // "MyApp" modulu + "Main" tipi
+    engine.loadFromModule("MyApp", "Main");
+
+    if (engine.rootObjects().isEmpty())
+        return -1;   // QML yuklenemedi
+
+    return app.exec();
+}
+\end{lstlisting}
+
+\begin{ipucukutu}
+\kod{loadFromModule("MyApp", "Main")} — Qt 6.5+ ile gelen modern yükleme
+biçimidir. Eski \kod{engine.load(QUrl("qrc:/..."))} yönteminin yerini alır;
+dosya yollarıyla uğraşmanıza gerek kalmaz.
+\end{ipucukutu}
+
+% =====================================================================
+\section{C++ Tiplerini QML'e Kaydetme}
+% =====================================================================
+
+Bir C++ sınıfını QML'de kullanabilmek için önce onu \emph{kaydetmek} gerekir.
+Qt 6'da bu, başlık dosyasına konan basit makrolarla yapılır; \kls{moc} ve
+\kod{qt\_add\_qml\_module} gerisini halleder.
+
+\subsection{QML\_ELEMENT — En Yaygın Yöntem}
+
+Sınıfa \kod{QML\_ELEMENT} makrosunu ekleyin; sınıf, C++'taki adıyla QML'de
+kullanılabilir hâle gelir.
+
+\begin{ornekkutu}[backend.h — Kaydedilebilir bir sınıf]
+\end{ornekkutu}
+\begin{lstlisting}
+#ifndef BACKEND_H
+#define BACKEND_H
+
+#include <QObject>
+#include <QQmlEngine>   // QML_ELEMENT icin gerekli
+
+class Backend : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT          // <-- Bu sinifi QML'e "Backend" olarak kaydeder
+
+public:
+    // QML'in nesne olusturabilmesi icin argumansiz kurucu sart
+    explicit Backend(QObject *parent = nullptr);
+
+    Q_INVOKABLE QString greet(const QString &name) const;
+};
+
+#endif
+\end{lstlisting}
+
+\begin{lstlisting}[caption={}]
+// backend.cpp
+#include "backend.h"
+
+Backend::Backend(QObject *parent) : QObject(parent) {}
+
+QString Backend::greet(const QString &name) const
+{
+    return QStringLiteral("Merhaba, %1!").arg(name);
+}
+\end{lstlisting}
+
+Artık QML tarafında hiçbir ek işlem olmadan kullanılabilir:
+
+\begin{lstlisting}[style=qmlstyle]
+import QtQuick
+import MyApp          // CMake'teki URI ile ayni
+
+Window {
+    width: 300; height: 200; visible: true
+
+    Backend { id: backend }   // C++ sinifindan nesne olusturuldu!
+
+    Text {
+        anchors.centerIn: parent
+        text: backend.greet("Dunya")   // -> "Merhaba, Dunya!"
+    }
+}
+\end{lstlisting}
+
+\begin{bilgikutu}
+\kod{QML\_ELEMENT}, sınıfı \textbf{C++ ismiyle} kaydeder. Farklı bir isim
+istiyorsanız \kod{QML\_NAMED\_ELEMENT(BaskaIsim)} kullanın. Kaydın çalışması için
+sınıfın bir QML modülünün parçası olması (yani \kod{SOURCES} altında listelenmesi)
+yeterlidir; ayrı bir \kod{qmlRegisterType} çağrısına gerek yoktur.
+\end{bilgikutu}
+
+\subsection{Kayıt Makroları Karşılaştırması}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Makro} & \color{anaMavi}\textbf{Ne zaman kullanılır} \\
+\midrule
+QML\_ELEMENT & Sınıfı C++ adıyla açar. Standart, en sık kullanılan. \\
+\rowcolor{acikGri} QML\_NAMED\_ELEMENT(Ad) & QML'de farklı bir isim vermek için. \\
+QML\_SINGLETON & Tek örnekli (singleton) tip. Bölüm 8'e bakın. \\
+\rowcolor{acikGri} QML\_UNCREATABLE("msg") & QML'de \kod{new}lenemez ama tipi/enum'u görünür. \\
+QML\_ANONYMOUS & İsimsiz; sadece özellik tipi olarak döner, QML'de yaratılamaz. \\
+\rowcolor{acikGri} QML\_FOREIGN & Değiştiremediğiniz (3. parti/Qt) bir tipi kaydetmek için. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Eski Yöntem: qmlRegisterType (Qt 5 tarzı)}
+
+Eski projelerde veya modül kullanmadığınızda kaydı \kod{main.cpp} içinden
+elle yaparsınız. Bilmekte fayda var:
+
+\begin{lstlisting}
+#include "backend.h"
+// ...
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
+
+    // qmlRegisterType<Sinif>("Uri", surumBuyuk, surumKucuk, "QmlAdi");
+    qmlRegisterType<Backend>("MyApp", 1, 0, "Backend");
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
+    return app.exec();
+}
+\end{lstlisting}
+
+\begin{uyarikutu}
+Yeni projelerde \kod{qmlRegisterType} yerine \kod{QML\_ELEMENT} + modül
+yaklaşımını tercih edin. Elle kayıt; sürüm numaralarını manuel yönetmenizi
+gerektirir, derleme zamanı kontrolü sağlamaz ve QML derleyici
+optimizasyonlarından yararlanamaz.
+\end{uyarikutu}
+
+% =====================================================================
+\section{Q\_PROPERTY: Veri Açmanın Kalbi}
+% =====================================================================
+
+\kod{Q\_PROPERTY}, bir C++ üye değişkenini QML'e \emph{özellik} olarak açar.
+QML bunu okuyabilir, yazabilir ve — en önemlisi — değeri değiştiğinde arayüz
+\textbf{otomatik olarak} güncellenir. Bu, QML'in \emph{property binding}
+(özellik bağlama) gücünün C++ tarafındaki karşılığıdır.
+
+\subsection{Anatomi: READ, WRITE, NOTIFY}
+
+\begin{lstlisting}
+Q_PROPERTY(tip ad READ okuyucu WRITE yazici NOTIFY degistiSinyali)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{vurguMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Anahtar} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+READ & Değeri döndüren getter metodu. Zorunlu (MEMBER yoksa). \\
+\rowcolor{acikGri} WRITE & Değeri ayarlayan setter. Opsiyonel — yoksa salt-okunur. \\
+NOTIFY & Değer değişince yayılan sinyal. Binding güncellemesi için \textbf{şart}. \\
+\rowcolor{acikGri} CONSTANT & Değer hiç değişmez; NOTIFY gerekmez. \\
+MEMBER & Getter/setter yazmadan üyeyi doğrudan açar. \\
+\rowcolor{acikGri} REQUIRED & QML nesnesi oluşturulurken bu özellik atanmak zorunda. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Tam Örnek: Sayaç Sınıfı}
+
+\begin{ornekkutu}[counter.h]
+\end{ornekkutu}
+\begin{lstlisting}
+#ifndef COUNTER_H
+#define COUNTER_H
+
+#include <QObject>
+#include <QQmlEngine>
+
+class Counter : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+
+    // "count" adinda, okunabilir/yazilabilir bir int ozellik
+    Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
+
+public:
+    explicit Counter(QObject *parent = nullptr) : QObject(parent) {}
+
+    int count() const { return m_count; }
+
+    void setCount(int value)
+    {
+        if (m_count == value)   // Deger degismediyse cik (sonsuz donguyu onler)
+            return;
+        m_count = value;
+        emit countChanged();    // QML'e "degistim" de
+    }
+
+    Q_INVOKABLE void increment() { setCount(m_count + 1); }
+    Q_INVOKABLE void reset()     { setCount(0); }
+
+signals:
+    void countChanged();        // NOTIFY sinyali
+
+private:
+    int m_count = 0;
+};
+
+#endif
+\end{lstlisting}
+
+\begin{uyarikutu}[En kritik iki kural]
+\textbf{1.} Setter içinde \emph{daima} değer değişti mi diye kontrol edin. Bu
+kontrol olmadan binding'ler kendini tetikleyip \textbf{sonsuz döngüye} girebilir.\\
+\textbf{2.} Değeri değiştiren her yolda NOTIFY sinyalini \kod{emit} edin. Etmezseniz
+QML arayüzü \emph{sessizce eski değeri gösterir} ve saatlerce hata ararsınız.
+\end{uyarikutu}
+
+\subsection{QML Tarafı: Binding Sihiri}
+
+\begin{lstlisting}[style=qmlstyle]
+import QtQuick
+import QtQuick.Controls
+import MyApp
+
+Window {
+    width: 300; height: 200; visible: true
+
+    Counter { id: counter }
+
+    Column {
+        anchors.centerIn: parent
+        spacing: 12
+
+        // counter.count degistiginde bu Text OTOMATIK guncellenir
+        Text {
+            text: "Sayac: " + counter.count
+            font.pixelSize: 24
+        }
+
+        Button {
+            text: "Arttir (+1)"
+            onClicked: counter.increment()   // C++ metodu cagrildi
+        }
+        Button {
+            text: "Sifirla"
+            onClicked: counter.count = 0      // WRITE ile dogrudan atama
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{ipucukutu}
+Burada \kod{text: "Sayac: " + counter.count} bir \textbf{binding}'dir. QML motoru
+\kod{count}'un \kod{countChanged} sinyaline otomatik abone olur; sinyal her
+yayıldığında \kod{Text} kendini yeniler. Siz elle güncelleme kodu yazmazsınız —
+bildirimsel (declarative) programlamanın özü budur.
+\end{ipucukutu}
+
+\subsection{Kısayol: MEMBER ile Hızlı Özellik}
+
+Getter/setter yazmak istemediğiniz basit durumlarda \kod{MEMBER} kullanın:
+
+\begin{lstlisting}
+class Settings : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    // Getter/setter yok; uyeye dogrudan baglanir. NOTIFY yine onerilir.
+    Q_PROPERTY(QString username MEMBER m_username NOTIFY usernameChanged)
+public:
+    explicit Settings(QObject *parent = nullptr) : QObject(parent) {}
+signals:
+    void usernameChanged();
+private:
+    QString m_username;
+};
+\end{lstlisting}
+
+\subsection{Salt-Okunur ve Sabit Özellikler}
+
+\begin{lstlisting}
+class AppInfo : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    // WRITE yok -> QML sadece okuyabilir
+    Q_PROPERTY(QString status READ status NOTIFY statusChanged)
+    // CONSTANT -> hic degismez, NOTIFY gerekmez
+    Q_PROPERTY(QString version READ version CONSTANT)
+public:
+    explicit AppInfo(QObject *parent = nullptr) : QObject(parent) {}
+    QString status() const  { return m_status; }
+    QString version() const { return QStringLiteral("1.0.0"); }
+signals:
+    void statusChanged();
+private:
+    QString m_status = QStringLiteral("Hazir");
+};
+\end{lstlisting}
+
+% =====================================================================
+\section{Q\_INVOKABLE ve Slotlar: C++ Metotlarını Çağırmak}
+% =====================================================================
+
+QML'in bir C++ metodunu çağırabilmesi için metodun meta-object sistemine
+kayıtlı olması gerekir. Bunun iki yolu vardır: \kod{Q\_INVOKABLE} ile
+işaretlemek veya metodu bir \kod{slot} yapmak.
+
+\subsection{İki Yöntem, Aynı Sonuç}
+
+\begin{lstlisting}
+class Calculator : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit Calculator(QObject *parent = nullptr) : QObject(parent) {}
+
+    // Yontem 1: Q_INVOKABLE ile isaretle
+    Q_INVOKABLE double topla(double a, double b) { return a + b; }
+    Q_INVOKABLE double bol(double a, double b)
+    {
+        if (b == 0.0)
+            return 0.0;      // Sifira bolme korumasi
+        return a / b;
+    }
+
+public slots:
+    // Yontem 2: public slot -> QML'den otomatik cagrilabilir
+    QString formatla(double sayi)
+    {
+        return QString::number(sayi, 'f', 2);   // "3.14" gibi
+    }
+};
+\end{lstlisting}
+
+\begin{lstlisting}[style=qmlstyle]
+Calculator { id: calc }
+
+Text {
+    // Her ucu de QML'den dogrudan cagrilabilir
+    text: calc.formatla(calc.bol(calc.topla(10, 5), 3))  // "5.00"
+}
+\end{lstlisting}
+
+\begin{notkutu}[Q\_INVOKABLE mı, slot mu?]
+İkisi de QML'den çağrılabilir. \textbf{Slot}; ayrıca bir sinyale
+\kod{connect} edilebildiği için sinyal--slot mimarisine uygundur. \textbf{Q\_INVOKABLE}
+ise "bu sadece QML'den çağrılan bir metot" niyetini daha net belirtir. Modern
+tercih: sinyale bağlanmayacaksa \kod{Q\_INVOKABLE} kullanın.
+\end{notkutu}
+
+\subsection{Parametre ve Dönüş Tipleri}
+
+QML ile C++ arasında otomatik dönüştürülen tipler (\kls{QVariant} üzerinden):
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}}l >{\ttfamily\color{mor}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{C++ Tipi} & \color{anaMavi}\textbf{QML Karşılığı} & \color{anaMavi}\textbf{Not} \\
+\midrule
+int, double, bool & int, real, bool & Doğrudan \\
+\rowcolor{acikGri} QString & string & UTF-16 \\
+QVariant & var & Her şeyi taşır \\
+\rowcolor{acikGri} QVariantList & list/array & JS dizisi \\
+QVariantMap & object & JS nesnesi (anahtar-değer) \\
+\rowcolor{acikGri} QObject* & (nesne) & Referans olarak geçer \\
+QDateTime & date & Tarih/saat \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{JavaScript Nesnesi Döndürmek}
+
+QML'e yapılandırılmış veri döndürmenin pratik yolu \kls{QVariantMap}'tir:
+
+\begin{lstlisting}
+Q_INVOKABLE QVariantMap kullaniciBilgisi(int id)
+{
+    QVariantMap m;
+    m["id"]    = id;
+    m["ad"]    = QStringLiteral("Ayse");
+    m["yas"]   = 30;
+    m["aktif"] = true;
+    return m;   // QML'de bir JS nesnesi olur
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=qmlstyle]
+var u = backend.kullaniciBilgisi(42)
+console.log(u.ad, u.yas)     // "Ayse 30"
+\end{lstlisting}
+
+% =====================================================================
+\section{Sinyaller: C++'tan QML'i Haberdar Etmek}
+% =====================================================================
+
+Özellikler "değer" iletmek için idealdir; ama "bir olay oldu" (indirme bitti,
+hata oluştu, bağlantı koptu) demek için \textbf{sinyaller} kullanılır. C++'ta
+sinyal yayarsınız, QML tarafında ona \emph{handler} bağlarsınız.
+
+\subsection{C++ Tarafı: Sinyal Tanımlama ve Yayma}
+
+\begin{lstlisting}
+class Downloader : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit Downloader(QObject *parent = nullptr) : QObject(parent) {}
+
+    Q_INVOKABLE void baslat(const QString &url)
+    {
+        emit basladi(url);
+        // ... indirme mantigi (basitlestirilmis) ...
+        for (int p = 0; p <= 100; p += 25)
+            emit ilerleme(p);         // Parametreli sinyal
+        emit tamamlandi(url, true);   // Cok parametreli sinyal
+    }
+
+signals:
+    void basladi(const QString &url);
+    void ilerleme(int yuzde);
+    void tamamlandi(const QString &url, bool basarili);
+};
+\end{lstlisting}
+
+\subsection{QML Tarafı: on\textless Sinyal\textgreater\ Handler'ı}
+
+Qt otomatik olarak her \kod{sinyalAdi} için \kod{onSinyalAdi} handler'ı üretir
+(ilk harf büyür):
+
+\begin{lstlisting}[style=qmlstyle]
+Downloader {
+    id: downloader
+
+    // "basladi" -> "onBasladi"
+    onBasladi: (url) => console.log("Basladi:", url)
+
+    // "ilerleme" -> "onIlerleme"; parametre adi sinyaldeki ile ayni
+    onIlerleme: (yuzde) => progressBar.value = yuzde / 100
+
+    onTamamlandi: (url, basarili) => {
+        if (basarili)
+            statusText.text = "Bitti: " + url
+        else
+            statusText.text = "Hata!"
+    }
+}
+\end{lstlisting}
+
+\subsection{Connections: Dışarıdan Sinyale Bağlanma}
+
+Nesnenin tanımıyla aynı yerde handler yazamıyorsanız (ör. context property ile
+gelen bir nesne) \kls{Connections} kullanın:
+
+\begin{lstlisting}[style=qmlstyle]
+Connections {
+    target: downloader          // Hangi nesnenin sinyalleri
+    function onTamamlandi(url, basarili) {
+        console.log("Connections ile yakalandi:", url)
+    }
+}
+\end{lstlisting}
+
+\begin{ipucukutu}
+Sinyal parametrelerine handler içinde \textbf{isimleriyle} erişebilirsiniz. Eski
+Qt 5 sözdiziminde bunlar sihirli biçimde kapsamdaydı; Qt 6'da modern ve önerilen
+biçim, yukarıdaki gibi \textbf{ok fonksiyonu} veya \kod{function onX(param)}
+parametre listesidir. Bu, isim çakışmalarını önler.
+\end{ipucukutu}
+
+% =====================================================================
+\section{Enum'ları QML'e Açmak}
+% =====================================================================
+
+C++ enum'larını QML'de kullanmak, "sihirli sayılar" yerine anlamlı isimler
+kullanmayı sağlar. \kod{Q\_ENUM} makrosu enum'u meta-object sistemine kaydeder.
+
+\subsection{Q\_ENUM ile Kayıt}
+
+\begin{lstlisting}
+class Player : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit Player(QObject *parent = nullptr) : QObject(parent) {}
+
+    enum State {
+        Stopped,
+        Playing,
+        Paused
+    };
+    Q_ENUM(State)     // <-- Enum'u QML'e acar
+
+    Q_PROPERTY(State state READ state WRITE setState NOTIFY stateChanged)
+
+    State state() const { return m_state; }
+    void setState(State s) {
+        if (m_state == s) return;
+        m_state = s;
+        emit stateChanged();
+    }
+signals:
+    void stateChanged();
+private:
+    State m_state = Stopped;
+};
+\end{lstlisting}
+
+\subsection{QML'de Enum Kullanımı}
+
+Enum değerlerine \kod{TipAdi.DegerAdi} biçiminde erişilir:
+
+\begin{lstlisting}[style=qmlstyle]
+Player {
+    id: player
+
+    onStateChanged: {
+        switch (state) {
+        case Player.Playing: console.log("Oynatiliyor"); break
+        case Player.Paused:  console.log("Duraklatildi"); break
+        case Player.Stopped: console.log("Durduruldu");  break
+        }
+    }
+}
+
+Button {
+    text: "Oynat"
+    // Sayi yerine anlamli isim:
+    onClicked: player.state = Player.Playing
+}
+\end{lstlisting}
+
+\begin{uyarikutu}
+Enum değerlerine QML'de \textbf{sınıf adı} üzerinden erişilir (\kod{Player.Playing}),
+nesne adı üzerinden değil (\kod{player.Playing} \textbf{yanlıştır}). Ayrıca enum
+kaydı için sınıfın QML'e kayıtlı olması (\kod{QML\_ELEMENT}) gerekir; sadece
+enum'u açmak istiyor ama nesne oluşturulmasını istemiyorsanız
+\kod{QML\_UNCREATABLE} ile birleştirin.
+\end{uyarikutu}
+
+% =====================================================================
+\section{Context Property: Global Nesne Enjeksiyonu}
+% =====================================================================
+
+\kod{QML\_ELEMENT} ile tipleri açtınız — ama bazen QML'in \emph{belirli bir C++
+örneğine} (tip değil, hazır nesne) erişmesini istersiniz. Örneğin veritabanına
+bağlı tek bir \kod{backend} nesnesi. Bunun klasik yolu \textbf{context property}'dir.
+
+\subsection{setContextProperty ile Nesne Enjekte Etme}
+
+\begin{lstlisting}
+#include <QQmlContext>
+#include "backend.h"
+
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
+    QQmlApplicationEngine engine;
+
+    Backend backend;   // C++'ta olusturulan tek ornek
+    backend.setUser("admin");
+
+    // "backend" adiyla TUM QML dosyalarina global olarak enjekte et
+    engine.rootContext()->setContextProperty("backend", &backend);
+
+    engine.loadFromModule("MyApp", "Main");
+    return app.exec();
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=qmlstyle]
+// Herhangi bir QML dosyasinda, import bile gerekmeden:
+Text {
+    text: "Kullanici: " + backend.user   // dogrudan "backend"
+}
+\end{lstlisting}
+
+\begin{uyarikutu}[Context property'nin dezavantajları]
+Context property'ler pratik görünse de modern Qt'de \textbf{önerilmez}:
+\textbf{(1)} Derleme zamanı tip kontrolü yoktur — yanlış özellik adı sadece
+çalışma zamanında sessizce \kod{undefined} döner. \textbf{(2)} QML derleyici
+(qmltc) bunları optimize edemez. \textbf{(3)} Her QML dosyasında görünür olması
+kapsam kirliliği yaratır. Mümkünse yerine \textbf{singleton} (Bölüm 8) kullanın.
+\end{uyarikutu}
+
+\subsection{Alternatif: initialProperties ile Örnek Aktarımı}
+
+Tek bir kök nesneye örnek geçirmek için daha temiz bir yol:
+
+\begin{lstlisting}
+Backend backend;
+QQmlApplicationEngine engine;
+engine.loadFromModule("MyApp", "Main");
+// Kök nesnenin "backend" ozelligine C++ ornegini bagla
+// (Main.qml icinde: property Backend backend)
+\end{lstlisting}
+
+% =====================================================================
+\section{Singleton'lar: Uygulama Geneli Tek Nesne}
+% =====================================================================
+
+Uygulama boyunca tek bir örneği olması gereken servisler (ayarlar yöneticisi,
+oturum, tema, veritabanı erişimi) için \textbf{singleton} idealdir. Context
+property'nin tip-güvenli, optimize edilebilir modern alternatifidir.
+
+\subsection{QML\_SINGLETON ile Tanımlama}
+
+\begin{lstlisting}
+class AppSettings : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON       // <-- Tek ornek olacak
+    Q_PROPERTY(QString theme READ theme WRITE setTheme NOTIFY themeChanged)
+    Q_PROPERTY(int fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
+public:
+    explicit AppSettings(QObject *parent = nullptr) : QObject(parent) {}
+
+    QString theme() const { return m_theme; }
+    void setTheme(const QString &t) {
+        if (m_theme == t) return;
+        m_theme = t; emit themeChanged();
+    }
+    int fontSize() const { return m_fontSize; }
+    void setFontSize(int s) {
+        if (m_fontSize == s) return;
+        m_fontSize = s; emit fontSizeChanged();
+    }
+signals:
+    void themeChanged();
+    void fontSizeChanged();
+private:
+    QString m_theme = QStringLiteral("dark");
+    int m_fontSize = 14;
+};
+\end{lstlisting}
+
+\subsection{QML'de Singleton Kullanımı}
+
+Singleton'a \textbf{tip adıyla} doğrudan erişilir; nesne oluşturmaya gerek yoktur:
+
+\begin{lstlisting}[style=qmlstyle]
+import QtQuick
+import MyApp
+
+Window {
+    // Tum uygulamada ayni ornek. Nesne olusturmadan tip adiyla eris:
+    color: AppSettings.theme === "dark" ? "#222" : "#fff"
+
+    Text {
+        text: "Ayarlar"
+        font.pixelSize: AppSettings.fontSize    // Global, canli baglanti
+        color: AppSettings.theme === "dark" ? "white" : "black"
+    }
+
+    Button {
+        text: "Temayi Degistir"
+        onClicked: AppSettings.theme =
+                   AppSettings.theme === "dark" ? "light" : "dark"
+    }
+}
+\end{lstlisting}
+
+\begin{ipucukutu}
+Bir singleton'ın \kod{theme} özelliğini bir yerde değiştirdiğinizde,
+uygulamadaki \emph{tüm} binding'ler anında güncellenir. Bu, tema/dil/ayar gibi
+global durumları yönetmenin en zarif yoludur. C++ tarafında singleton örneğine
+\kod{engine} üzerinden de erişebilirsiniz.
+\end{ipucukutu}
+
+\subsection{Özel Kurucu Gereken Singleton}
+
+Örneğin oluşumunu kontrol etmek isterseniz \kod{create} fonksiyonu kullanın:
+
+\begin{lstlisting}
+class Database : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
+public:
+    // QML motoru bu statik fonksiyonu cagirarak ornegi olusturur
+    static Database *create(QQmlEngine *, QJSEngine *engine)
+    {
+        Database *db = new Database();
+        db->connectToDb();
+        return db;   // Sahiplik QML motoruna gecer
+    }
+private:
+    explicit Database(QObject *parent = nullptr) : QObject(parent) {}
+    void connectToDb() { /* ... */ }
+};
+\end{lstlisting}
+
+% =====================================================================
+\section{Liste Modelleri: QAbstractListModel}
+% =====================================================================
+
+Tek nesne değil de bir \emph{liste} (kişiler, mesajlar, ürünler) göstermek
+istediğinizde, C++ verisini \kls{ListView}'e bağlamanın performanslı yolu
+\kls{QAbstractListModel} türetmektir.
+
+\subsection{Rol Tabanlı Model Mantığı}
+
+QML modelleri \textbf{rol (role)} kavramıyla çalışır. Her satır birden çok
+alana sahiptir (ad, e-posta, yaş); her alan bir "rol"dür. QML delegate'i bu
+rollere isimle erişir.
+
+\begin{ornekkutu}[contactmodel.h]
+\end{ornekkutu}
+\begin{lstlisting}
+#ifndef CONTACTMODEL_H
+#define CONTACTMODEL_H
+
+#include <QAbstractListModel>
+#include <QQmlEngine>
+
+struct Contact {
+    QString name;
+    QString email;
+};
+
+class ContactModel : public QAbstractListModel
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    // Rolleri tanimla (Qt::UserRole'dan baslar)
+    enum Roles {
+        NameRole = Qt::UserRole + 1,
+        EmailRole
+    };
+
+    explicit ContactModel(QObject *parent = nullptr) : QAbstractListModel(parent)
+    {
+        m_data = {
+            {"Ali",  "ali@ornek.com"},
+            {"Veli", "veli@ornek.com"}
+        };
+    }
+
+    // 1) Kac satir var?
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
+    {
+        Q_UNUSED(parent)
+        return m_data.count();
+    }
+
+    // 2) Belirli satir+rol icin veri
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        if (!index.isValid() || index.row() >= m_data.count())
+            return {};
+        const Contact &c = m_data.at(index.row());
+        switch (role) {
+        case NameRole:  return c.name;
+        case EmailRole: return c.email;
+        }
+        return {};
+    }
+
+    // 3) Rol numaralarini QML'deki isimlere esle
+    QHash<int, QByteArray> roleNames() const override
+    {
+        return {
+            { NameRole,  "name"  },
+            { EmailRole, "email" }
+        };
+    }
+
+    // Satir eklemek: beginInsertRows/endInsertRows sart!
+    Q_INVOKABLE void addContact(const QString &name, const QString &email)
+    {
+        beginInsertRows(QModelIndex(), m_data.count(), m_data.count());
+        m_data.append({ name, email });
+        endInsertRows();
+    }
+
+private:
+    QList<Contact> m_data;
+};
+
+#endif
+\end{lstlisting}
+
+\begin{uyarikutu}[Üç zorunlu metot + değişiklik bildirimi]
+\kod{rowCount}, \kod{data} ve \kod{roleNames} \textbf{override edilmek zorundadır}.
+Ayrıca veriyi değiştirirken \kod{beginInsertRows}/\kod{endInsertRows} (ekleme),
+\kod{beginRemoveRows}/\kod{endRemoveRows} (silme) veya \kod{dataChanged} (güncelleme)
+çağrılarını \textbf{atlamayın}. Atlarsanız \kls{ListView} güncellenmez veya
+çökme yaşarsınız.
+\end{uyarikutu}
+
+\subsection{QML'de ListView ile Gösterme}
+
+\begin{lstlisting}[style=qmlstyle]
+import QtQuick
+import QtQuick.Controls
+import MyApp
+
+ListView {
+    anchors.fill: parent
+    model: ContactModel {}    // C++ modeli dogrudan bagla
+
+    delegate: Rectangle {
+        width: ListView.view.width
+        height: 50
+        color: index % 2 ? "#f0f0f0" : "white"
+
+        Row {
+            spacing: 10
+            anchors.verticalCenter: parent.verticalCenter
+            // roleNames'teki isimler dogrudan kapsamda:
+            Text { text: name; font.bold: true }
+            Text { text: email; color: "gray" }
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{notkutu}[Basit listeler için kısayol]
+Sadece birkaç öğelik statik/basit bir liste için \kls{QAbstractListModel}
+fazla ağır kalır. \kod{QStringList} veya \kod{QVariantList} döndüren bir
+\kod{Q\_PROPERTY} de \kod{model} olarak kullanılabilir. Ancak büyük, sık
+değişen veya çok alanlı listeler için mutlaka \kls{QAbstractListModel} tercih
+edin — performans farkı büyüktür.
+\end{notkutu}
+
+% =====================================================================
+\section{C++'tan QML'e Erişmek}
+% =====================================================================
+
+Şimdiye kadar akış çoğunlukla QML $\rightarrow$ C++ yönündeydi. Bazen tersine,
+C++'tan bir QML nesnesinin özelliğini okumak, metodunu çağırmak veya sinyaline
+bağlanmak istersiniz. Bu genelde \emph{gerekli olmadıkça kaçınılması} gereken
+bir yöndür ama gerektiğinde şöyle yapılır.
+
+\subsection{Kök Nesneye ve Alt Nesnelere Erişim}
+
+\begin{lstlisting}
+QQmlApplicationEngine engine;
+engine.loadFromModule("MyApp", "Main");
+
+// Kok QML nesnesi (Window)
+QObject *root = engine.rootObjects().first();
+
+// Ozellik oku/yaz (property adiyla)
+root->setProperty("title", "C++ tarafindan degistirildi");
+QVariant w = root->property("width");
+
+// objectName ile bir alt nesne bul
+//   (QML'de: Text { objectName: "durumMetni" })
+QObject *label = root->findChild<QObject*>("durumMetni");
+if (label)
+    label->setProperty("text", "Guncellendi");
+\end{lstlisting}
+
+\subsection{C++'tan QML Fonksiyonu Çağırmak}
+
+QML'de \kod{function} olarak tanımlı bir metodu \kls{QMetaObject::invokeMethod}
+ile çağırabilirsiniz:
+
+\begin{lstlisting}[style=qmlstyle]
+// Main.qml
+Window {
+    function mesajGoster(metin) {
+        console.log("QML fonksiyonu:", metin)
+        return "alindi: " + metin
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+QObject *root = engine.rootObjects().first();
+QVariant donus;
+QMetaObject::invokeMethod(root, "mesajGoster",
+    Q_RETURN_ARG(QVariant, donus),
+    Q_ARG(QVariant, QString("Selam QML")));
+qDebug() << donus;   // "alindi: Selam QML"
+\end{lstlisting}
+
+\begin{uyarikutu}
+C++'tan QML nesnelerine \kod{findChild}/\kod{invokeMethod} ile erişmek
+\textbf{kırılgan} bir desendir: QML yapısını değiştirdiğinizde C++ kodu sessizce
+bozulur ve derleyici sizi uyarmaz. \textbf{Tercih edilen mimari}: veriyi ve
+mantığı C++'ta tutun, \kod{Q\_PROPERTY} ve sinyallerle QML'e \emph{itin}; QML
+bunlara binding ile tepki versin. C++'ın QML'e uzanması yerine QML'in C++'a
+bağlanması daha sağlıklıdır.
+\end{uyarikutu}
+
+% =====================================================================
+\section{Değer Tipleri ve Gadget'lar (Q\_GADGET)}
+% =====================================================================
+
+Her veri yapısının tam bir \kls{QObject} olması gerekmez. Konum, renk, boyut
+gibi küçük, kopyalanabilir veri taşıyıcıları için \kod{Q\_GADGET} kullanılır —
+sinyal/slot yükü olmadan meta bilgi sağlar.
+
+\begin{lstlisting}
+class Point3D
+{
+    Q_GADGET     // QObject degil! Hafif meta-tip
+    Q_PROPERTY(double x READ x WRITE setX)
+    Q_PROPERTY(double y READ y WRITE setY)
+    Q_PROPERTY(double z READ z WRITE setZ)
+public:
+    double x() const { return m_x; }  void setX(double v) { m_x = v; }
+    double y() const { return m_y; }  void setY(double v) { m_y = v; }
+    double z() const { return m_z; }  void setZ(double v) { m_z = v; }
+
+    Q_INVOKABLE double length() const
+    {
+        return std::sqrt(m_x*m_x + m_y*m_y + m_z*m_z);
+    }
+private:
+    double m_x = 0, m_y = 0, m_z = 0;
+};
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Özellik} & \color{anaMavi}\textbf{Q\_OBJECT} & \color{anaMavi}\textbf{Q\_GADGET} \\
+\midrule
+Sinyal/slot & Var & Yok \\
+\rowcolor{acikGri} Kopyalanabilir & Hayır (kimliği var) & Evet (değer tipi) \\
+Bellek yükü & Yüksek & Düşük \\
+\rowcolor{acikGri} Kullanım & Servis, model, mantık & Küçük veri taşıyıcı \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Yaygın Hatalar ve En İyi Pratikler}
+% =====================================================================
+
+\subsection{Sık Yapılan Hatalar}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash\bfseries\color{kirmizi}}p{5cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{kirmizi!12}\color{kirmizi}\textbf{Hata} & \color{kirmizi}\textbf{Sonuç \& Çözüm} \\
+\midrule
+NOTIFY sinyalini emit etmemek & QML eski değeri gösterir. Setter'da değer değişince mutlaka \kod{emit} edin. \\
+\rowcolor{acikGri} Setter'da değişiklik kontrolü yapmamak & Binding sonsuz döngüye girer. \kod{if (m == v) return;} ekleyin. \\
+Q\_OBJECT makrosunu unutmak & Sinyaller/özellikler çalışmaz, linker hatası. Sınıf başına ekleyin. \\
+\rowcolor{acikGri} Argümansız kurucu olmaması & QML nesneyi oluşturamaz. Ya kurucu ekleyin ya \kod{QML\_UNCREATABLE}. \\
+Modeli \kod{begin/end...} olmadan değiştirmek & ListView bozulur/çöker. Değişiklik metotlarını sarmalayın. \\
+\rowcolor{acikGri} Nesne sahipliğini yanlış yönetmek & Çift silme veya sızıntı. QML'e verdiğiniz nesnelerde JS sahipliğine dikkat. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Nesne Sahipliği (Ownership)}
+
+\begin{bilgikutu}
+Bir C++ metodu QML'e \kod{QObject*} döndürdüğünde sahiplik kuralı: nesnenin
+\textbf{parent'ı varsa} C++ sahiptir; \textbf{parent'ı yoksa} QML çöp toplayıcısı
+(garbage collector) onu silebilir. QML'in beklenmedik anda silmesini istemiyorsanız
+nesneye bir parent verin veya \kod{QQmlEngine::setObjectOwnership(obj,
+QQmlEngine::CppOwnership)} ile sahipliği açıkça C++'a bırakın.
+\end{bilgikutu}
+
+\subsection{Mimari Tavsiyeleri}
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{Tek yön akış:} Veri ve mantık C++'ta; QML sadece \emph{sunum}.
+      C++ QML'e veri iter, QML C++ metotlarını çağırır. C++'ın QML iç yapısına
+      uzanmasından kaçının.
+\item \textbf{Singleton \textgreater\ context property:} Global servisler için
+      tip-güvenli, optimize edilebilir singleton'ları tercih edin.
+\item \textbf{Modül kullanın:} \kod{qt\_add\_qml\_module} + \kod{QML\_ELEMENT},
+      elle \kod{qmlRegisterType}'a yeğdir.
+\item \textbf{Ağır işi bloklamayın:} Uzun süren C++ işlemlerini ayrı bir iş
+      parçacığında (\kls{QThread}, \kls{QtConcurrent}) yapın; bitince sinyalle
+      QML'i haberdar edin. Aksi hâlde arayüz donar.
+\item \textbf{const \& referans:} Metot parametrelerinde büyük tipleri
+      \kod{const QString\&} gibi referansla alın; gereksiz kopyalamayı önler.
+\end{itemize}
+
+\subsection{Hızlı Referans Tablosu}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Makro / Öğe} & \color{anaMavi}\textbf{Amaç} \\
+\midrule
+Q\_OBJECT & Meta-object desteği; her açılan sınıfta zorunlu. \\
+\rowcolor{acikGri} QML\_ELEMENT & Sınıfı QML'e kaydeder. \\
+QML\_SINGLETON & Tek örnekli tip. \\
+\rowcolor{acikGri} QML\_UNCREATABLE & Görünür ama QML'de yaratılamaz (enum açmak için ideal). \\
+Q\_PROPERTY & Veriyi özellik olarak açar (READ/WRITE/NOTIFY). \\
+\rowcolor{acikGri} Q\_INVOKABLE & Metodu QML'den çağrılabilir yapar. \\
+Q\_ENUM & Enum'u QML'e açar. \\
+\rowcolor{acikGri} Q\_GADGET & Hafif, kopyalanabilir değer tipi. \\
+signals: & Sinyal bölümü; C++'tan QML'e olay bildirimi. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{0.6cm}
+\begin{tcolorbox}[colback=qtYesil!8,colframe=qtYesil!70!koyuGri,arc=3pt,boxrule=1pt]
+\centering
+\textbf{Özet:} QML arayüzü, C++ mantığı. İkisini \kod{Q\_PROPERTY} (veri),
+\kod{Q\_INVOKABLE} (metot), \textbf{signal} (olay) üçlüsüyle birbirine bağlayın.
+Tipleri \kod{QML\_ELEMENT} ile modül içinde kaydedin, global servisler için
+singleton kullanın, listeler için \kls{QAbstractListModel} türetin. Akışı tek
+yönlü tutun: \emph{C++ iter, QML bağlanır.}
+\end{tcolorbox}
+
+\end{document}

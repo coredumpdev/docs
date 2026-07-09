@@ -1,0 +1,1204 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (xelatex) ====================
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{turkish}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{hyperref}
+\usepackage{fontawesome5}
+\setlength{\headheight}{13.6pt}
+
+% ==================== FONTLAR ====================
+\setmainfont{Latin Modern Roman}
+\newfontfamily\codefont{Consolas}[Scale=0.88]
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+\definecolor{satirRenk}{HTML}{F0F4F8}
+\definecolor{qtYesil}{HTML}{41CD52}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=vurguMavi,
+  urlcolor=vurguMavi,
+  pdftitle={QML Temelleri ve Pratik Örnekler Rehberi},
+  pdfauthor={QML Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ ====================
+\titleformat{\section}
+  {\color{anaMavi}\Large\bfseries}
+  {\thesection.}{0.6em}{}
+  [\vspace{2pt}{\color{turuncu}\titlerule[1.6pt]}]
+\titleformat{\subsection}
+  {\color{vurguMavi}\large\bfseries}
+  {\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}
+  {\color{koyuGri}\normalsize\bfseries}
+  {\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}QML Temelleri Rehberi}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME: QML ====================
+\lstdefinelanguage{QML}{
+  morekeywords={import,property,signal,function,id,anchors,width,height,color,
+    Rectangle,Item,Text,Image,MouseArea,Component,Window,ApplicationWindow,Column,
+    Row,Grid,Flow,RowLayout,ColumnLayout,GridLayout,Layout,ListView,GridView,
+    ListModel,ListElement,Repeater,Button,TextField,TextArea,Slider,CheckBox,
+    RadioButton,ComboBox,Connections,readonly,alias,required,default,var,int,real,
+    string,bool,true,false,null,on,Behavior,states,State,PropertyChanges,Transition,
+    Timer,Loader,pragma,QtQuick,Controls,Layouts,NumberAnimation,PropertyAnimation,
+    SequentialAnimation,ParallelAnimation,ColorAnimation,RotationAnimation,
+    onClicked,onCompleted,onPressed,onReleased,model,delegate,sourceComponent,
+    TapHandler,DragHandler,Gradient,GradientStop,Flickable,ScrollView,Keys,
+    when,anchors,parent,elide,wrapMode,font,source,fillMode,spacing,scale,rotation,
+    opacity,visible,enabled,focus,z,radius,border},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]'
+}
+\lstdefinestyle{qmlstyle}{
+  language=QML,
+  basicstyle=\codefont\small\color{koyuGri},
+  keywordstyle=\color{mor}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{qtYesil!6},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{qtYesil!50!ortaGri},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true
+}
+\lstset{style=qmlstyle}
+
+% ==================== ÖZEL KUTULAR ====================
+\newtcolorbox{bilgikutu}[1][Bilgi]{
+  colback=acikMavi, colframe=vurguMavi, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faInfoCircle~~#1}
+}
+\newtcolorbox{ipucukutu}[1][İpucu]{
+  colback=acikYesil, colframe=yesil, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faLightbulb~~#1}
+}
+\newtcolorbox{uyarikutu}[1][Dikkat]{
+  colback=kirmizi!8, colframe=kirmizi, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faExclamationTriangle~~#1}
+}
+\newtcolorbox{ornekkutu}[1][Örnek]{
+  colback=acikGri, colframe=ortaGri!60, boxrule=0.7pt, arc=2pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{koyuGri}, coltitle=koyuGri,
+  title={\faCode~~#1}
+}
+\newtcolorbox{notkutu}[1][Not]{
+  colback=acikMor, colframe=mor, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title={\faStickyNote~~#1}
+}
+
+% Yardımcı komutlar
+\newcommand{\kls}[1]{\texttt{\color{anaMavi}\textbf{#1}}}
+\newcommand{\hx}[1]{\texttt{\color{turuncu}#1}}
+\newcommand{\kod}[1]{\texttt{\color{koyuGri}#1}}
+
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\color{qtYesil}\rule{\textwidth}{2pt}}\\[6pt]
+{\color{anaMavi}\Huge\bfseries QML Temelleri}\\[10pt]
+{\color{vurguMavi}\LARGE Pratik Örneklerle Qt Quick}\\[8pt]
+{\color{ortaGri}\large Bileşenler \textbullet\ Layout'lar \textbullet\ Modeller \textbullet\ Animasyonlar}\\[6pt]
+{\color{qtYesil}\rule{\textwidth}{2pt}}\\[1.6cm]
+
+\begin{tcolorbox}[width=0.88\textwidth,colback=acikMavi,colframe=vurguMavi,arc=4pt,boxrule=1pt]
+\centering\large
+Bu belge, Qt Quick / QML ile arayüz geliştirmede \textbf{en sık kullanılan}
+yapı taşlarını sıfırdan anlatır: görsel öğeler, özellik bağlama, konumlandırma,
+\textbf{yeniden kullanılabilir bileşenlere bölme}, sinyaller, durumlar,
+animasyonlar ve liste görünümleri. Her konu \textbf{çok sayıda kopyala-çalıştır
+örneğiyle} verilmiştir.
+\end{tcolorbox}
+
+\vspace{0.9cm}
+\begin{tcolorbox}[width=0.88\textwidth,colback=acikGri,colframe=ortaGri!50,arc=3pt,boxrule=0.6pt]
+\small
+\textbf{Kapsam:} Item/Rectangle/Text/Image \textbullet\ property \& binding
+\textbullet\ anchors \textbullet\ Row/Column/Grid \& Layouts \textbullet\
+\textbf{kendi bileşenini yazma} \textbullet\ property/signal API \textbullet\
+sinyaller \& handler \textbullet\ States \& Transitions \textbullet\ animasyonlar
+\& Behavior \textbullet\ ListModel/ListView/Repeater/GridView \textbullet\ Loader
+\textbullet\ Qt Quick Controls \textbullet\ en iyi pratikler
+\end{tcolorbox}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 9 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Qt 6.x \textbullet\ QtQuick \textbullet\ QtQuick.Controls \& Layouts}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% =====================================================================
+\section{QML Söz Dizimi: Temel Kavramlar}
+% =====================================================================
+
+QML, kullanıcı arayüzünü \emph{ne olduğunu} tanımlayarak (deklaratif) yazdığınız
+bir dildir. Bir QML dosyası, iç içe geçmiş \textbf{nesnelerden} oluşan bir ağaçtır.
+Her nesnenin \emph{özellikleri} (property) vardır ve bu özellikler birbirine
+\emph{bağlanabilir} (binding).
+
+\subsection{İlk QML Dosyası}
+
+\begin{lstlisting}
+import QtQuick               // Temel QML tipleri (Item, Rectangle, Text...)
+import QtQuick.Window        // Window tipi
+
+Window {
+    width: 400
+    height: 300
+    visible: true
+    title: "Ilk QML Uygulamam"
+
+    Rectangle {
+        anchors.centerIn: parent   // Pencerenin ortasina yerlestir
+        width: 200
+        height: 100
+        color: "steelblue"
+        radius: 12                 // Yuvarlatilmis koseler
+
+        Text {
+            anchors.centerIn: parent
+            text: "Merhaba QML"
+            color: "white"
+            font.pixelSize: 20
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{Nesne, id ve Özellik}
+
+Her QML nesnesi \kod{TipAdi \{ ... \}} biçiminde yazılır. İçine özellik atamaları
+ve alt nesneler koyarsınız.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{vurguMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Öğe} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+id & Nesneye benzersiz kimlik; başka nesnelerden erişmek için. Örn: \kod{id: kutu} \\
+\rowcolor{acikGri} property & Özellik: nesnenin verisi. \kod{width}, \kod{color}, \kod{text}... \\
+parent & Bir nesnenin görsel ebeveyni; \kod{anchors} ve boyutlandırmada kullanılır. \\
+\rowcolor{acikGri} \{ \} & Nesne kapsamı; içine alt nesneler ve özellikler yazılır. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}
+\kod{id} bir string değildir, tırnak almaz: \kod{id: baslik}. Aynı dosyada
+benzersiz olmalı, küçük harfle başlamalıdır. Bir nesneye başka yerden erişmenin
+tek yolu \kod{id}'sidir: \kod{baslik.text = "Yeni"}.
+\end{ipucukutu}
+
+\subsection{Property Binding: QML'in Kalbi}
+
+Bir özelliği sabit değil, \emph{bir ifadeye} bağlayabilirsiniz. İfadedeki değerler
+değişince özellik \textbf{otomatik güncellenir}.
+
+\begin{lstlisting}
+Rectangle {
+    id: kutu
+    width: 200
+    // height artik width'e bagli; width degisince height da degisir
+    height: width / 2
+    color: width > 150 ? "green" : "red"   // Kosula bagli renk
+}
+\end{lstlisting}
+
+\begin{bilgikutu}
+Binding tek yönlü ve canlıdır. \kod{height: width / 2} yazdığınızda, "şu an
+width'in yarısını al" değil, "\emph{her zaman} width'in yarısı ol" dersiniz.
+\kod{width} 300 olursa \kod{height} anında 150 olur. Elle güncelleme kodu
+yazmazsınız — bu, QML'i güçlü kılan özelliktir.
+\end{bilgikutu}
+
+% =====================================================================
+\section{Temel Görsel Öğeler}
+% =====================================================================
+
+QtQuick'te en sık kullanacağınız birkaç temel tip vardır. Bunları öğrenmek
+arayüzlerin \%80'ini kapsar.
+
+\subsection{Item — Görünmez Kapsayıcı}
+
+\kls{Item} tüm görsel öğelerin taban tipidir; kendi başına bir şey çizmez ama
+gruplamak, konumlandırmak ve boyutlandırmak için kullanılır.
+
+\begin{lstlisting}
+Item {
+    width: 300; height: 200
+    // Icindeki ogeleri gruplar; kendisi gorunmez
+    Rectangle { anchors.fill: parent; color: "lightgray" }
+}
+\end{lstlisting}
+
+\subsection{Rectangle — Dikdörtgen}
+
+\begin{lstlisting}
+Rectangle {
+    width: 120; height: 80
+    color: "tomato"
+    radius: 10                    // Kose yuvarlakligi
+    border.color: "darkred"       // Kenarlik rengi
+    border.width: 2               // Kenarlik kalinligi
+    opacity: 0.9                  // Saydamlik (0=gorunmez, 1=opak)
+
+    // Renk gecisi (gradient)
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: "orange" }
+        GradientStop { position: 1.0; color: "red" }
+    }
+}
+\end{lstlisting}
+
+\subsection{Text — Metin}
+
+\begin{lstlisting}
+Text {
+    text: "Uzun bir metin bu satira sigmayabilir"
+    color: "#333333"
+    font.pixelSize: 18
+    font.bold: true
+    font.family: "Arial"
+    width: 150                    // Sabit genislik
+    wrapMode: Text.WordWrap       // Kelime bazli alt satira gec
+    elide: Text.ElideRight        // Sigmazsa sonuna "..." koy
+    horizontalAlignment: Text.AlignHCenter
+}
+\end{lstlisting}
+
+\subsection{Image — Görsel}
+
+\begin{lstlisting}
+Image {
+    source: "qrc:/images/logo.png"   // veya "https://..." / dosya yolu
+    width: 100; height: 100
+    fillMode: Image.PreserveAspectFit  // Orani koru, sigdir
+    asynchronous: true                 // Arka planda yukle (UI donmasin)
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{fillMode} & \color{anaMavi}\textbf{Davranış} \\
+\midrule
+Image.Stretch & Görseli çerçeveye uzat (oran bozulur) \\
+\rowcolor{acikGri} Image.PreserveAspectFit & Oranı koruyarak sığdır (boşluk kalabilir) \\
+Image.PreserveAspectCrop & Oranı koruyarak doldur (taşan kırpılır) \\
+\rowcolor{acikGri} Image.Tile & Döşe (tekrarla) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{MouseArea — Fare/Dokunma Etkileşimi}
+
+Görsel öğeler kendiliğinden tıklanabilir değildir; üzerlerine görünmez bir
+\kls{MouseArea} koyarsınız.
+
+\begin{lstlisting}
+Rectangle {
+    id: dugme
+    width: 120; height: 40
+    color: fare.pressed ? "darkblue" : "steelblue"   // Basiliyken koyulasir
+    radius: 6
+
+    Text { anchors.centerIn: parent; text: "Tikla"; color: "white" }
+
+    MouseArea {
+        id: fare
+        anchors.fill: parent          // Tum dikdortgeni kapla
+        hoverEnabled: true            // Fare uzerine gelince de algila
+        onClicked: console.log("Tiklandi!")
+        onDoubleClicked: console.log("Cift tiklandi")
+        onPressed: console.log("Basildi")
+        onEntered: dugme.scale = 1.1  // Fare geldi
+        onExited:  dugme.scale = 1.0  // Fare cikti
+    }
+}
+\end{lstlisting}
+
+\begin{notkutu}[Modern alternatif: Handler'lar]
+Qt 6'da \kls{MouseArea} yerine daha esnek \textbf{Input Handler}'lar önerilir:
+\kod{TapHandler} (tıklama), \kod{DragHandler} (sürükleme), \kod{HoverHandler}
+(fare üzeri), \kod{PinchHandler} (kıstırma). Bunlar birden fazla aynı anda
+çalışabilir ve dokunmatik ekranlarla daha uyumludur.
+\end{notkutu}
+
+\begin{lstlisting}
+Rectangle {
+    width: 100; height: 100; color: "coral"
+    TapHandler { onTapped: console.log("TapHandler ile tiklandi") }
+    DragHandler { }   // Tek satirla surukle-birak!
+}
+\end{lstlisting}
+
+% =====================================================================
+\section{Konumlandırma: Anchors ve Positioner'lar}
+% =====================================================================
+
+QML'de öğeleri yerleştirmenin üç yolu vardır: sabit x/y, \textbf{anchors}
+(bağlama), \textbf{positioner}'lar (Row/Column/Grid) ve \textbf{Layout}'lar.
+
+\subsection{Anchors — Bağlama}
+
+Bir öğenin kenarlarını başka bir öğenin kenarlarına "yapıştırırsınız".
+
+\begin{lstlisting}
+Rectangle {
+    id: kapsayici
+    width: 300; height: 200; color: "#eee"
+
+    Rectangle {
+        width: 80; height: 80; color: "teal"
+        anchors.top: parent.top          // Ust kenari ebeveynin ustune
+        anchors.left: parent.left        // Sol kenari ebeveynin soluna
+        anchors.margins: 10              // 10px bosluk birak
+    }
+    Rectangle {
+        width: 80; height: 80; color: "orange"
+        anchors.centerIn: parent         // Tam ortala
+    }
+    Rectangle {
+        height: 40; color: "purple"
+        anchors.left: parent.left
+        anchors.right: parent.right      // Sol+sag -> genislik otomatik
+        anchors.bottom: parent.bottom
+    }
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Anchor} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+anchors.fill: parent & Ebeveyni tamamen kapla \\
+\rowcolor{acikGri} anchors.centerIn: parent & Yatay+dikey ortala \\
+anchors.top / bottom / left / right & Tek kenar bağlama \\
+\rowcolor{acikGri} anchors.horizontalCenter & Yatay merkez hizalama \\
+anchors.margins / topMargin ... & Bağlanan kenardan boşluk \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{uyarikutu}
+Bir öğeyi hem \kod{anchors} ile hem de \kod{x}/\kod{y} ile konumlandırmayın —
+çakışırlar. Ayrıca \kod{anchors} yalnızca \textbf{ebeveyn} veya \textbf{kardeş}
+öğelere bağlanabilir, rastgele bir öğeye değil.
+\end{uyarikutu}
+
+\subsection{Row, Column, Grid — Positioner'lar}
+
+Öğeleri otomatik olarak yatay, dikey veya ızgara biçiminde dizerler.
+
+\begin{lstlisting}
+Column {                       // Alt alta dizer
+    spacing: 10                // Ogeler arasi bosluk
+    Rectangle { width: 100; height: 30; color: "red" }
+    Rectangle { width: 100; height: 30; color: "green" }
+    Rectangle { width: 100; height: 30; color: "blue" }
+}
+
+Row {                          // Yan yana dizer
+    spacing: 8
+    Repeater {                 // 5 tane uret
+        model: 5
+        Rectangle { width: 40; height: 40; color: "steelblue"; radius: 4 }
+    }
+}
+
+Grid {                         // Izgara: 3 sutun
+    columns: 3
+    spacing: 6
+    Repeater {
+        model: 9
+        Rectangle { width: 50; height: 50; color: "orange" }
+    }
+}
+\end{lstlisting}
+
+\subsection{Layout'lar — Esnek ve Uyarlanabilir}
+
+\kls{RowLayout}, \kls{ColumnLayout}, \kls{GridLayout}; öğelerin pencere boyutuna
+göre \emph{esnemesini} sağlar. Bunun için \kod{QtQuick.Layouts} import edilir ve
+öğeler \kod{Layout.*} ekli özellikleriyle yapılandırılır.
+
+\begin{lstlisting}
+import QtQuick
+import QtQuick.Layouts
+
+RowLayout {
+    anchors.fill: parent
+    spacing: 10
+
+    Rectangle {
+        color: "salmon"
+        Layout.preferredWidth: 100
+        Layout.fillHeight: true       // Dikeyde tum alani doldur
+    }
+    Rectangle {
+        color: "khaki"
+        Layout.fillWidth: true        // Kalan yatay alani KAP
+        Layout.fillHeight: true
+    }
+    Rectangle {
+        color: "lightgreen"
+        Layout.preferredWidth: 60
+        Layout.fillHeight: true
+    }
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Layout özelliği} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+Layout.fillWidth / fillHeight & Kalan alanı doldur (esne) \\
+\rowcolor{acikGri} Layout.preferredWidth / Height & Tercih edilen boyut \\
+Layout.minimumWidth / maximumWidth & Alt/üst boyut sınırı \\
+\rowcolor{acikGri} Layout.alignment & Hücre içi hizalama (Qt.AlignCenter...) \\
+Layout.columnSpan / rowSpan & GridLayout'ta hücre yayılımı \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}[Positioner mı, Layout mu?]
+\kls{Row/Column} basit, sabit boyutlu dizilimler için hafif ve hızlıdır.
+\kls{RowLayout/ColumnLayout} ise öğelerin \textbf{pencere boyutuna göre esnemesi}
+gerektiğinde (responsive arayüz) kullanılır. \kod{Layout.fillWidth} gibi
+özellikler sadece Layout'lar içinde çalışır, Row/Column içinde çalışmaz.
+\end{ipucukutu}
+
+% =====================================================================
+\section{Bileşenlere Bölme: Yeniden Kullanılabilir QML}
+% =====================================================================
+
+QML'in en güçlü tarafı: \textbf{her \kod{.qml} dosyası aynı zamanda bir tiptir}.
+\kod{MyButton.qml} adında bir dosya oluşturursanız, başka QML dosyalarında
+\kod{MyButton \{ \}} yazarak onu bir öğe gibi kullanabilirsiniz. Böylece tekrar
+eden arayüz parçalarını bileşenlere bölersiniz.
+
+\subsection{İlk Özel Bileşen}
+
+Diyelim aynı stildeki düğmeyi defalarca kullanacaksınız. Ayrı bir dosyaya
+taşıyın:
+
+\begin{ornekkutu}[StyledButton.qml — kendi bileşenimiz]
+\end{ornekkutu}
+\begin{lstlisting}
+import QtQuick
+
+Rectangle {                        // Kok oge = bilesenin "govdesi"
+    id: root
+    width: 140; height: 44
+    radius: 8
+    color: area.pressed ? Qt.darker(baseColor, 1.2)
+                        : (area.containsMouse ? Qt.lighter(baseColor, 1.1)
+                                              : baseColor)
+
+    // ---- DISARIYA ACILAN API ----
+    property string text: "Dugme"       // Ozellestirilebilir etiket
+    property color  baseColor: "#2E6DA4"
+    signal clicked()                    // Disariya bildirilen sinyal
+
+    Text {
+        anchors.centerIn: parent
+        text: root.text                 // Disaridan gelen metin
+        color: "white"
+        font.pixelSize: 16
+    }
+
+    MouseArea {
+        id: area
+        anchors.fill: parent
+        hoverEnabled: true
+        onClicked: root.clicked()       // Kendi sinyalimizi yay
+    }
+}
+\end{lstlisting}
+
+Artık başka dosyada kullanabiliriz (aynı klasördeyse \kod{import} bile gerekmez):
+
+\begin{lstlisting}
+import QtQuick
+import QtQuick.Window
+
+Window {
+    width: 300; height: 240; visible: true
+
+    Column {
+        anchors.centerIn: parent
+        spacing: 12
+
+        StyledButton {
+            text: "Kaydet"
+            baseColor: "#2E7D32"
+            onClicked: console.log("Kaydedildi")   // Sinyali dinle
+        }
+        StyledButton {
+            text: "Sil"
+            baseColor: "#C0392B"
+            onClicked: console.log("Silindi")
+        }
+        StyledButton { text: "Iptal" }             // Varsayilan mavi
+    }
+}
+\end{lstlisting}
+
+\begin{bilgikutu}
+Bir bileşenin \textbf{genel API'si} üç şeyden oluşur: \textbf{(1)} dışarıdan
+ayarlanabilen \kod{property}'ler (girdi), \textbf{(2)} dışarıya olay bildiren
+\kod{signal}'ler (çıktı), \textbf{(3)} çağrılabilen \kod{function}'lar. İç yapı
+(MouseArea, Text vs.) gizli kalır — kullanıcı sadece bu API'yi görür. Bu,
+kapsülleme (encapsulation) demektir.
+\end{bilgikutu}
+
+\subsection{property alias — İç Öğeyi Dışarı Açma}
+
+Bazen iç öğenin bir özelliğine dışarıdan doğrudan erişim vermek istersiniz.
+\kod{alias} bunu sağlar:
+
+\begin{lstlisting}
+// LabeledField.qml
+import QtQuick
+import QtQuick.Controls
+
+Row {
+    spacing: 8
+    property alias label: etiket.text     // Ic Text'in text'ini disa ac
+    property alias value: girdi.text       // Ic TextField'in text'ini ac
+
+    Text { id: etiket; text: "Ad:" }
+    TextField { id: girdi; placeholderText: "..." }
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+LabeledField {
+    label: "E-posta:"
+    value: "ornek@mail.com"
+    onValueChanged: console.log("Deger:", value)   // alias otomatik sinyal uretir
+}
+\end{lstlisting}
+
+\begin{notkutu}[property vs alias]
+\kod{property string x: "..."} \emph{yeni} bir değer saklar. \kod{property alias x:
+oge.y} ise mevcut bir öğenin özelliğine \emph{takma ad} verir — okuma ve yazma
+doğrudan o öğeye gider. Alias, iç bir bileşenin özelliğini/nesnesini API'ye dahil
+etmenin temiz yoludur.
+\end{notkutu}
+
+\subsection{default property — İçerik Yuvası}
+
+Kendi bileşeninize, tıpkı \kls{Column} gibi, doğrudan çocuk öğe alabilme
+yeteneği verebilirsiniz:
+
+\begin{lstlisting}
+// Card.qml -- icine konan her sey "content" alanina gider
+import QtQuick
+
+Rectangle {
+    id: root
+    radius: 10; color: "white"; border.color: "#ddd"
+    implicitWidth: content.implicitWidth + 24
+    implicitHeight: content.implicitHeight + 24
+
+    default property alias data: content.data   // <-- Sihir burada
+
+    Column {
+        id: content
+        anchors.centerIn: parent
+        spacing: 8
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+Card {
+    // Bunlar dogrudan Card'in icine (content Column'a) gider:
+    Text { text: "Baslik"; font.bold: true }
+    Text { text: "Aciklama metni burada" }
+}
+\end{lstlisting}
+
+\subsection{inline Component ve Component Tipi}
+
+Küçük, sadece o dosyada kullanılacak bileşenler için ayrı dosya açmadan
+\kod{component} anahtar kelimesiyle satır içi tip tanımlayabilirsiniz:
+
+\begin{lstlisting}
+Item {
+    // Dosya ici bilesen tanimi (Qt 6)
+    component Rozet: Rectangle {
+        width: 60; height: 24; radius: 12; color: "purple"
+        property alias text: t.text
+        Text { id: t; anchors.centerIn: parent; color: "white" }
+    }
+
+    Row {
+        spacing: 6
+        Rozet { text: "Yeni" }
+        Rozet { text: "Pro"; color: "orange" }
+    }
+}
+\end{lstlisting}
+
+% =====================================================================
+\section{Sinyaller ve Handler'lar}
+% =====================================================================
+
+Sinyaller, "bir şey oldu" bilgisini iletir. Yerleşik öğelerin hazır sinyalleri
+(\kod{onClicked}, \kod{onPressed}...) vardır; kendi sinyallerinizi de
+tanımlayabilirsiniz.
+
+\subsection{Kendi Sinyalini Tanımlama ve Yayma}
+
+\begin{lstlisting}
+Item {
+    id: kutu
+
+    // Parametreli sinyal tanimi (Qt 6 tarzi)
+    signal itemSelected(int index, string name)
+
+    function sec(i, ad) {
+        kutu.itemSelected(i, ad)      // Sinyali yay
+    }
+
+    // Ayni Item icinde handler:
+    onItemSelected: (index, name) => {
+        console.log("Secilen:", index, name)
+    }
+}
+\end{lstlisting}
+
+\subsection{Connections ile Dışarıdan Bağlanma}
+
+Bir öğenin sinyaline, tanımından \emph{başka} bir yerde bağlanmak için:
+
+\begin{lstlisting}
+Timer {
+    id: sayac
+    interval: 1000; running: true; repeat: true
+}
+
+Connections {
+    target: sayac
+    function onTriggered() {           // Timer'in "triggered" sinyali
+        console.log("Bir saniye gecti")
+    }
+}
+\end{lstlisting}
+
+\subsection{Property Değişim Sinyalleri}
+
+Her özellik otomatik olarak bir \kod{on\textless Ozellik\textgreater Changed}
+handler'ı sağlar:
+
+\begin{lstlisting}
+Rectangle {
+    width: 100; height: 100
+    // width degistiginde otomatik cagrilir
+    onWidthChanged: console.log("Yeni genislik:", width)
+    color: "gray"
+    onColorChanged: console.log("Renk degisti")
+}
+\end{lstlisting}
+
+% =====================================================================
+\section{Durumlar (States) ve Geçişler (Transitions)}
+% =====================================================================
+
+Bir öğenin farklı görünümlerini (açık/kapalı, seçili/seçilmemiş) \textbf{state}
+olarak tanımlar, aralarındaki \emph{yumuşak geçişi} \textbf{transition} ile
+sağlarsınız.
+
+\subsection{States ile Görünüm Değiştirme}
+
+\begin{lstlisting}
+Rectangle {
+    id: panel
+    width: 200; height: 60
+    color: "steelblue"
+
+    // Baslangicta state yok (varsayilan); tanimli durumlar:
+    states: [
+        State {
+            name: "genisletilmis"
+            PropertyChanges { target: panel; height: 200; color: "seagreen" }
+        },
+        State {
+            name: "gizli"
+            PropertyChanges { target: panel; height: 0; opacity: 0 }
+        }
+    ]
+
+    MouseArea {
+        anchors.fill: parent
+        // Tikla -> durumu degistir (bosluk = varsayilana don)
+        onClicked: panel.state = (panel.state === "genisletilmis")
+                                 ? "" : "genisletilmis"
+    }
+}
+\end{lstlisting}
+
+\subsection{Transitions ile Yumuşak Geçiş}
+
+State değişimi ani olur; \kls{Transition} eklerseniz animasyonlu olur:
+
+\begin{lstlisting}
+Rectangle {
+    id: kutu
+    width: 100; height: 100; color: "coral"
+    states: State {
+        name: "buyuk"
+        PropertyChanges { target: kutu; width: 200; height: 200 }
+    }
+    transitions: Transition {
+        // Tum sayisal ozellikleri 300ms'de yumusakca degistir
+        NumberAnimation {
+            properties: "width,height"
+            duration: 300
+            easing.type: Easing.InOutQuad
+        }
+    }
+    MouseArea { anchors.fill: parent
+                onClicked: kutu.state = kutu.state === "buyuk" ? "" : "buyuk" }
+}
+\end{lstlisting}
+
+% =====================================================================
+\section{Animasyonlar}
+% =====================================================================
+
+QML animasyonlar için zengin bir sistem sunar. En sık kullanılanlar:
+
+\subsection{Behavior — Otomatik Yumuşatma}
+
+Bir özellik \emph{her ne zaman} değişirse değişsin animasyonlu olsun istiyorsanız
+\kls{Behavior} en pratik yoldur:
+
+\begin{lstlisting}
+Rectangle {
+    id: top
+    width: 60; height: 60; radius: 30; color: "tomato"
+    x: 0
+
+    // x her degistiginde 400ms'de yumusakca kaysin
+    Behavior on x {
+        NumberAnimation { duration: 400; easing.type: Easing.OutBounce }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: top.x = top.x === 0 ? 200 : 0   // x'i degistir, animasyon otomatik
+    }
+}
+\end{lstlisting}
+
+\subsection{Sıralı ve Paralel Animasyonlar}
+
+\begin{lstlisting}
+Rectangle {
+    id: kare
+    width: 80; height: 80; color: "mediumpurple"
+
+    // Tiklaninca calisacak animasyon zinciri
+    SequentialAnimation {
+        id: anim
+        NumberAnimation { target: kare; property: "rotation"
+                          to: 360; duration: 500 }
+        ParallelAnimation {                        // Ayni anda:
+            NumberAnimation { target: kare; property: "scale"
+                              to: 1.5; duration: 300 }
+            ColorAnimation  { target: kare; property: "color"
+                              to: "gold"; duration: 300 }
+        }
+        NumberAnimation { target: kare; property: "scale"
+                          to: 1.0; duration: 200 }
+    }
+    MouseArea { anchors.fill: parent; onClicked: anim.start() }
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Animasyon tipi} & \color{anaMavi}\textbf{Kullanım} \\
+\midrule
+NumberAnimation & Sayısal özellikler (x, width, opacity...) \\
+\rowcolor{acikGri} ColorAnimation & Renk geçişleri \\
+RotationAnimation & Dönüş (en kısa yol seçebilir) \\
+\rowcolor{acikGri} SequentialAnimation & İçindekileri sırayla çalıştırır \\
+ParallelAnimation & İçindekileri aynı anda çalıştırır \\
+\rowcolor{acikGri} Behavior on X & X değişince otomatik animasyon \\
+PropertyAnimation & Genel; her tip özelliğe uygulanır \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{ipucukutu}[Easing — yumuşama eğrileri]
+\kod{easing.type} animasyonun "hissini" belirler: \kod{Easing.Linear} (sabit hız),
+\kod{Easing.InOutQuad} (yavaş başla-hızlan-yavaşla), \kod{Easing.OutBounce}
+(zıplayarak dur), \kod{Easing.OutElastic} (yaylanarak). Doğal his için genelde
+\kod{InOutQuad} veya \kod{OutCubic} iyi başlangıçtır.
+\end{ipucukutu}
+
+% =====================================================================
+\section{Modeller ve Görünümler: Liste Göstermek}
+% =====================================================================
+
+Tekrar eden veriyi (liste, ızgara) göstermenin yolu \textbf{model-view}
+ayrımıdır: \emph{model} veriyi tutar, \emph{delegate} her öğenin nasıl
+görüneceğini tanımlar, \emph{view} (ListView/GridView) ikisini birleştirir.
+
+\subsection{Repeater — En Basit Tekrarlama}
+
+\begin{lstlisting}
+Column {
+    spacing: 4
+    Repeater {
+        model: ["Elma", "Armut", "Muz"]   // Dizi model
+        delegate: Text {
+            required property string modelData   // Dizi elemani
+            required property int index
+            text: (index + 1) + ". " + modelData  // "1. Elma"
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{ListModel + ListView — Kaydırılabilir Liste}
+
+\begin{lstlisting}
+import QtQuick
+
+ListView {
+    width: 250; height: 300
+    spacing: 6
+    clip: true                       // Tasan icerigi kirp
+
+    model: ListModel {
+        ListElement { ad: "Ali";  yas: 25 }
+        ListElement { ad: "Ayse"; yas: 30 }
+        ListElement { ad: "Veli"; yas: 28 }
+    }
+
+    delegate: Rectangle {
+        // Model rolleri delegate icinde dogrudan erisilir
+        required property string ad
+        required property int yas
+        width: ListView.view.width
+        height: 50
+        color: "#f0f4f8"
+        radius: 6
+
+        Row {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left; anchors.leftMargin: 12
+            spacing: 12
+            Text { text: ad; font.bold: true }
+            Text { text: yas + " yas"; color: "gray" }
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{uyarikutu}
+Delegate içinde model rollerine erişmek için Qt 6'da \kod{required property}
+kullanımı \textbf{önerilir} (\kod{required property string ad}). Eski kodda bu
+roller sihirli biçimde kapsamdaydı ama isim çakışması ve karışıklık yaratıyordu.
+\kod{required} ile hangi rollerin kullanıldığı açık ve güvenli olur.
+\end{uyarikutu}
+
+\subsection{ListModel'i Dinamik Değiştirme}
+
+\begin{lstlisting}
+ListModel { id: liste }
+
+// Ekle / sil / guncelle
+function ekle(ad) { liste.append({ ad: ad, yas: 0 }) }
+function sil(i)   { liste.remove(i) }
+function temizle(){ liste.clear() }
+function guncelle(i, yeniAd) { liste.setProperty(i, "ad", yeniAd) }
+\end{lstlisting}
+
+\subsection{GridView — Izgara Görünüm}
+
+\begin{lstlisting}
+GridView {
+    width: 320; height: 300
+    cellWidth: 100; cellHeight: 100     // Her hucrenin boyutu
+    model: 12
+    delegate: Rectangle {
+        required property int index
+        width: 90; height: 90
+        color: Qt.hsla(index / 12, 0.6, 0.6, 1)   // Renk carki
+        radius: 8
+        Text { anchors.centerIn: parent; text: index; color: "white" }
+    }
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Özellik} & \color{anaMavi}\textbf{Açıklama} \\
+\midrule
+model & Veri kaynağı (sayı, dizi, ListModel, C++ modeli) \\
+\rowcolor{acikGri} delegate & Her öğenin görsel şablonu \\
+clip: true & Görünüm dışına taşan öğeleri gizle \\
+\rowcolor{acikGri} spacing & Öğeler arası boşluk (ListView) \\
+header / footer & Liste başı/sonu öğeleri \\
+\rowcolor{acikGri} ScrollBar.vertical & Kaydırma çubuğu ekleme \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Loader ve Dinamik İçerik}
+% =====================================================================
+
+\kls{Loader}, bir bileşeni \emph{gerektiğinde} yükler — sekmeli arayüzlerde,
+koşullu içerikte ve belleği verimli kullanmada idealdir.
+
+\begin{lstlisting}
+Item {
+    Loader {
+        id: yukleyici
+        anchors.fill: parent
+        // Kaynagi degistirerek icerigi degistir
+        source: durum === "ayarlar" ? "SettingsPage.qml" : "HomePage.qml"
+    }
+
+    // veya satir ici bilesen yukle:
+    Loader {
+        sourceComponent: acikMi ? detayBileseni : null
+    }
+    Component {
+        id: detayBileseni
+        Rectangle { color: "lightyellow"; width: 100; height: 100 }
+    }
+}
+\end{lstlisting}
+
+\begin{ipucukutu}
+\kod{Loader.active: false} yaparak yüklenen içeriği bellekten kaldırabilirsiniz.
+Ağır sayfaları yalnızca görünür olduklarında yüklemek (lazy loading) uygulama
+başlangıcını hızlandırır. \kod{asynchronous: true} ile yükleme arka planda olur.
+\end{ipucukutu}
+
+% =====================================================================
+\section{Qt Quick Controls: Hazır Bileşenler}
+% =====================================================================
+
+\kod{QtQuick.Controls}; düğme, metin kutusu, kaydırıcı gibi hazır, stillenebilir
+arayüz bileşenleri sunar. Sıfırdan yazmak yerine bunları kullanın.
+
+\begin{lstlisting}
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+ColumnLayout {
+    anchors.centerIn: parent
+    spacing: 10
+
+    Button {
+        text: "Tikla"
+        onClicked: durumEtiketi.text = "Butona basildi"
+    }
+
+    TextField {
+        placeholderText: "Adinizi girin"
+        onTextChanged: console.log("Metin:", text)
+    }
+
+    Slider {
+        from: 0; to: 100; value: 50
+        onValueChanged: console.log("Deger:", value.toFixed(0))
+    }
+
+    CheckBox {
+        text: "Sartlari kabul ediyorum"
+        onCheckedChanged: console.log("Onay:", checked)
+    }
+
+    ComboBox {
+        model: ["Kucuk", "Orta", "Buyuk"]
+        onCurrentTextChanged: console.log("Secim:", currentText)
+    }
+
+    Label { id: durumEtiketi; text: "Hazir" }
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Control} & \color{anaMavi}\textbf{Kullanım} \\
+\midrule
+Button & Tıklanabilir düğme (\kod{onClicked}) \\
+\rowcolor{acikGri} TextField / TextArea & Tek/çok satır metin girişi \\
+Slider / RangeSlider & Kaydırıcı ile değer seçimi \\
+\rowcolor{acikGri} CheckBox / Switch & Aç/kapa seçimi \\
+RadioButton & Gruptan tek seçim \\
+\rowcolor{acikGri} ComboBox & Açılır liste \\
+Dialog / Popup & İletişim kutusu / açılır pencere \\
+\rowcolor{acikGri} TabBar / StackView & Sekme ve sayfa yığını navigasyonu \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{notkutu}[Stil seçimi]
+Qt Quick Controls farklı stillerle gelir: \kod{Basic}, \kod{Material},
+\kod{Universal}, \kod{Fusion}, \kod{macOS}, \kod{Windows}. Uygulama genelinde
+stili \kod{main.cpp}'de \kod{QQuickStyle::setStyle("Material")} ile veya
+\kod{qtquickcontrols2.conf} dosyasıyla ayarlarsınız. Material stil, renk ve
+tema özelleştirmesi için en esnek olanıdır.
+\end{notkutu}
+
+% =====================================================================
+\section{En İyi Pratikler ve Sık Hatalar}
+% =====================================================================
+
+\subsection{Yapılması Gerekenler}
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{Bileşenlere böl:} 100+ satırlık QML dosyalarını mantıklı,
+      yeniden kullanılabilir bileşenlere ayırın. Her bileşen tek bir işi yapsın.
+\item \textbf{Net API tasarla:} Bileşenin dışarıya açtığı \kod{property} ve
+      \kod{signal}'leri bilinçli seçin; iç yapıyı gizleyin.
+\item \textbf{Binding kullan, elle güncelleme yapma:} \kod{width: parent.width /
+      2} yaz; \kod{onParentWidthChanged} ile elle atama yapma.
+\item \textbf{Layout'larla responsive tasarla:} Sabit piksel yerine
+      \kod{anchors} ve \kod{Layout} kullan; farklı ekranlara uyum sağlasın.
+\item \textbf{required property kullan:} Delegate'lerde model rollerini açıkça
+      belirt.
+\item \textbf{Ağır işi QML'de yapma:} Karmaşık hesaplama/döngüleri C++'a taşı;
+      QML sadece sunum olsun.
+\end{itemize}
+
+\subsection{Kaçınılması Gerekenler}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash\bfseries\color{kirmizi}}p{5.2cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{kirmizi!12}\color{kirmizi}\textbf{Hata} & \color{kirmizi}\textbf{Neden kaçınmalı} \\
+\midrule
+Binding'i JS ile ezmek & \kod{width = 100} atarsanız binding \textbf{kalıcı olarak kırılır}. İfade tabanlı kalın. \\
+\rowcolor{acikGri} anchors + x/y karıştırmak & Çakışır, öngörülemez sonuç. Birini seçin. \\
+Dev tek dosya & Bakımı imkânsızlaşır. Bileşenlere bölün. \\
+\rowcolor{acikGri} Delegate'te ağır iş & Kaydırma takılır. Delegate hafif olmalı; \kod{clip} ve \kod{asynchronous} kullanın. \\
+id yerine sabit yol & \kod{parent.parent.parent...} kırılgan. \kod{id} ile referans verin. \\
+\rowcolor{acikGri} console.log unutmak & Çalışmayan binding'i sessizce kaçırırsınız. Şüphede logla. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Hızlı Referans}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}\small}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Öğe} & \color{anaMavi}\textbf{Amaç} \\
+\midrule
+Item / Rectangle / Text / Image & Temel görsel yapı taşları \\
+\rowcolor{acikGri} MouseArea / TapHandler & Kullanıcı etkileşimi \\
+anchors & Öğeyi ebeveyn/kardeşe bağlama \\
+\rowcolor{acikGri} Row / Column / Grid & Otomatik dizilim \\
+RowLayout / ColumnLayout & Esneyen (responsive) yerleşim \\
+\rowcolor{acikGri} property / alias / signal & Bileşen API'si \\
+States / Transitions & Görünüm durumları ve geçişleri \\
+\rowcolor{acikGri} Behavior / NumberAnimation & Animasyon \\
+ListView / GridView / Repeater & Liste ve ızgara görünümleri \\
+\rowcolor{acikGri} Loader & Dinamik/tembel yükleme \\
+Qt Quick Controls & Hazır arayüz bileşenleri \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{0.6cm}
+\begin{tcolorbox}[colback=qtYesil!8,colframe=qtYesil!70!koyuGri,arc=3pt,boxrule=1pt]
+\centering
+\textbf{Özet:} QML deklaratiftir — \emph{ne} istediğinizi yazarsınız, \emph{nasıl}
+güncelleneceğini binding halleder. Arayüzü küçük, net API'li bileşenlere bölün;
+yerleşimi \kod{anchors} ve Layout'larla responsive yapın; tekrarlı veriyi
+model-view ile gösterin; hareketi States/Behavior ile canlandırın. İnce bir QML
+katmanı + ayrı bileşenler = bakımı kolay, ölçeklenebilir arayüz.
+\end{tcolorbox}
+
+\end{document}
