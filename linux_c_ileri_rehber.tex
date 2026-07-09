@@ -3425,6 +3425,321 @@ Biri çökerse tümü çöker & Biri çökerse diğerleri sağ kalır\\
 \end{center}
 
 % =====================================================================
+\gsec{Atomik İşlemler (Atomics)}
+% =====================================================================
+
+Önceki bölümde \code{sayac++} işleminin iş parçacıkları arasında
+\emph{yarış durumu} ürettiğini gördük. Nedeni şu: \code{sayac++} tek bir
+işlem gibi görünse de derleyici bunu üç ayrı makine adımına çevirir ---
+\textbf{oku}, \textbf{artır}, \textbf{yaz}. İki iş parçacığı bu adımları
+iç içe çalıştırırsa güncellemelerden biri kaybolur.
+
+\begin{lstlisting}
+// sayac = 41 iken iki iplik ayni anda sayac++ yaparsa:
+// Iplik A: oku(41)          Iplik B: oku(41)
+// Iplik A: artir -> 42      Iplik B: artir -> 42
+// Iplik A: yaz(42)          Iplik B: yaz(42)   // iki artis, sonuc 42!
+\end{lstlisting}
+
+Bunu mutex ile çözebiliriz ama mutex pahalıdır: kilit alıp bırakmak sistem
+çağrısına dönüşebilir, iş parçacıkları uyutulup uyandırılır. \textbf{Atomik
+işlemler}, tek bir değişken üzerindeki oku-değiştir-yaz adımlarını
+donanımın \emph{bölünemez} tek bir talimatıyla (ör. x86 \code{lock xadd})
+gerçekleştirir. Kilit yoktur, uyuma yoktur --- çok daha hızlıdır.
+
+\bilgi{Atomik bir işlem \textbf{ya tamamen olur ya hiç olmaz}; ortada
+başka bir iş parçacığı onu yarım halde göremez. C11 ile dile giren
+\code{<stdatomic.h>} başlığı bunu taşınabilir biçimde sunar.}
+
+\gsub{\code{\_Atomic} ve \code{<stdatomic.h>}}
+
+Bir değişkeni \code{\_Atomic} niteleyicisiyle tanımlarsanız, üzerindeki
+sıradan işlemler (\code{++}, \code{+=}, atama) otomatik olarak atomik olur.
+Yarış durumu örneğini tek kelime değiştirerek düzeltelim:
+
+\begin{lstlisting}
+#include <pthread.h>
+#include <stdatomic.h>
+#include <stdio.h>
+
+_Atomic long sayac = 0;             // artik ++ atomik: yaris yok
+
+void *artir(void *arg) {
+    (void)arg;
+    for (int i = 0; i < 1000000; i++)
+        sayac++;                    // lock xadd -> bolunemez oku-artir-yaz
+    return NULL;
+}
+int main(void) {
+    pthread_t a, b;
+    pthread_create(&a, NULL, artir, NULL);
+    pthread_create(&b, NULL, artir, NULL);
+    pthread_join(a, NULL); pthread_join(b, NULL);
+    printf("sayac = %ld (beklenen 2000000)\n", sayac); // HER ZAMAN 2000000
+    return 0;
+}
+// Derleme: gcc bu.c -o bu -lpthread   (C11 gerekli, gcc varsayilan destekler)
+\end{lstlisting}
+
+\ipucu{\code{atomic\_int}, \code{atomic\_long}, \code{atomic\_bool},
+\code{atomic\_size\_t} gibi hazır tür adları \code{<stdatomic.h>} içinde
+tanımlıdır; \code{\_Atomic int} ile aynı anlama gelir.}
+
+\gsub{Açık Atomik Fonksiyonlar}
+
+\code{++} operatörü okunaklıdır ama dönüş değeriyle çalışmak veya niyeti
+açıkça göstermek için fonksiyon biçimleri vardır. Hepsi \emph{eski değeri}
+döndürür:
+
+\begin{lstlisting}
+#include <stdatomic.h>
+
+atomic_int x = 0;
+
+atomic_store(&x, 10);                    // x = 10
+int e = atomic_load(&x);                 // e = 10 (guvenli okuma)
+
+int eski = atomic_fetch_add(&x, 5);      // x -> 15, eski = 10
+atomic_fetch_sub(&x, 3);                 // x -> 12
+atomic_fetch_or(&x, 0x1);                // bit maskeleme de atomik
+atomic_fetch_and(&x, ~0x2);
+
+int y = atomic_exchange(&x, 99);         // x'e 99 yaz, eski degeri dondur
+\end{lstlisting}
+
+\notk{Neden dönüş değeri önemli? Çok iş parçacıklı bir sayaçta "benim
+artırdığım andaki değer neydi?" sorusuna sadece \code{fetch\_add}'ın dönüşü
+doğru yanıtı verir. Önce \code{load} sonra \code{store} yaparsanız araya
+başka iplik girebilir --- yine yarış.}
+
+\gsub{Compare-and-Swap (CAS): Kilitsiz Programlamanın Temeli}
+
+En güçlü atomik ilkel \textbf{karşılaştır-ve-değiştir}tir:
+\code{atomic\_compare\_exchange\_weak(\&nesne, \&beklenen, yeni)}. Anlamı:
+"\code{nesne} hâlâ \code{beklenen}'e eşitse \code{yeni}'yi yaz ve
+\code{true} döndür; değilse \code{beklenen}'i nesnenin \emph{güncel}
+değeriyle güncelle ve \code{false} döndür." Bu, "değiştirmeden önce kimse
+dokunmadığından emin ol" mantığıdır ve kilitsiz veri yapılarının kalbidir.
+
+Klasik desen bir CAS döngüsüdür --- başarana kadar tekrar dene:
+
+\begin{lstlisting}
+#include <stdatomic.h>
+
+// Atomik olarak toplama uygula (ornek amacli; gercekte fetch_add kullanin)
+void atomik_ekle(atomic_int *hedef, int deger) {
+    int beklenen = atomic_load(hedef);
+    int yeni;
+    do {
+        yeni = beklenen + deger;
+        // hedef hala 'beklenen' ise 'yeni'yi yaz; degilse beklenen guncellenir
+    } while (!atomic_compare_exchange_weak(hedef, &beklenen, yeni));
+}
+\end{lstlisting}
+
+\uyari{\code{compare\_exchange\_weak} nadiren \emph{sahte başarısızlık}
+verebilir (değer eşit olsa bile \code{false} döner); bu yüzden \textbf{daima
+bir döngü içinde} kullanılır. Döngüsüz tek atış gerekiyorsa
+\code{compare\_exchange\_strong} tercih edin.}
+
+\gsubsub{Uygulama: Kilitsiz (lock-free) yığın}
+
+CAS ile mutex kullanmadan iş parçacığı-güvenli bir yığın (stack) yazılabilir.
+\code{push}, yeni düğümün \code{next}'ini mevcut tepeye bağlar, sonra tepeyi
+CAS ile günceller --- araya biri girdiyse döngü tekrar dener:
+
+\begin{lstlisting}
+#include <stdatomic.h>
+#include <stdlib.h>
+
+typedef struct Dugum { int veri; struct Dugum *next; } Dugum;
+_Atomic(Dugum *) tepe = NULL;            // atomik isaretci
+
+void push(int v) {
+    Dugum *yeni = malloc(sizeof(Dugum));
+    yeni->veri = v;
+    yeni->next = atomic_load(&tepe);
+    // tepe hala yeni->next ise yeni'yi tepe yap; degilse yeni->next tazelenir
+    while (!atomic_compare_exchange_weak(&tepe, &yeni->next, yeni))
+        ;                                // bos govde: beklemeden yeniden dene
+}
+
+int pop(int *out) {                      // 1: basarili, 0: bos
+    Dugum *eski = atomic_load(&tepe);
+    while (eski && !atomic_compare_exchange_weak(&tepe, &eski, eski->next))
+        ;                                // eski, guncel tepeyle tazelenir
+    if (!eski) return 0;
+    *out = eski->veri;
+    free(eski);                          // NOT: ABA problemine dikkat (asagi)
+    return 1;
+}
+\end{lstlisting}
+
+\uyari{\textbf{ABA problemi:} Bir iplik tepeyi A okur, uyur; başka iplik
+A'yı çıkarıp serbest bırakır, sonra aynı adreste yeni bir A düğümü oluşur.
+İlk iplik uyanınca CAS "hâlâ A" diye başarılı olur ama artık \emph{farklı}
+bir A'dır --- liste bozulur. Gerçek kilitsiz yapılar bunu etiketli işaretçi
+(tagged pointer) veya \emph{hazard pointer} / RCU ile çözer. Kilitsiz
+programlama uzmanlık ister; çoğu durumda mutex daha güvenli ve yeterlidir.}
+
+\gsub{Bellek Sıralaması (Memory Ordering)}
+
+Modern CPU'lar ve derleyiciler, hızı artırmak için bellek işlemlerinin
+\emph{sırasını} değiştirebilir. Tek iş parçacığında fark edilmez, ama çok
+iş parçacığında bir ipliğin yazdıklarını başka ipliğin \emph{hangi sırayla}
+gördüğü önemlidir. Her atomik fonksiyon, ikinci argüman olarak bir
+\code{memory\_order} alabilir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.34\textwidth} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Sıralama} & \color{anaMavi}\textbf{Anlamı / Kullanımı}\\
+\midrule
+\code{memory\_order\_relaxed} & Yalnızca atomiklik; sıralama garantisi yok. Sadece sayaç (ör. istatistik) için idealdir.\\
+\rowcolor{acikGri}\code{memory\_order\_acquire} & Bir \emph{okuma} bariyeri: bu yükten sonraki erişimler öne kaymaz. Kilit \emph{alırken}.\\
+\code{memory\_order\_release} & Bir \emph{yazma} bariyeri: bu depodan önceki erişimler geriye kaymaz. Kilit \emph{bırakırken}.\\
+\rowcolor{acikGri}\code{memory\_order\_acq\_rel} & Hem acquire hem release; oku-değiştir-yaz için.\\
+\code{memory\_order\_seq\_cst} & En güçlü: tüm iplikler için tek bir küresel sıra. \textbf{Varsayılan} ve en güvenli.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\code{sayac++} gibi kısayollar her zaman \code{seq\_cst} kullanır --- en
+güvenli ama en yavaş olanı. Sırf saymak yeterliyse \code{relaxed} çok daha
+hızlıdır:
+
+\begin{lstlisting}
+#include <stdatomic.h>
+
+atomic_long islem_sayisi = 0;
+
+void olay(void) {
+    // Sadece toplam onemli; hangi sirada arttigi onemsiz -> relaxed
+    atomic_fetch_add_explicit(&islem_sayisi, 1, memory_order_relaxed);
+}
+\end{lstlisting}
+
+Klasik acquire/release deseni: bir iplik veriyi hazırlar, sonra bir bayrağı
+\code{release} ile set eder; diğer iplik bayrağı \code{acquire} ile
+okuduğunda \emph{verinin de hazır olduğunu} görmesi \textbf{garantidir}:
+
+\begin{lstlisting}
+#include <stdatomic.h>
+
+int      veri = 0;                       // sıradan degisken
+atomic_bool hazir = false;
+
+void uretici(void) {
+    veri = 42;                                          // (1) once veriyi yaz
+    atomic_store_explicit(&hazir, true,
+                          memory_order_release);        // (2) sonra bayragi set et
+}
+void tuketici(void) {
+    while (!atomic_load_explicit(&hazir, memory_order_acquire))
+        ;                                               // bayragi bekle
+    // release/acquire eslesmesi: (1) burada KESIN gorunur
+    printf("veri = %d\n", veri);                        // daima 42
+}
+\end{lstlisting}
+
+\bilgi{Kural: emin değilseniz \code{memory\_order} vermeyin ---
+varsayılan \code{seq\_cst} her zaman doğrudur, sadece biraz yavaştır.
+\code{relaxed} ve acquire/release ölçülmüş bir darboğaz varsa ve ne
+yaptığınızı biliyorsanız kullanılır.}
+
+\gsub{\code{atomic\_flag} ile Spinlock}
+
+\code{atomic\_flag}, standardın \emph{kilitsiz olması garanti edilen} tek
+türüdür. \code{test\_and\_set} bayrağı set eder ve \emph{önceki} değerini
+döndürür; bununla basit bir spinlock (dönen kilit) yazılır:
+
+\begin{lstlisting}
+#include <stdatomic.h>
+
+atomic_flag kilit = ATOMIC_FLAG_INIT;
+
+void kilitle(void) {
+    // set edip eski deger true ise baskasi tutuyor demektir -> don ve bekle
+    while (atomic_flag_test_and_set_explicit(&kilit, memory_order_acquire))
+        ;                                // "busy-wait" (mesgul bekleme)
+}
+void ac(void) {
+    atomic_flag_clear_explicit(&kilit, memory_order_release);
+}
+\end{lstlisting}
+
+\uyari{Spinlock CPU'yu döngüde \emph{meşgul} tutar (uyumaz). Yalnızca kritik
+bölge çok kısaysa ve çekişme düşükse mutex'ten hızlıdır; uzun beklemelerde
+CPU'yu boşa yakar. Genel amaçlı senkronizasyon için \code{pthread\_mutex\_t}
+kullanın.}
+
+\gsub{GCC/Clang Yerleşikleri (\_\_atomic)}
+
+C11'den önce (ve hâlâ yaygın olarak) GCC/Clang, \code{\_\_atomic\_*} ve
+eski \code{\_\_sync\_*} yerleşik fonksiyonlarını sunardı. Linux çekirdeği ve
+birçok eski kod tabanı bunları kullanır:
+
+\begin{lstlisting}
+long sayac = 0;                          // _Atomic gerekmez
+
+__atomic_fetch_add(&sayac, 1, __ATOMIC_SEQ_CST);   // C11 fetch_add karsiligi
+long v = __atomic_load_n(&sayac, __ATOMIC_ACQUIRE);
+__atomic_store_n(&sayac, 0, __ATOMIC_RELEASE);
+
+// Eski __sync ailesi (her zaman tam bariyer):
+__sync_fetch_and_add(&sayac, 1);
+__sync_bool_compare_and_swap(&sayac, 0, 100);      // CAS
+\end{lstlisting}
+
+\ipucu{Yeni kod yazıyorsanız taşınabilir C11 \code{<stdatomic.h>}'i tercih
+edin. \code{\_\_atomic\_*} yerleşiklerini yalnızca derleyiciye özgü kodda
+veya \code{\_Atomic} niteleyemeyeceğiniz mevcut bir değişkende kullanın.}
+
+\gsub{\code{volatile} Atomik Değildir!}
+
+Sık yapılan bir hata: \code{volatile} sanki iş parçacığı güvenliği
+sağlarmış gibi kullanmak. \code{volatile} yalnızca "bu değişkeni önbelleğe
+alma, her seferinde bellekten oku" der (donanım yazmaçları, sinyal
+handler'ları için). Atomiklik veya bellek sıralaması \emph{sağlamaz}.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Özellik} & \color{anaMavi}\textbf{\code{volatile}} & \color{anaMavi}\textbf{\code{\_Atomic}}\\
+\midrule
+Oku-değiştir-yaz bölünemez mi? & \textbf{Hayır} & \textbf{Evet}\\
+\rowcolor{acikGri} Bellek sıralaması & Yok & Var (memory\_order)\\
+Kullanım amacı & Donanım/sinyal ("her defa oku") & İş parçacığı senkronizasyonu\\
+\rowcolor{acikGri} \code{sig\_atomic\_t} ile & Sinyal handler bayrağı & --- \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\notk[Not]{Sinyal handler'ları için hâlâ \code{volatile sig\_atomic\_t}
+doğru seçimdir (tek yazar, atomik okuma/yazma yeterli). Ama \emph{iş
+parçacıkları} arasında paylaşım için \code{\_Atomic} veya mutex kullanın.}
+
+\gsub{Ne Zaman Hangisi?}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.30\textwidth} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Durum} & \color{anaMavi}\textbf{Öneri}\\
+\midrule
+Tek bir sayaç / bayrak & \code{\_Atomic} (en hızlı, en basit)\\
+\rowcolor{acikGri} Birden çok değişkeni birlikte tutarlı güncellemek & \code{pthread\_mutex\_t}\\
+Kritik bölge uzun / sistem çağrısı içeriyor & Mutex (spinlock değil)\\
+\rowcolor{acikGri} Çok kısa kritik bölge, düşük çekişme & Spinlock (\code{atomic\_flag})\\
+Kilitsiz veri yapısı & CAS döngüsü + ABA'ya dikkat (uzmanlık ister)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{Altın kural: \textbf{en basit doğru araçtan başla.} Önce tek atomik,
+yetmezse mutex. Kilitsiz CAS koduna ancak profilleme gerçek bir darboğaz
+gösterirse geç --- doğrulaması zordur ve ABA gibi tuzaklar barındırır.}
+
+% =====================================================================
 \gsec{Ağ Programlama: Soketler}
 % =====================================================================
 
