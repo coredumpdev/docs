@@ -1,0 +1,2028 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+\definecolor{formulArka}{HTML}{F7F9FC}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={Makine Öğrenmesi: Matematikten Koda Kapsamlı Rehber},
+  pdfauthor={ML Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}Makine Öğrenmesi Rehberi}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (Python) ====================
+\lstdefinestyle{pystyle}{
+  language=Python,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+  morekeywords={np,pd,plt,sns,as,with,yield,lambda,None,True,False,
+    self,assert,async,await,nonlocal,fit,transform,predict,fit_transform}
+}
+\lstset{style=pystyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+% Matematik/turetme kutusu
+\newcommand{\turetme}[1]{\callout{anaMavi}{formulArka}{Türetme}{#1}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\newcommand{\vek}[1]{\bm{#1}}
+\newcommand{\R}{\mathbb{R}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries Makine Öğrenmesi}\\[10pt]
+{\color{vurguMavi}\LARGE Matematikten Koda Kapsamlı Rehber}\\[8pt]
+{\color{ortaGri}\large Teori \textbullet\ Türetmeler \textbullet\ Sıfırdan ve scikit-learn ile Uygulama}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge, makine öğrenmesini \textbf{matematiksel temellerinden başlayarak}
+her algoritmanın türetmesiyle, hem \textbf{sıfırdan NumPy} hem de
+\textbf{scikit-learn} uygulamalarıyla adım adım anlatır. Lineer cebir ve
+optimizasyondan derin öğrenmeye ve geri yayılıma kadar uzanır.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kısım 1 --- Matematiksel Temeller:} lineer cebir \textbullet\ kalkülüs
+\& gradyanlar \textbullet\ optimizasyon (gradient descent) \textbullet\ olasılık
+\& MLE \textbullet\ bilgi teorisi.\vspace{3pt}
+
+\textbf{Kısım 2 --- Öğrenme Teorisi:} kayıp fonksiyonları \textbullet\ risk
+\textbullet\ bias-variance \textbullet\ düzenlileştirme \textbullet\ değerlendirme.\vspace{3pt}
+
+\textbf{Kısım 3 --- Regresyon:} lineer regresyon (normal denklem + GD)
+\textbullet\ Ridge/Lasso \textbullet\ lojistik regresyon.\vspace{3pt}
+
+\textbf{Kısım 4 --- Sınıflandırma:} Naive Bayes \textbullet\ KNN \textbullet\
+SVM (marj + kernel) \textbullet\ karar ağaçları \textbullet\ ensemble \& boosting.\vspace{3pt}
+
+\textbf{Kısım 5 --- Denetimsiz:} K-Means \textbullet\ PCA (özdeğer türetmesi).\vspace{3pt}
+
+\textbf{Kısım 6 --- Derin Öğrenme:} perceptron \textbullet\ çok katmanlı ağlar
+\textbullet\ geri yayılım (tam türetme) \textbullet\ optimizasyon \textbullet\ CNN \& RNN.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 12 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Python 3 \textbullet\ NumPy \textbullet\ scikit-learn \textbullet\ Kodlar İngilizce, açıklamalar Türkçe}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Matematiksel Temeller}
+% #####################################################################
+
+Makine öğrenmesi, özünde \emph{matematiktir}: veriyi vektör ve matrislerle
+temsil eder (lineer cebir), bir hata fonksiyonunu türev alarak küçültür
+(kalkülüs \& optimizasyon) ve belirsizliği olasılıkla modeller. Bu kısım,
+sonraki tüm algoritmaların üzerine kurulacağı matematiksel zemini atar.
+Aceleyle geçme --- buradaki her kavram ileride tekrar tekrar karşına çıkacak.
+
+% =====================================================================
+\gsec{Lineer Cebir}
+% =====================================================================
+
+Lineer cebir, makine öğrenmesinin dilidir. Bir veri kümesindeki her örnek bir
+\emph{vektör}, tüm veri kümesi bir \emph{matris}, bir modelin parametreleri de
+vektör/matrislerdir. Modern donanım (CPU/GPU) matris işlemlerinde son derece
+hızlı olduğundan, algoritmaları matris biçiminde ifade etmek hem zarif hem
+verimlidir.
+
+\gsub{Skaler, Vektör, Matris, Tensör}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Nesne} & \color{anaMavi}\textbf{Gösterim} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+Skaler & $x \in \R$ & Tek sayı.\\
+\rowcolor{acikGri} Vektör & $\vek{x} \in \R^n$ & $n$ sayıdan oluşan dizi (bir örnek/nokta).\\
+Matris & $\vek{X} \in \R^{m\times n}$ & $m$ satır $n$ sütun ($m$ örnek, $n$ özellik).\\
+\rowcolor{acikGri} Tensör & $\mathcal{X}$ & 3+ boyutlu dizi (görüntü, video).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Bir makine öğrenmesi problemi genelde \emph{tasarım matrisi} $\vek{X} \in
+\R^{m \times n}$ ile ifade edilir: her satır bir örnek ($m$ tane), her sütun
+bir özellik ($n$ tane). Hedef değerler ise $\vek{y} \in \R^m$ vektöründedir.
+
+\gsub{İç Çarpım (Dot Product)}
+
+İki vektörün iç çarpımı, makine öğrenmesindeki en temel işlemdir: bir modelin
+``ağırlıklı toplam'' tahmini tam olarak budur. Tanım:
+\[
+\vek{a} \cdot \vek{b} = \vek{a}^\top \vek{b} = \sum_{i=1}^{n} a_i b_i
+= a_1 b_1 + a_2 b_2 + \dots + a_n b_n .
+\]
+İç çarpım aynı zamanda vektörler arası açıyla ilişkilidir:
+$\vek{a}^\top \vek{b} = \|\vek{a}\|\,\|\vek{b}\|\cos\theta$. Bu yüzden iç
+çarpım bir \emph{benzerlik} ölçüsüdür: aynı yöne bakan vektörlerde büyük,
+dik vektörlerde sıfırdır.
+
+\begin{lstlisting}
+import numpy as np
+
+a = np.array([1.0, 2.0, 3.0])
+b = np.array([4.0, 5.0, 6.0])
+
+dot = a @ b                 # 1*4 + 2*5 + 3*6 = 32
+dot = np.dot(a, b)          # aynı sonuç
+dot = np.sum(a * b)         # elle: eleman bazlı çarpım sonra toplam
+\end{lstlisting}
+
+\gsub{Norm: Vektör Uzunluğu}
+
+Norm, bir vektörün ``büyüklüğünü'' ölçer. Kayıp fonksiyonları ve
+düzenlileştirme normlarla tanımlanır. En yaygını $L_2$ (Öklid) normudur:
+\[
+\|\vek{x}\|_2 = \sqrt{\sum_{i=1}^{n} x_i^2} = \sqrt{\vek{x}^\top \vek{x}},
+\qquad
+\|\vek{x}\|_1 = \sum_{i=1}^{n} |x_i| .
+\]
+$L_1$ normu (mutlak değerler toplamı) Lasso düzenlileştirmesinde,
+$L_2$ normu Ridge'de karşımıza çıkacak. İkisi arasındaki fark, ileride göreceğimiz
+gibi, modelin davranışını kökten değiştirir.
+
+\begin{lstlisting}
+x = np.array([3.0, 4.0])
+l2 = np.linalg.norm(x)          # sqrt(9 + 16) = 5.0
+l1 = np.linalg.norm(x, ord=1)   # |3| + |4| = 7.0
+\end{lstlisting}
+
+\gsub{Kosinüs Benzerliği ve Uzaklık Ölçütleri}
+
+İki veri noktasının ``ne kadar benzer'' veya ``ne kadar uzak'' olduğunu ölçmek;
+KNN, k-means, öneri sistemleri ve metin gömme (embedding) gibi birçok
+algoritmanın temelidir. İki temel yaklaşım vardır: \emph{açı} tabanlı benzerlik
+ve \emph{uzaklık}.
+
+\gsubsub{Kosinüs Benzerliği (Cosine Similarity)}
+
+İç çarpımdan türeyen kosinüs benzerliği, iki vektörün \emph{yönlerinin} ne kadar
+hizalı olduğunu ölçer --- büyüklüklerinden bağımsız olarak:
+\[
+\cos\theta = \frac{\vek{a}^\top\vek{b}}{\|\vek{a}\|\,\|\vek{b}\|} \in [-1, 1].
+\]
+$+1$ aynı yön (çok benzer), $0$ dik (ilgisiz), $-1$ zıt yön demektir.
+
+\turetme{\textbf{Örnek:} $\vek{a}=(1,2,3)$, $\vek{b}=(2,4,6)$ olsun. Dikkat:
+$\vek{b}=2\vek{a}$, yani aynı yön. İç çarpım $\vek{a}^\top\vek{b}=2+8+18=28$;
+normlar $\|\vek{a}\|=\sqrt{14}$, $\|\vek{b}\|=\sqrt{56}=2\sqrt{14}$. O halde:
+\[
+\cos\theta = \frac{28}{\sqrt{14}\cdot 2\sqrt{14}} = \frac{28}{28} = 1.
+\]
+Büyüklükleri farklı olsa da (biri diğerinin iki katı), yönleri aynı olduğu için
+benzerlik tamdır. Buna karşılık $\vek{a}=(1,0)$ ve $\vek{b}=(0,1)$ için iç
+çarpım $0$ olduğundan $\cos\theta=0$: dik, yani ``ilgisiz''.}
+
+\gsubsub{Uzaklık Ölçütleri (Distance Metrics)}
+
+Uzaklık ise iki noktanın \emph{konum} farkını ölçer. İki yaygın ölçüt:
+\[
+\text{Öklid (}L_2\text{): } d_2(\vek{a},\vek{b}) = \|\vek{a}-\vek{b}\|_2
+= \sqrt{\textstyle\sum_i (a_i-b_i)^2}, \qquad
+\text{Manhattan (}L_1\text{): } d_1 = \sum_i |a_i-b_i|.
+\]
+Örneğin $\vek{a}=(1,2)$, $\vek{b}=(4,6)$ için: $d_2=\sqrt{9+16}=5$,
+$d_1=3+4=7$.
+
+\begin{lstlisting}
+import numpy as np
+
+a = np.array([1.0, 2.0, 3.0])
+b = np.array([2.0, 4.0, 6.0])
+
+cos_sim = a @ b / (np.linalg.norm(a) * np.linalg.norm(b))   # 1.0 (aynı yön)
+euclidean = np.linalg.norm(a - b)                            # Öklid uzaklığı
+manhattan = np.sum(np.abs(a - b))                            # Manhattan uzaklığı
+\end{lstlisting}
+
+\bilgi{\textbf{Benzerlik mi, uzaklık mı?} Kosinüs benzerliği büyüklüğü
+\emph{yok sayar}, yalnızca yöne bakar --- metin/embedding karşılaştırmasında
+ideal (uzun bir belge ile kısa bir belge aynı konudaysa benzer sayılmalı).
+Öklid uzaklığı ise büyüklüğe \emph{duyarlıdır}; bu yüzden KNN ve k-means'te
+özellikleri önce standartlaştırmak (aynı ölçeğe getirmek) şarttır.}
+
+\gsub{Matris Çarpımı}
+
+Matris çarpımı, bir veri kümesindeki tüm örnekler için tahminleri \emph{tek
+seferde} hesaplamamızı sağlar. $\vek{A} \in \R^{m\times k}$ ve
+$\vek{B} \in \R^{k\times n}$ için çarpım $\vek{C} = \vek{AB} \in \R^{m\times n}$:
+\[
+C_{ij} = \sum_{l=1}^{k} A_{il} B_{lj} .
+\]
+Çarpımın tanımlı olması için ilk matrisin sütun sayısı, ikincinin satır
+sayısına eşit olmalıdır. Bu ``iç boyutların eşleşmesi'' kuralı,
+uygulamada boyut hatalarının ana kaynağıdır.
+
+\begin{lstlisting}
+A = np.array([[1, 2],
+              [3, 4]])          # 2x2
+B = np.array([[5, 6],
+              [7, 8]])          # 2x2
+
+C = A @ B                       # matris çarpımı
+# C = [[1*5+2*7, 1*6+2*8],
+#      [3*5+4*7, 3*6+4*8]] = [[19, 22], [43, 50]]
+
+# TÜM örnekler için tek seferde bir model tahmini:
+# X: (m, n) tasarım matrisi, w: (n,) ağırlıklar  ->  tahminler: (m,)
+X = np.random.randn(100, 3)     # 100 örnek, 3 özellik
+w = np.array([0.5, -1.2, 2.0])
+predictions = X @ w             # (100,) -- her satır için bir iç çarpım
+\end{lstlisting}
+
+\gsub{Şekil Uyumu ve Yayınlama (Broadcasting)}
+
+Matris/vektör işlemlerinde en sık karşılaşılan hata, \emph{boyut uyumsuzluğudur}
+(shape mismatch). İki kuralı içselleştirmek, ML kodundaki hataların büyük
+kısmını önler:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Matris çarpımı} $\vek{A}_{(m\times k)}\vek{B}_{(k\times n)}$:
+iç boyutlar ($k$) eşleşmeli; sonuç $(m\times n)$.
+\item \textbf{Yayınlama (broadcasting):} eleman bazlı işlemlerde NumPy şekilleri
+\emph{sondan başa} karşılaştırır; her boyut ya eşit ya da biri $1$ olmalıdır.
+Boyutu $1$ olan taraf diğerine ``yayılır'' --- bellekte kopya oluşturmadan.
+\end{itemize}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily}l >{\ttfamily}l >{\ttfamily}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{A şekli} & \color{anaMavi}\textbf{B şekli} & \color{anaMavi}\textbf{Sonuç} & \color{anaMavi}\textbf{Durum}\\
+\midrule
+(100, 3) & (3,) & (100,) & A @ B: geçerli (iç boyut 3)\\
+\rowcolor{acikGri} (100, 3) & (3,) & (100, 3) & A + B: her satıra yayılır\\
+(100, 1) & (1, 3) & (100, 3) & Dış çarpım gibi yayılır\\
+\rowcolor{acikGri} (100, 3) & (100,) & --- & Hata: 3 ile 100 uyumsuz\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+import numpy as np
+
+X = np.random.randn(100, 3)     # 100 örnek, 3 özellik
+
+# Her sütunu standartlaştır (z-skoru) -- yayınlamanın klasik kullanımı
+mean = X.mean(axis=0)           # (3,)  her özelliğin ortalaması
+std = X.std(axis=0)             # (3,)
+X_scaled = (X - mean) / std     # (100,3) - (3,) -> (3,) her satıra yayılır
+
+# Sık hata: (100,) ile (100,3) toplanamaz -> yeniden şekillendir
+col = np.arange(100)            # (100,)
+result = X + col[:, None]       # (100,1) yapılıp her sütuna yayılır
+\end{lstlisting}
+
+\uyari{Boyut hatası aldığında (\code{ValueError: operands could not be
+broadcast}), önce ilgili dizilerin \code{.shape}'ini yazdır. Sorun neredeyse
+her zaman bir yerde beklenmedik bir eksik/fazla boyuttur. \code{None}
+(veya \code{np.newaxis}) ile yeni bir eksen ekleyerek şekilleri uyumlu hale
+getirebilirsin.}
+
+\gsub{Özel Matrisler ve İşlemler}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kavram} & \color{anaMavi}\textbf{Tanım / önem}\\
+\midrule
+Transpoz $\vek{A}^\top$ & Satır ve sütunları takas eder; $(A^\top)_{ij}=A_{ji}$.\\
+\rowcolor{acikGri} Birim matris $\vek{I}$ & Köşegeni 1, gerisi 0; $\vek{AI}=\vek{A}$.\\
+Ters matris $\vek{A}^{-1}$ & $\vek{A}\vek{A}^{-1}=\vek{I}$; sadece kare ve tekil olmayan matrisler için.\\
+\rowcolor{acikGri} Determinant $\det(\vek{A})$ & 0 ise matris tersinir değildir (tekil).\\
+Simetrik & $\vek{A}=\vek{A}^\top$; kovaryans matrisleri simetriktir.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Özdeğerler ve Özvektörler}
+
+Bir kare matris $\vek{A}$ için, yönü değişmeyip yalnızca ölçeklenen özel
+vektörlere \emph{özvektör}, ölçekleme çarpanına \emph{özdeğer} denir:
+\[
+\vek{A}\vek{v} = \lambda \vek{v}, \qquad \vek{v} \ne \vek{0}.
+\]
+Burada $\vek{v}$ özvektör, $\lambda$ özdeğerdir. Özdeğerler, PCA'nın (Kısım 5)
+kalbindedir: bir veri kümesinin kovaryans matrisinin özvektörleri, verinin en
+çok yayıldığı yönleri (temel bileşenleri) verir; özdeğerler o yönlerdeki
+varyansı ölçer.
+
+\begin{lstlisting}
+A = np.array([[2.0, 0.0],
+              [0.0, 3.0]])
+eigenvalues, eigenvectors = np.linalg.eig(A)
+# özdeğerler:   [2., 3.]
+# özvektörler: sütunlar özvektörlerdir
+\end{lstlisting}
+
+\bilgi{\textbf{Neden matris biçimi?} Bir döngüyle 100 örnek için tahmin
+hesaplamak yerine tek bir \code{X @ w} çarpımı kullanmak hem çok daha hızlıdır
+(BLAS kütüphaneleri, GPU) hem de matematiği okunaklı kılar. Makine öğrenmesi
+kodunu ``vektörleştirmek'' (döngüleri matris işlemleriyle değiştirmek) temel
+bir beceridir.}
+
+% =====================================================================
+\gsec{Kalkülüs ve Optimizasyon}
+% =====================================================================
+
+Makine öğrenmesinde ``öğrenmek'', bir \emph{kayıp fonksiyonunu} (modelin ne
+kadar yanıldığını ölçen fonksiyon) minimize etmektir. Bunu yapmak için kalkülüs
+kullanırız: türev, fonksiyonun hangi yönde arttığını söyler; ters yöne giderek
+kaybı azaltırız. Bu, \emph{gradient descent} (gradyan inişi) algoritmasının özüdür.
+
+\gsub{Türev: Değişim Oranı}
+
+Tek değişkenli bir $f(x)$ fonksiyonunun türevi $f'(x)$, fonksiyonun $x$
+noktasındaki anlık değişim oranıdır (eğim):
+\[
+f'(x) = \frac{df}{dx} = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}.
+\]
+Bir minimum (veya maksimum) noktada eğim sıfırdır: $f'(x) = 0$. Optimizasyonun
+temel fikri budur --- kaybın türevinin sıfır olduğu parametreleri ararız.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{$}l<{$} >{$}l<{$} X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{f(x)} & \color{anaMavi}\textbf{f'(x)} & \color{anaMavi}\textbf{Kural}\\
+\midrule
+x^n & n x^{n-1} & Kuvvet kuralı\\
+\rowcolor{acikGri} e^x & e^x & Üstel\\
+\ln x & 1/x & Logaritma\\
+\rowcolor{acikGri} f(g(x)) & f'(g(x))\,g'(x) & Zincir kuralı (backprop'un temeli)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Kısmi Türev ve Gradyan}
+
+Makine öğrenmesinde kayıp, \emph{birçok} parametreye bağlıdır:
+$L(w_1, w_2, \dots, w_n)$. Bir parametreye göre \emph{kısmi türev}
+$\frac{\partial L}{\partial w_i}$, diğerlerini sabit tutup yalnızca $w_i$'yi
+değiştirdiğimizde kaybın nasıl değiştiğini söyler. Tüm kısmi türevleri bir
+vektörde toplarsak \emph{gradyanı} elde ederiz:
+\[
+\nabla L = \left[ \frac{\partial L}{\partial w_1},\;
+\frac{\partial L}{\partial w_2},\; \dots,\;
+\frac{\partial L}{\partial w_n} \right]^\top .
+\]
+Gradyan, kaybın \emph{en hızlı arttığı} yönü gösteren bir vektördür.
+Dolayısıyla kaybı azaltmak için gradyanın \emph{tersi} yönde ilerleriz.
+
+\gsub{Zincir Kuralı: Backprop'un Kalbi}
+
+Zincir kuralı, \emph{bileşke fonksiyonların} türevini verir ve derin
+öğrenmedeki geri yayılımın (backpropagation) temelidir. İç içe fonksiyonlarda
+türevler \emph{çarpılarak} dışarıdan içeriye taşınır:
+\[
+\frac{d}{dx}f(g(x)) = f'(g(x))\cdot g'(x).
+\]
+
+\turetme{\textbf{Örnek:} $f(x) = (3x+1)^2$ fonksiyonunun türevi. Dış fonksiyon
+$(\cdot)^2$, iç fonksiyon $3x+1$. Zincir kuralı:
+\[
+f'(x) = \underbrace{2(3x+1)}_{\text{dışın türevi}}\cdot
+\underbrace{3}_{\text{için türevi}} = 6(3x+1).
+\]
+Daha uzun bir zincir, örneğin sigmoid içeren bir kayıp
+$L = (\sigma(wx))^2$, aynı mantıkla katman katman çarpılır:
+$\frac{dL}{dw} = 2\sigma(wx)\cdot\sigma'(wx)\cdot x$. Sinir ağları tam olarak
+bu ``çarpım zincirini'' otomatikleştirir.}
+
+\gsub{Kısmi Türev ve Gradyanın Somut Hesabı}
+
+Kısmi türev kavramını sayısal bir örnekle pekiştirelim. Bir kaybın gradyanını
+\emph{elle} hesaplamak, gradient descent'in ne yaptığını netleştirir.
+
+\turetme{\textbf{İki parametreli kayıp:} $L(w_1, w_2) = (w_1 - 2)^2 + (w_2 + 1)^2$.
+Bu, minimumu $(2, -1)$'de olan bir çanaktır. Kısmi türevler:
+\[
+\frac{\partial L}{\partial w_1} = 2(w_1 - 2), \qquad
+\frac{\partial L}{\partial w_2} = 2(w_2 + 1).
+\]
+$(w_1, w_2) = (0, 0)$ noktasında gradyan:
+\[
+\nabla L = \big[\,2(0-2),\ 2(0+1)\,\big]^\top = [-4,\ 2]^\top.
+\]
+$\eta = 0.1$ ile bir gradient descent adımı:
+\[
+\vek{w} \leftarrow [0,0]^\top - 0.1\cdot[-4,2]^\top = [0.4,\ -0.2]^\top.
+\]
+Görüldüğü gibi $w_1$ minimuma ($2$) doğru arttı, $w_2$ minimuma ($-1$) doğru
+azaldı --- tam istediğimiz yön.}
+
+\begin{lstlisting}
+import numpy as np
+
+# L(w) = (w1 - 2)^2 + (w2 + 1)^2  kaybının gradyanı
+def grad_L(w):
+    return np.array([2 * (w[0] - 2), 2 * (w[1] + 1)])
+
+w = np.array([0.0, 0.0])            # başlangıç noktası
+lr = 0.1
+for step in range(30):
+    w = w - lr * grad_L(w)          # gradyanın tersine adım
+print(w)                            # [2., -1.]'e yaklaşır (minimum)
+\end{lstlisting}
+
+\gsub{Gradient Descent (Gradyan İnişi)}
+
+Gradient descent, kaybı minimize eden temel algoritmadır. Fikir basittir:
+parametreleri, gradyanın ters yönünde küçük adımlarla güncelle. Güncelleme
+kuralı:
+\[
+\vek{w} \leftarrow \vek{w} - \eta \, \nabla L(\vek{w}),
+\]
+burada $\eta > 0$ \emph{öğrenme oranıdır} (learning rate) --- adım büyüklüğünü
+kontrol eder. Bunu, sisli bir dağda aşağı inmeye benzet: her adımda ayağının
+altındaki en dik iniş yönünü bul ve o yöne bir adım at.
+
+\turetme{$f(w) = w^2$ fonksiyonunu ele alalım; minimumu $w=0$'dadır. Türevi
+$f'(w) = 2w$. $w_0 = 5$ ve $\eta = 0.1$ ile başlayalım:
+\[
+w_1 = 5 - 0.1 \cdot (2\cdot 5) = 5 - 1 = 4,\quad
+w_2 = 4 - 0.1 \cdot 8 = 3.2,\quad
+w_3 = 3.2 - 0.1 \cdot 6.4 = 2.56, \dots
+\]
+Her adımda $w$, minimuma ($0$) biraz daha yaklaşır. Adımlar minimuma
+yaklaştıkça (gradyan küçüldükçe) küçülür.}
+
+\begin{lstlisting}
+import numpy as np
+
+def gradient_descent(grad_fn, start, learning_rate=0.1, n_iters=50):
+    """Genel amaçlı gradyan inişi.
+    grad_fn: bir noktadaki gradyanı döndüren fonksiyon.
+    """
+    w = start
+    history = [w]
+    for _ in range(n_iters):
+        grad = grad_fn(w)               # gradyanı hesapla
+        w = w - learning_rate * grad    # gradyanın tersine adım at
+        history.append(w)
+    return w, history
+
+# f(w) = w^2'yi minimize et; gradyanı f'(w) = 2w
+grad = lambda w: 2 * w
+w_min, hist = gradient_descent(grad, start=5.0)
+print(w_min)                            # 0.0'a yaklaşır
+\end{lstlisting}
+
+\uyari{\textbf{Öğrenme oranı $\eta$ kritiktir.} Çok küçükse öğrenme çok yavaş
+olur (binlerce adım). Çok büyükse adımlar minimumu aşar ve algoritma
+\emph{ıraksar} (loss patlar, NaN olur). Pratikte $\eta$ genelde $0.001$--$0.1$
+arasında denenir ve kayıp eğrisi izlenerek ayarlanır.}
+
+\gsub{Gradient Descent Türleri}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tür} & \color{anaMavi}\textbf{Her adımda kaç örnek?} & \color{anaMavi}\textbf{Özellik}\\
+\midrule
+Batch GD & Tüm veri ($m$) & Kararlı ama yavaş, çok bellek.\\
+\rowcolor{acikGri} Stochastic (SGD) & Tek örnek (1) & Hızlı, gürültülü, kaçış yapabilir.\\
+Mini-batch & Küçük grup (32--256) & En yaygın; denge; GPU dostu.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Konvekslik: Neden Bazı Problemler Kolaydır?}
+
+Bir fonksiyon \emph{konveksse} (dışbükey --- çanak şeklinde) tek bir global
+minimumu vardır ve gradient descent oraya ulaşacağı garanti edilir. Lineer ve
+lojistik regresyonun kayıpları konvekstir --- bu yüzden ``kolay'' problemlerdir.
+Sinir ağlarının kaybı ise konveks \emph{değildir}: birçok yerel minimum ve eyer
+noktası vardır; yine de gradient descent pratikte yeterince iyi çözümler bulur.
+
+\bilgi{\textbf{Otomatik türev (autograd):} Modern kütüphaneler (PyTorch,
+TensorFlow, JAX) gradyanları elle hesaplamana gerek bırakmaz; hesaplama
+çizgesini takip edip zincir kuralını otomatik uygular. Yine de bu rehberde
+gradyanları elle türeteceğiz --- çünkü ``sihrin'' altında ne olduğunu anlamak,
+hata ayıklamak ve yeni modeller tasarlamak için şarttır.}
+
+% =====================================================================
+\gsec{Olasılık ve İstatistik}
+% =====================================================================
+
+Makine öğrenmesi belirsizlikle uğraşır: veri gürültülüdür, tahminler asla
+kesin değildir. Olasılık teorisi, bu belirsizliği matematiksel olarak modeller.
+Birçok ML algoritması (Naive Bayes, lojistik regresyon, tüm üretici modeller)
+doğrudan olasılık üzerine kuruludur.
+
+\gsub{Temel Kavramlar}
+
+Bir \emph{rastgele değişken} $X$, sonucu belirsiz bir niceliktir. Olasılık
+dağılımı, $X$'in hangi değerleri hangi olasılıkla aldığını tarif eder.
+Ayrık değişkenler için \emph{olasılık kütle fonksiyonu} (PMF) $P(X=x)$,
+sürekli için \emph{olasılık yoğunluk fonksiyonu} (PDF) $p(x)$ kullanılır.
+Temel büyüklükler:
+\[
+\mathbb{E}[X] = \sum_x x\,P(X=x) \quad(\text{beklenen değer, ortalama}),
+\qquad
+\mathrm{Var}(X) = \mathbb{E}[(X - \mathbb{E}[X])^2].
+\]
+Beklenen değer dağılımın ``merkezini'' (ortalama), varyans ise ``yayılımını''
+(dağınıklık) ölçer. Standart sapma $\sigma = \sqrt{\mathrm{Var}(X)}$'dır.
+
+\turetme{\textbf{Örnek --- adil zar:} $X \in \{1,\dots,6\}$, her yüz olasılığı
+$\frac{1}{6}$. Beklenen değer:
+\[
+\mathbb{E}[X] = \tfrac{1}{6}(1+2+3+4+5+6) = \tfrac{21}{6} = 3.5.
+\]
+Varyans $\mathbb{E}[X^2] - (\mathbb{E}[X])^2$ ile:
+$\mathbb{E}[X^2]=\frac{1}{6}(1+4+9+16+25+36)=\frac{91}{6}\approx 15.17$, dolayısıyla
+$\mathrm{Var}(X)=15.17 - 3.5^2 = 2.92$.}
+
+\gsub{Önemli Olasılık Dağılımları}
+
+ML'de sürekli karşılaşılan birkaç dağılımı tanımak, hangi modelin hangi
+varsayıma dayandığını anlamak için gereklidir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{$}l<{$} X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Dağılım} & \color{anaMavi}\textbf{Kütle/Yoğunluk} & \color{anaMavi}\textbf{Ne modeller?}\\
+\midrule
+Bernoulli & p^y(1-p)^{1-y} & Tek ikili sonuç (0/1). Lojistik regresyon.\\
+\rowcolor{acikGri} Binom & \binom{n}{k}p^k(1-p)^{n-k} & $n$ denemede başarı sayısı.\\
+Kategorik & \prod_c p_c^{[y=c]} & Çok sınıflı etiket. Softmax çıktısı.\\
+\rowcolor{acikGri} Gaussian & \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}} & Sürekli, gürültü. En küçük kareler.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\emph{Normal (Gaussian) dağılım} özellikle önemlidir: iki parametresi vardır ---
+ortalama $\mu$ (merkez) ve standart sapma $\sigma$ (genişlik). Doğadaki birçok
+gürültü normal dağıldığından, birazdan göreceğimiz gibi \emph{en küçük kareler
+kaybı} bu varsayımdan doğar.
+
+\begin{lstlisting}
+import numpy as np
+
+rng = np.random.default_rng(42)          # tekrarlanabilirlik için tohum
+
+bernoulli = rng.binomial(1, 0.3, size=1000)   # p=0.3 ile 0/1 örnekler
+gaussian = rng.normal(loc=0.0, scale=1.0, size=1000)  # mu=0, sigma=1
+
+print(bernoulli.mean())                  # ~0.3 (ampirik p)
+print(gaussian.mean(), gaussian.std())   # ~0.0, ~1.0
+\end{lstlisting}
+
+\gsub{Bağımsızlık ve Olasılık Zincir Kuralı}
+
+İki olay \emph{bağımsızsa}, birlikte olma olasılıkları çarpımdır:
+$P(A \cap B) = P(A)\,P(B)$. Bu basit kural, Naive Bayes'in ``saf''
+varsayımının (özellikler sınıf verildiğinde bağımsız) ve MLE'de olabilirliğin
+neden bir \emph{çarpım} olduğunun temelidir. Genel olarak (bağımlı olsalar bile)
+zincir kuralı geçerlidir: $P(A \cap B) = P(A)\,P(B \mid A)$.
+
+\gsub{Koşullu Olasılık ve Bayes Teoremi}
+
+Koşullu olasılık $P(A \mid B)$, ``$B$ gerçekleştiği bilindiğinde $A$'nın
+olasılığı''dır. Buradan makine öğrenmesinin en önemli formüllerinden biri olan
+\emph{Bayes teoremi} çıkar:
+\[
+P(A \mid B) = \frac{P(B \mid A)\,P(A)}{P(B)}.
+\]
+Sınıflandırma diliyle: bir örneğin özellikleri $\vek{x}$ verildiğinde, sınıf
+$y$ olma olasılığı ($\emph{posterior}$):
+\[
+\underbrace{P(y \mid \vek{x})}_{\text{sonsal}} =
+\frac{\overbrace{P(\vek{x} \mid y)}^{\text{olabilirlik}}\;
+\overbrace{P(y)}^{\text{önsel}}}{\underbrace{P(\vek{x})}_{\text{kanıt}}}.
+\]
+Bu formül, Naive Bayes sınıflandırıcısının (Kısım 4) doğrudan temelidir:
+her sınıf için sağ tarafı hesaplar ve en yüksek olasılıklı sınıfı seçeriz.
+
+\turetme{\textbf{Örnek --- tıbbi test:} Bir hastalık nüfusun \%1'inde var
+($P(H)=0.01$). Test hastalığı \%99 yakalıyor ($P(+\mid H)=0.99$) ama sağlıklıda
+da \%5 yanlış alarm veriyor ($P(+\mid \bar H)=0.05$). Testin pozitif çıktı;
+gerçekten hasta olma olasılığın nedir?
+\[
+P(H\mid +) = \frac{P(+\mid H)P(H)}{P(+\mid H)P(H)+P(+\mid \bar H)P(\bar H)}
+= \frac{0.99 \cdot 0.01}{0.99\cdot 0.01 + 0.05 \cdot 0.99}
+\approx 0.167.
+\]
+Yani pozitif teste rağmen gerçekten hasta olma olasılığın yalnızca \%17!
+Nadir olayların (düşük önsel) sezgiye aykırı sonuçları buradan gelir.}
+
+\gsub{Maksimum Olabilirlik Tahmini (MLE)}
+
+Maksimum olabilirlik (Maximum Likelihood Estimation), bir modelin
+parametrelerini veriden tahmin etmenin temel yöntemidir ve birçok kayıp
+fonksiyonunun \emph{nereden geldiğini} açıklar. Fikir: gözlemlediğimiz veriyi
+\emph{en olası} kılan parametreleri seç.
+
+Bağımsız gözlemler $x_1, \dots, x_m$ için olabilirlik, çarpımdır:
+\[
+\mathcal{L}(\theta) = \prod_{i=1}^{m} p(x_i \mid \theta).
+\]
+Çarpımlarla çalışmak zor olduğundan (ve sayısal olarak taşabildiğinden)
+\emph{log-olabilirliği} maksimize ederiz (log tekdüze arttığından maksimum
+noktası aynıdır):
+\[
+\ell(\theta) = \log \mathcal{L}(\theta) = \sum_{i=1}^{m} \log p(x_i \mid \theta).
+\]
+
+\turetme{\textbf{Basit örnek --- hileli para:} Bir parayı 10 kez attık ve 7 kez
+yazı geldi. Yazı olasılığı $p$'yi MLE ile tahmin edelim. Olabilirlik
+(Bernoulli): $\mathcal{L}(p) = p^7 (1-p)^3$. Log-olabilirlik:
+\[
+\ell(p) = 7\ln p + 3\ln(1-p).
+\]
+Maksimum için türevi sıfırlarız:
+\[
+\ell'(p) = \frac{7}{p} - \frac{3}{1-p} = 0
+\;\Longrightarrow\; 7(1-p) = 3p
+\;\Longrightarrow\; p = \frac{7}{10}.
+\]
+Yani MLE tahmini $\hat{p}=0.7$ --- tam da ampirik frekans (yazı sayısı / toplam).
+Sezgimizle örtüşür; MLE'nin gücü, sezgisel olmayan modellerde de aynı ilkeyi
+uygulayabilmesidir.}
+
+\turetme{\textbf{MLE $\Rightarrow$ En Küçük Kareler:} Regresyonda hataların
+normal dağıldığını, $y_i = \vek{w}^\top\vek{x}_i + \varepsilon_i$ ve
+$\varepsilon_i \sim \mathcal{N}(0,\sigma^2)$, varsayalım. Bir örneğin
+olabilirliği:
+\[
+p(y_i \mid \vek{x}_i) = \frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\!\left(-\frac{(y_i - \vek{w}^\top\vek{x}_i)^2}{2\sigma^2}\right).
+\]
+Log-olabilirlik toplandığında, $\vek{w}$'ye bağlı olmayan sabitler atılınca:
+\[
+\ell(\vek{w}) = -\frac{1}{2\sigma^2}\sum_{i=1}^{m}(y_i - \vek{w}^\top\vek{x}_i)^2 + \text{sabit}.
+\]
+$\ell$'i maksimize etmek, $\sum (y_i - \vek{w}^\top\vek{x}_i)^2$ toplamını
+\emph{minimize} etmekle aynıdır --- yani \textbf{ortalama kare hatası}!
+Demek ki en küçük kareler, Gauss gürültü varsayımı altında MLE'dir.}
+
+\bilgi{Bu türetme çok önemli bir dersi öğretir: makine öğrenmesindeki kayıp
+fonksiyonları keyfi değildir. Ortalama kare hatası (MSE) normal dağılımdan,
+çapraz entropi (cross-entropy) Bernoulli/kategorik dağılımdan MLE yoluyla
+doğar. Kaybı seçmek, aslında verinin dağılımı hakkında bir varsayım yapmaktır.}
+
+% =====================================================================
+\gsec{Bilgi Teorisi}
+% =====================================================================
+
+Bilgi teorisi, ``belirsizliği'' ve ``bilgiyi'' niceliksel ölçer. Sınıflandırma
+kayıplarının (cross-entropy) ve karar ağaçlarının bölme kriterlerinin
+(information gain) temelini oluşturur.
+
+\gsub{Entropi}
+
+Entropi, bir olasılık dağılımının \emph{belirsizliğini} ölçer. Bir olayın
+taşıdığı ``şaşırtıcılık'' $-\log p$ ile tanımlanır (nadir olaylar daha
+şaşırtıcı). Entropi, bu şaşırtıcılığın beklenen değeridir:
+\[
+H(P) = -\sum_{i} p_i \log p_i .
+\]
+Dağılım ne kadar düzgünse (belirsizse) entropi o kadar yüksektir. Adil bir
+paranın entropisi maksimumdur ($\log 2 = 1$ bit); hep yazı gelen hileli bir
+paranın entropisi sıfırdır (belirsizlik yok).
+
+\begin{lstlisting}
+import numpy as np
+
+def entropy(p):
+    """Bir olasılık dağılımının Shannon entropisi (bit cinsinden)."""
+    p = np.asarray(p)
+    p = p[p > 0]                    # log(0)'dan kaçın
+    return -np.sum(p * np.log2(p))
+
+print(entropy([0.5, 0.5]))          # 1.0 bit  (maksimum belirsizlik)
+print(entropy([0.9, 0.1]))          # 0.469 bit
+print(entropy([1.0, 0.0]))          # 0.0 bit  (belirsizlik yok)
+\end{lstlisting}
+
+\gsub{Çapraz Entropi ve KL Iraksaması}
+
+\emph{Çapraz entropi}, gerçek dağılım $P$ yerine tahmin edilen dağılım $Q$
+kullanıldığında gereken ortalama şaşırtıcılıktır:
+\[
+H(P, Q) = -\sum_i p_i \log q_i .
+\]
+Sınıflandırmada $P$ gerçek etiket (one-hot), $Q$ modelin tahmin ettiği
+olasılıklardır. Çapraz entropiyi minimize etmek, modelin tahminlerini gerçek
+etiketlere yaklaştırır --- bu yüzden sınıflandırmanın standart kaybıdır.
+
+İkili sınıflandırmada ($y \in \{0,1\}$) çapraz entropi, tek bir örnek için
+şu tanıdık biçimi alır (\emph{binary cross-entropy}):
+\[
+L = -\big[\,y\log\hat{y} + (1-y)\log(1-\hat{y})\,\big],
+\]
+burada $\hat{y}$ modelin ``sınıf $1$'' olma tahminidir. Kısım 3'te bunun
+Bernoulli MLE'sinden doğduğunu göreceğiz.
+
+\turetme{\textbf{Örnek --- çapraz entropi hesabı:} Gerçek etiket 3 sınıflı,
+one-hot $P=(0,1,0)$ (yani doğru sınıf ikinci). Model iki farklı tahmin
+üretsin:
+\begin{itemize}\itemsep1pt
+\item İyi model $Q=(0.1,\,0.8,\,0.1)$: \ $L = -\ln(0.8) \approx 0.22$.
+\item Kötü model $Q=(0.4,\,0.3,\,0.3)$: \ $L = -\ln(0.3) \approx 1.20$.
+\end{itemize}
+Yalnızca doğru sınıfa atanan olasılığın logaritması sayılır (diğer terimler
+$p_i=0$ ile çarpılıp yok olur). Model doğru sınıfa ne kadar yüksek olasılık
+verirse kayıp o kadar küçük olur --- doğruya $1$ verirse kayıp $0$.}
+
+\begin{lstlisting}
+import numpy as np
+
+def cross_entropy(p_true, q_pred):
+    """One-hot gerçek dağılım ile tahmin arası çapraz entropi (doğal log)."""
+    q_pred = np.clip(q_pred, 1e-12, 1.0)     # log(0)'ı önle
+    return -np.sum(p_true * np.log(q_pred))
+
+p = np.array([0, 1, 0])                      # gerçek sınıf: ikinci
+print(cross_entropy(p, [0.1, 0.8, 0.1]))     # ~0.22 (iyi tahmin)
+print(cross_entropy(p, [0.4, 0.3, 0.3]))     # ~1.20 (kötü tahmin)
+\end{lstlisting}
+
+\emph{Kullback-Leibler (KL) ıraksaması}, iki dağılım arasındaki ``uzaklığı''
+ölçer:
+\[
+D_{\mathrm{KL}}(P \parallel Q) = \sum_i p_i \log \frac{p_i}{q_i}
+= H(P,Q) - H(P).
+\]
+KL her zaman $\ge 0$'dır ve yalnızca $P=Q$ iken sıfırdır. Gerçek dağılım $P$
+sabit olduğunda $H(P)$ de sabittir; dolayısıyla \emph{çapraz entropiyi
+minimize etmek, KL ıraksamasını minimize etmekle aynıdır}.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kavram} & \color{anaMavi}\textbf{Ölçtüğü} & \color{anaMavi}\textbf{ML'de kullanımı}\\
+\midrule
+Entropi & Bir dağılımın belirsizliği & Karar ağacı bölme (information gain)\\
+\rowcolor{acikGri} Çapraz entropi & $Q$ ile $P$'yi kodlama maliyeti & Sınıflandırma kaybı\\
+KL ıraksaması & İki dağılım arası fark & VAE, dağılım eşleştirme\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\notk[Bağlantı]{Kısım 3'te lojistik regresyonun kaybını türettiğimizde,
+Bernoulli dağılımı için MLE'nin tam olarak \emph{ikili çapraz entropiye}
+eşit olduğunu göreceğiz. Böylece olasılık (MLE), bilgi teorisi (cross-entropy)
+ve optimizasyon (gradient descent) tek bir noktada birleşecek. Bu üç temelin
+nasıl kaynaştığını görmek, makine öğrenmesini gerçekten ``anlamak'' demektir.}
+
+% #####################################################################
+\gpart{2}{Öğrenme Teorisi}
+% #####################################################################
+
+% =====================================================================
+\gsec{Öğrenme Problemi ve Kayıp Fonksiyonları}
+% =====================================================================
+
+Makine öğrenmesini kurmadan önce ``öğrenmenin'' ne demek olduğunu matematiksel
+olarak tanımlamalıyız. Denetimli öğrenmede elimizde girdi-çıktı çiftleri
+$\{(\vek{x}_i, y_i)\}_{i=1}^{m}$ vardır ve amacımız, yeni bir $\vek{x}$ için
+$y$'yi tahmin eden bir $f_{\vek{\theta}}(\vek{x})$ fonksiyonu (model) bulmaktır.
+
+\gsub{Temel Bileşenler}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bileşen} & \color{anaMavi}\textbf{Tanım}\\
+\midrule
+Model $f_{\vek{\theta}}$ & Girdiden çıktıya eşleyen, $\vek{\theta}$ parametreli fonksiyon.\\
+\rowcolor{acikGri} Kayıp $L$ & Tek bir tahminin ne kadar yanlış olduğu.\\
+Maliyet $J$ & Tüm veri üzerinde ortalama kayıp: $J(\vek{\theta})=\frac1m\sum_i L(f_{\vek\theta}(\vek x_i), y_i)$.\\
+\rowcolor{acikGri} Optimizasyon & $J$'yi minimize eden $\vek{\theta}$'yı bulma (öğrenme budur).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Yaygın Kayıp Fonksiyonları}
+
+Kayıp fonksiyonu, ``iyi tahmin'' tanımını belirler ve probleme göre seçilir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{$}l<{$} X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kayıp} & \color{anaMavi}\textbf{Formül} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+Kare hata (MSE) & (y - \hat y)^2 & Regresyon\\
+\rowcolor{acikGri} Mutlak hata (MAE) & |y - \hat y| & Regresyon (aykırıya dayanıklı)\\
+İkili çapraz entropi & -[y\log\hat y + (1{-}y)\log(1{-}\hat y)] & İkili sınıflandırma\\
+\rowcolor{acikGri} Hinge & \max(0, 1 - y\hat y) & SVM\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Ampirik Risk Minimizasyonu}
+
+Gerçekte veriyi üreten dağılımı bilmeyiz; elimizde yalnızca örneklem vardır.
+Bu yüzden ``gerçek riski'' (tüm dağılım üzerinde beklenen kayıp) doğrudan
+minimize edemeyiz; onun yerine \emph{ampirik riski} (eğitim verisi üzerindeki
+ortalama kayıp) minimize ederiz:
+\[
+\hat{\vek{\theta}} = \arg\min_{\vek{\theta}} \; \frac{1}{m}
+\sum_{i=1}^{m} L\big(f_{\vek{\theta}}(\vek{x}_i), y_i\big).
+\]
+Buradaki tehlike şudur: eğitim verisinde mükemmel olmak, \emph{yeni} veride
+iyi olmayı garanti etmez. Bu, aşırı öğrenme problemidir.
+
+% =====================================================================
+\gsec{Aşırı Öğrenme, Bias-Variance ve Düzenlileştirme}
+% =====================================================================
+
+\gsub{Aşırı ve Eksik Öğrenme}
+
+Bir modelin başarısı, eğitim verisini ezberlemesiyle değil, \emph{yeni} veriye
+\emph{genelleme} yapmasıyla ölçülür. İki başarısızlık modu vardır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Durum} & \color{anaMavi}\textbf{Belirti} & \color{anaMavi}\textbf{Neden / çözüm}\\
+\midrule
+Eksik öğrenme & Eğitim VE test kötü & Model çok basit; daha güçlü model / özellik.\\
+\rowcolor{acikGri} İyi denge & Her ikisi de iyi & İstenen nokta.\\
+Aşırı öğrenme & Eğitim iyi, test kötü & Model çok karmaşık; düzenlileştirme / daha çok veri.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Bias-Variance Ayrışması}
+
+Bir modelin beklenen test hatası matematiksel olarak üç parçaya ayrılır:
+\[
+\mathbb{E}[(y - \hat f(\vek{x}))^2] =
+\underbrace{\mathrm{Bias}[\hat f]^2}_{\text{yanlılık}} +
+\underbrace{\mathrm{Var}[\hat f]}_{\text{varyans}} +
+\underbrace{\sigma^2}_{\text{indirgenemez gürültü}}.
+\]
+\textbf{Bias (yanlılık):} modelin sistematik hatası --- çok basit bir model
+gerçeği kaçırır (eksik öğrenme). \textbf{Variance (varyans):} modelin eğitim
+verisindeki küçük değişimlere aşırı duyarlılığı --- çok karmaşık model gürültüyü
+öğrenir (aşırı öğrenme). İkisini aynı anda düşürmek genelde mümkün değildir;
+bu \emph{bias-variance ödünleşmesidir}.
+
+\bilgi{Model karmaşıklığı arttıkça bias düşer ama variance artar. Toplam hata
+önce düşer, bir minimumdan sonra tekrar yükselir. Amaç, bu \emph{tatlı noktayı}
+bulmaktır --- ne fazla basit ne fazla karmaşık. Düzenlileştirme ve çapraz
+doğrulama bunun için araçlardır.}
+
+\gsub{Düzenlileştirme (Regularization)}
+
+Düzenlileştirme, aşırı öğrenmeyi önlemek için maliyet fonksiyonuna model
+karmaşıklığını cezalandıran bir terim ekler. Böylece model, veriye uymakla
+\emph{basit kalmak} arasında denge kurar:
+\[
+J(\vek{w}) = \underbrace{\frac{1}{m}\sum_{i=1}^{m} L(f_{\vek w}(\vek x_i), y_i)}_{\text{veriye uyum}}
++ \lambda \underbrace{R(\vek{w})}_{\text{karmaşıklık cezası}}.
+\]
+Burada $\lambda \ge 0$ ceza gücünü ayarlar. İki temel ceza:
+\[
+\text{Ridge (L2):}\; R(\vek w) = \|\vek w\|_2^2 = \sum_j w_j^2, \qquad
+\text{Lasso (L1):}\; R(\vek w) = \|\vek w\|_1 = \sum_j |w_j|.
+\]
+L2 ağırlıkları küçültür ama sıfırlamaz; L1 bazı ağırlıkları \emph{tam sıfır}
+yapar, böylece otomatik özellik seçimi sağlar. Bu farkın nedenini Kısım 3'te
+göreceğiz.
+
+\uyari{$\lambda$ bir hiperparametredir --- veriden öğrenilmez, çapraz
+doğrulamayla seçilir. $\lambda$ çok büyükse model aşırı basitleşir (eksik
+öğrenme, yüksek bias); çok küçükse düzenlileştirme etkisiz kalır (aşırı öğrenme,
+yüksek variance). Doğru $\lambda$'yı bir doğrulama kümesinde aranmalıdır.}
+
+% #####################################################################
+\gpart{3}{Regresyon}
+% #####################################################################
+
+% =====================================================================
+\gsec{Lineer Regresyon}
+% =====================================================================
+
+Lineer regresyon, makine öğrenmesinin ``merhaba dünya''sıdır: basit ama
+üzerine çok şey inşa edilen temel bir modeldir. Çıktının, girdilerin
+\emph{ağırlıklı toplamı} olduğunu varsayar.
+
+\gsub{Model}
+
+$n$ özellikli bir örnek $\vek{x}=(x_1,\dots,x_n)$ için tahmin:
+\[
+\hat y = w_0 + w_1 x_1 + \dots + w_n x_n = \vek{w}^\top \vek{x},
+\]
+burada $w_0$ bias (kesişim) terimidir; $\vek{x}$'e sabit bir $1$ eklenerek
+(bias trick) matris çarpımına dahil edilir. Tüm veri için:
+$\hat{\vek{y}} = \vek{X}\vek{w}$, $\vek{X}\in\R^{m\times(n+1)}$.
+
+\gsub{Maliyet Fonksiyonu}
+
+Kısım 1'de MLE'den türettiğimiz gibi, kayıp ortalama kare hatasıdır:
+\[
+J(\vek{w}) = \frac{1}{2m}\sum_{i=1}^{m}\big(\vek{w}^\top\vek{x}_i - y_i\big)^2
+= \frac{1}{2m}\|\vek{X}\vek{w} - \vek{y}\|_2^2 .
+\]
+$\frac{1}{2}$ çarpanı yalnızca türevi sadeleştirmek içindir (sonuçları
+değiştirmez). Bu $J$ konvekstir, dolayısıyla tek bir global minimumu vardır.
+
+\gsub{Çözüm 1: Normal Denklem (Kapalı Form)}
+
+Konveks $J$'nin minimumunu gradyanını sıfıra eşitleyerek \emph{analitik olarak}
+bulabiliriz.
+
+\turetme{Maliyeti matris biçiminde açalım:
+\[
+J(\vek w) = \frac{1}{2m}(\vek{X}\vek{w}-\vek{y})^\top(\vek{X}\vek{w}-\vek{y}).
+\]
+$\vek w$'ye göre gradyan (matris kalkülüsü kuralları ile):
+\[
+\nabla_{\vek w} J = \frac{1}{m}\vek{X}^\top(\vek{X}\vek{w}-\vek{y}).
+\]
+Sıfıra eşitleyip çözersek \emph{normal denklemi} elde ederiz:
+\[
+\vek{X}^\top\vek{X}\vek{w} = \vek{X}^\top\vek{y}
+\;\;\Longrightarrow\;\;
+\boxed{\;\vek{w} = (\vek{X}^\top\vek{X})^{-1}\vek{X}^\top\vek{y}\;}.
+\]}
+
+\begin{lstlisting}
+import numpy as np
+
+class LinearRegressionClosedForm:
+    def fit(self, X, y):
+        # bir'lerden oluşan bias sütunu ekle -> X (m, n+1) olur
+        X_b = np.c_[np.ones((X.shape[0], 1)), X]
+        # Normal denklem: w = (X^T X)^{-1} X^T y
+        self.w = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
+        return self
+
+    def predict(self, X):
+        X_b = np.c_[np.ones((X.shape[0], 1)), X]
+        return X_b @ self.w
+
+# Örnek
+X = np.array([[1.0], [2.0], [3.0], [4.0]])
+y = np.array([2.0, 4.0, 6.0, 8.0])          # tam olarak y = 2x
+model = LinearRegressionClosedForm().fit(X, y)
+print(model.w)                               # ~[0, 2]  (bias 0, eğim 2)
+\end{lstlisting}
+
+\uyari{Normal denklem $(\vek{X}^\top\vek{X})^{-1}$ matris tersi gerektirir;
+bu $\mathcal{O}(n^3)$'tür ve özellik sayısı $n$ çok büyükse (binlerce) pahalıdır.
+Ayrıca $\vek{X}^\top\vek{X}$ tekil (tersinemez) olabilir. Bu durumlarda
+gradient descent tercih edilir.}
+
+\gsub{Çözüm 2: Gradient Descent}
+
+Büyük veri için normal denklem yerine gradyan inişini kullanırız. Yukarıda
+türettiğimiz gradyanı doğrudan kullanan güncelleme:
+\[
+\vek{w} \leftarrow \vek{w} - \eta \cdot \frac{1}{m}\vek{X}^\top(\vek{X}\vek{w}-\vek{y}).
+\]
+
+\begin{lstlisting}
+class LinearRegressionGD:
+    def __init__(self, lr=0.01, n_iters=1000):
+        self.lr = lr
+        self.n_iters = n_iters
+
+    def fit(self, X, y):
+        m, n = X.shape
+        self.w = np.zeros(n)
+        self.b = 0.0
+        for _ in range(self.n_iters):
+            y_pred = X @ self.w + self.b            # tahminler (m,)
+            error = y_pred - y                      # artıklar (m,)
+            # MSE'nin ağırlıklara ve bias'a göre gradyanları
+            dw = (1 / m) * (X.T @ error)            # (n,)
+            db = (1 / m) * np.sum(error)            # skaler
+            self.w -= self.lr * dw                  # gradyan adımı
+            self.b -= self.lr * db
+        return self
+
+    def predict(self, X):
+        return X @ self.w + self.b
+\end{lstlisting}
+
+\gsub{scikit-learn ile}
+
+\begin{lstlisting}
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+print(model.coef_, model.intercept_)        # öğrenilen ağırlıklar ve bias
+print(r2_score(y_test, y_pred))             # uyum iyiliği
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Ridge, Lasso ve Lojistik Regresyon}
+% =====================================================================
+
+\gsub{Ridge Regresyonu (L2)}
+
+Ridge, maliyete $L2$ cezası ekler. İlginç olan, kapalı formunun hâlâ mevcut
+olması ve tekillik problemini de çözmesidir:
+\[
+J(\vek w) = \frac{1}{2m}\|\vek{X}\vek{w}-\vek{y}\|_2^2 + \frac{\lambda}{2}\|\vek{w}\|_2^2
+\;\;\Longrightarrow\;\;
+\vek{w} = (\vek{X}^\top\vek{X} + \lambda\vek{I})^{-1}\vek{X}^\top\vek{y}.
+\]
+$\lambda\vek{I}$ terimi köşegeni güçlendirir, matrisi her zaman tersinir kılar
+--- bu yüzden Ridge sayısal olarak da kararlıdır.
+
+\gsub{Neden Lasso Sıfırlar, Ridge Sıfırlamaz?}
+
+Bu, sıkça sorulan ve derin bir sorudur. Geometrik sezgi: düzenlileştirme,
+ağırlıkları bir ``bütçe bölgesi'' içinde kalmaya zorlar. $L2$ bölgesi bir
+\emph{daire} (yuvarlak), $L1$ bölgesi bir \emph{karedir} (köşeli). Maliyet
+konturları bu bölgeye ilk değdiği noktada çözüm bulunur. $L1$'in köşeleri
+eksenler üzerindedir --- kontur genelde bir köşeye değer ve o eksendeki ağırlık
+tam sıfır olur. $L2$'nin yuvarlak sınırında böyle köşe yoktur, bu yüzden
+sıfırlamaz yalnızca küçültür.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{} & \color{anaMavi}\textbf{Ridge (L2)} & \color{anaMavi}\textbf{Lasso (L1)}\\
+\midrule
+Ceza & $\sum w_j^2$ & $\sum |w_j|$\\
+\rowcolor{acikGri} Ağırlıklara etki & Küçültür (sıfırlamaz) & Bazılarını sıfırlar\\
+Özellik seçimi & Hayır & Evet (seyrek çözüm)\\
+\rowcolor{acikGri} Kapalı form & Var & Yok (koordinat inişi)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+from sklearn.linear_model import Ridge, Lasso, ElasticNet
+
+ridge = Ridge(alpha=1.0).fit(X_train, y_train)
+lasso = Lasso(alpha=0.1).fit(X_train, y_train)     # bazı coef_ 0 olur
+elastic = ElasticNet(alpha=0.1, l1_ratio=0.5)      # L1 + L2 birleşik
+print(lasso.coef_)                                  # sıfırları gözlemle
+\end{lstlisting}
+
+\gsub{Lojistik Regresyon: Sınıflandırmaya Köprü}
+
+Adına ``regresyon'' dense de lojistik regresyon bir \emph{sınıflandırma}
+algoritmasıdır. Lineer bir skoru, \emph{sigmoid} fonksiyonuyla $[0,1]$
+aralığına --- bir olasılığa --- sıkıştırır:
+\[
+\sigma(z) = \frac{1}{1 + e^{-z}}, \qquad
+\hat y = P(y=1\mid\vek{x}) = \sigma(\vek{w}^\top\vek{x}).
+\]
+Sigmoid'in güzel bir özelliği türevidir: $\sigma'(z) = \sigma(z)(1-\sigma(z))$
+--- bu, gradyanı sadeleştirir.
+
+\gsub{Kayıp: İkili Çapraz Entropi (MLE'den)}
+
+\turetme{Etiket $y\in\{0,1\}$ Bernoulli dağılır: $P(y\mid\vek x)=\hat y^{\,y}(1-\hat y)^{1-y}$.
+Log-olabilirlik, tek örnek için:
+\[
+\log P(y\mid\vek x) = y\log\hat y + (1-y)\log(1-\hat y).
+\]
+Bunun \emph{negatifini} minimize etmek, tüm veri için maliyeti verir ---
+\textbf{ikili çapraz entropi}:
+\[
+J(\vek w) = -\frac{1}{m}\sum_{i=1}^{m}\big[y_i\log\hat y_i + (1-y_i)\log(1-\hat y_i)\big].
+\]
+Gradyanı türetince (sigmoid türevi sayesinde) çarpıcı biçimde sadeleşir ---
+lineer regresyonunkiyle \emph{aynı} biçimi alır:
+\[
+\nabla_{\vek w} J = \frac{1}{m}\vek{X}^\top(\hat{\vek y} - \vek{y}).
+\]}
+
+\begin{lstlisting}
+import numpy as np
+
+class LogisticRegressionScratch:
+    def __init__(self, lr=0.1, n_iters=1000):
+        self.lr, self.n_iters = lr, n_iters
+
+    @staticmethod
+    def _sigmoid(z):
+        return 1.0 / (1.0 + np.exp(-z))
+
+    def fit(self, X, y):
+        m, n = X.shape
+        self.w = np.zeros(n)
+        self.b = 0.0
+        for _ in range(self.n_iters):
+            z = X @ self.w + self.b
+            y_hat = self._sigmoid(z)                # tahmin edilen olasılıklar
+            # Lineer regresyonla aynı gradyan biçimi (MLE türetmesiyle)
+            dw = (1 / m) * (X.T @ (y_hat - y))
+            db = (1 / m) * np.sum(y_hat - y)
+            self.w -= self.lr * dw
+            self.b -= self.lr * db
+        return self
+
+    def predict_proba(self, X):
+        return self._sigmoid(X @ self.w + self.b)
+
+    def predict(self, X, threshold=0.5):
+        return (self.predict_proba(X) >= threshold).astype(int)
+\end{lstlisting}
+
+\bilgi{Lineer ve lojistik regresyonun gradyanının \emph{aynı biçimde}
+($\vek{X}^\top(\hat{\vek y}-\vek y)$) çıkması tesadüf değildir: her ikisi de
+``genelleştirilmiş lineer modeller'' ailesindendir. Bu ortak yapı, aynı
+optimizasyon kodunu farklı modellerde yeniden kullanmanı sağlar ---
+ve derin öğrenmedeki katman gradyanlarının da temelini oluşturur.}
+
+% #####################################################################
+\gpart{4}{Sınıflandırma Algoritmaları}
+% #####################################################################
+
+% =====================================================================
+\gsec{Naive Bayes ve K-En Yakın Komşu}
+% =====================================================================
+
+\gsub{Naive Bayes}
+
+Naive Bayes, Kısım 1'deki Bayes teoreminin doğrudan uygulamasıdır. Bir örneğin
+her sınıfa ait olma olasılığını hesaplar ve en yükseğini seçer:
+\[
+\hat y = \arg\max_{y} \; P(y \mid \vek{x}) = \arg\max_{y}\; P(\vek{x}\mid y)\,P(y).
+\]
+``Naive'' (saf) olmasının nedeni, güçlü bir varsayımdır: özelliklerin, sınıf
+verildiğinde \emph{birbirinden bağımsız} olduğunu kabul eder. Bu varsayım
+sayesinde ortak olasılık, tek tek olasılıkların çarpımına iner:
+\[
+P(\vek{x}\mid y) = \prod_{j=1}^{n} P(x_j \mid y).
+\]
+Varsayım gerçekçi olmasa da (özellikler genelde ilişkilidir), pratikte ---
+özellikle metin sınıflandırmada (spam filtresi) --- şaşırtıcı derecede iyi
+çalışır ve çok hızlıdır.
+
+\turetme{Sayısal taşmayı önlemek için çarpım yerine \emph{log} kullanılır
+(log, çarpımı toplama çevirir ve tekdüze olduğundan argmax'i değiştirmez):
+\[
+\hat y = \arg\max_{y}\;\Big[\log P(y) + \sum_{j=1}^{n}\log P(x_j\mid y)\Big].
+\]
+Sürekli özellikler için $P(x_j\mid y)$ genelde normal (Gaussian) dağılımla
+modellenir; her sınıf-özellik çifti için ortalama ve varyans eğitim verisinden
+tahmin edilir.}
+
+\begin{lstlisting}
+from sklearn.naive_bayes import GaussianNB, MultinomialNB
+
+gnb = GaussianNB()                          # sürekli özellikler
+gnb.fit(X_train, y_train)
+print(gnb.predict(X_test))
+
+# Metin (kelime sayıları) için MultinomialNB standarttır:
+# mnb = MultinomialNB(alpha=1.0)  # alpha = Laplace düzeltmesi
+\end{lstlisting}
+
+\uyari{\textbf{Sıfır olasılık problemi:} Eğitimde hiç görülmemiş bir
+özellik-sınıf kombinasyonu olasılığı $0$ yapar ve tüm çarpımı sıfırlar. Çözüm
+\emph{Laplace düzeltmesidir} (smoothing): her sayıma küçük bir sabit ($\alpha$)
+eklenir, böylece hiçbir olasılık tam sıfır olmaz.}
+
+\gsub{K-En Yakın Komşu (KNN)}
+
+KNN, ``benzer örnekler benzer etikete sahiptir'' sezgisine dayanan, eğitimsiz
+(lazy) bir algoritmadır. Yeni bir örneği sınıflandırmak için: eğitim
+kümesindeki \emph{en yakın} $k$ komşuyu bul, çoğunluğun etiketini ver.
+``Yakınlık'' genelde Öklid uzaklığıyla ölçülür:
+\[
+d(\vek{x}, \vek{x}') = \|\vek{x}-\vek{x}'\|_2 = \sqrt{\sum_{j=1}^{n}(x_j - x'_j)^2}.
+\]
+KNN'nin ``eğitimi'' yoktur --- tüm işi tahmin anında yapar (veriyi saklar,
+sorguda uzaklıkları hesaplar). Bu yüzden büyük veride tahmin yavaştır.
+
+\begin{lstlisting}
+import numpy as np
+from collections import Counter
+
+class KNNClassifier:
+    def __init__(self, k=5):
+        self.k = k
+
+    def fit(self, X, y):
+        self.X_train = X            # tembel: veriyi sadece ezberle
+        self.y_train = y
+        return self
+
+    def predict(self, X):
+        preds = []
+        for x in X:
+            # her eğitim noktasına Öklid uzaklığı
+            distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
+            k_idx = np.argsort(distances)[:self.k]      # en yakın k indeks
+            k_labels = self.y_train[k_idx]
+            preds.append(Counter(k_labels).most_common(1)[0][0])  # çoğunluk
+        return np.array(preds)
+\end{lstlisting}
+
+\bilgi{\textbf{$k$ seçimi bir ödünleşmedir:} Küçük $k$ (örneğin 1) gürültüye
+duyarlıdır (yüksek variance); büyük $k$ sınırları aşırı yumuşatır (yüksek bias).
+KNN \emph{ölçeğe çok duyarlıdır} --- büyük değerli özellikler uzaklığa hâkim
+olur; bu yüzden KNN'den önce mutlaka özellikleri standartlaştır.}
+
+% =====================================================================
+\gsec{Destek Vektör Makineleri (SVM)}
+% =====================================================================
+
+SVM, iki sınıfı ayıran en iyi \emph{hiperdüzlemi} bulan güçlü bir
+sınıflandırıcıdır. ``En iyi'' derken: iki sınıf arasındaki boşluğu (marjı)
+\emph{maksimize} eden düzlemi kasteder. Geniş marj, daha iyi genelleme demektir.
+
+\gsub{Maksimum Marj}
+
+Bir hiperdüzlem $\vek{w}^\top\vek{x} + b = 0$ ile tanımlanır. Sınıflar
+$y\in\{-1,+1\}$ olsun. Her örneğin düzleme uzaklığının en azını (marjı)
+maksimize etmek istiyoruz. Bu, şu kısıtlı optimizasyona dönüşür:
+\[
+\min_{\vek{w}, b} \; \frac{1}{2}\|\vek{w}\|_2^2
+\quad \text{öyle ki} \quad
+y_i(\vek{w}^\top\vek{x}_i + b) \ge 1, \;\; \forall i.
+\]
+Marj $\frac{2}{\|\vek{w}\|}$ olduğundan, onu maksimize etmek $\|\vek{w}\|$'yi
+minimize etmekle aynıdır. Kısıtı sağlayan, marj sınırında yatan örneklere
+\emph{destek vektörleri} denir --- çözümü yalnızca onlar belirler.
+
+\gsub{Yumuşak Marj (Soft Margin)}
+
+Gerçek veri genelde tam ayrılabilir değildir. \emph{Yumuşak marj}, bir miktar
+ihlale izin verir; bunu $\xi_i$ ``gevşeklik'' değişkenleri ve bir $C$
+parametresiyle dengeler:
+\[
+\min_{\vek{w},b,\vek{\xi}} \; \frac{1}{2}\|\vek{w}\|^2 + C\sum_{i=1}^m \xi_i,
+\quad y_i(\vek{w}^\top\vek{x}_i+b)\ge 1-\xi_i,\;\; \xi_i\ge 0.
+\]
+$C$ ödünleşmeyi kontrol eder: büyük $C$ ihlalleri sert cezalandırır (dar marj,
+aşırı öğrenme riski); küçük $C$ daha geniş marja izin verir (daha çok
+düzenlileştirme).
+
+\gsub{Kernel Hilesi (Kernel Trick)}
+
+Veri doğrusal ayrılabilir değilse, SVM'i \emph{daha yüksek boyutlu} bir uzaya
+taşırız; orada doğrusal ayrılabilir hale gelebilir. Kernel hilesi, bu dönüşümü
+\emph{açıkça hesaplamadan}, yalnızca iç çarpımlar üzerinden yapar:
+\[
+K(\vek{x}, \vek{x}') = \phi(\vek{x})^\top\phi(\vek{x}').
+\]
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{$}l<{$} X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kernel} & \color{anaMavi}\textbf{K(x,x')} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+Lineer & \vek{x}^\top\vek{x}' & Doğrusal ayrılabilir, çok özellik\\
+\rowcolor{acikGri} Polinom & (\gamma\vek{x}^\top\vek{x}'+r)^d & Polinom sınırlar\\
+RBF (Gauss) & \exp(-\gamma\|\vek{x}-\vek{x}'\|^2) & En yaygın; esnek sınırlar\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
+# SVM ölçeğe duyarlıdır -> önce her zaman standartlaştır
+model = make_pipeline(
+    StandardScaler(),
+    SVC(kernel='rbf', C=1.0, gamma='scale')   # RBF çekirdeği
+)
+model.fit(X_train, y_train)
+print(model.score(X_test, y_test))
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Karar Ağaçları}
+% =====================================================================
+
+Karar ağacı, veriyi bir dizi ``evet/hayır'' sorusuyla bölerek sınıflandıran,
+sezgisel ve yorumlanabilir bir modeldir. Her iç düğüm bir özellik üzerinde
+bir eşik testi, her yaprak bir tahmindir. İnsanın karar verme sürecine
+benzediği için ``beyaz kutu'' modeldir --- neden o kararı verdiğini
+açıklayabilirsin.
+
+\gsub{Bölme Kriteri: Bilgi Kazancı ve Gini}
+
+Ağaç, her adımda veriyi \emph{en saf} alt gruplara bölen özelliği/eşiği seçer.
+Saflık iki şekilde ölçülür. Kısım 1'deki entropiyi kullanan \emph{bilgi
+kazancı}:
+\[
+IG = H(\text{ebeveyn}) - \sum_{k}\frac{m_k}{m}H(\text{çocuk}_k),
+\]
+veya hesaplaması daha ucuz olan \emph{Gini safsızlığı}:
+\[
+\text{Gini} = 1 - \sum_{c} p_c^2,
+\]
+burada $p_c$, düğümdeki $c$ sınıfının oranıdır. Her ikisi de düğüm ``saf''
+(tek sınıf) olduğunda sıfırdır. Ağaç, bölme sonrası safsızlığı en çok azaltan
+seçimi yapar.
+
+\turetme{\textbf{Örnek:} 10 örnekli bir düğümde 5 pozitif, 5 negatif olsun.
+Gini $= 1 - (0.5^2 + 0.5^2) = 0.5$ (maksimum karışıklık). Bir bölme, sol
+düğüme 4 pozitif 1 negatif, sağa 1 pozitif 4 negatif koyarsa: her çocuğun
+Gini'si $1-(0.8^2+0.2^2)=0.32$; ağırlıklı ortalama $0.32$. Safsızlık
+$0.5\to0.32$ düştü --- iyi bir bölme.}
+
+\begin{lstlisting}
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+tree = DecisionTreeClassifier(
+    criterion='gini',       # veya 'entropy'
+    max_depth=4,            # aşırı öğrenmeyi önlemek için derinliği sınırla
+    min_samples_leaf=5)
+tree.fit(X_train, y_train)
+print(tree.feature_importances_)    # en çok hangi özellikler önemli
+\end{lstlisting}
+
+\uyari{Karar ağaçları \emph{aşırı öğrenmeye çok eğilimlidir}: sınırlamazsan
+her örneği ezberleyen dev bir ağaç kurar (eğitimde \%100, testte kötü). Bunu
+\code{max\_depth}, \code{min\_samples\_leaf} gibi parametrelerle
+``budarsın'' (pruning). Ama tek ağacın asıl gücü, aşağıdaki topluluk
+yöntemlerinde ortaya çıkar.}
+
+% =====================================================================
+\gsec{Topluluk Yöntemleri (Ensemble)}
+% =====================================================================
+
+Topluluk yöntemleri, birçok ``zayıf'' modeli birleştirerek tek başına her
+birinden daha güçlü bir model oluşturur. ``Kalabalığın bilgeliği'' ilkesi:
+bağımsız hataları olan çok sayıda modelin ortalaması, bireysel hataları
+söndürür. İki ana strateji vardır: bagging ve boosting.
+
+\gsub{Bagging ve Random Forest}
+
+\emph{Bagging} (Bootstrap Aggregating), eğitim verisinden rastgele
+(yerine koyarak) alt örneklemler çeker, her birinde ayrı bir ağaç eğitir ve
+tahminleri oylar/ortalar. Bu, variance'ı düşürür (aşırı öğrenmeyi azaltır).
+
+\emph{Random Forest}, bagging'e bir ek yapar: her bölmede yalnızca özelliklerin
+rastgele bir alt kümesini dener. Bu, ağaçları birbirinden \emph{ilişkisizleştirir}
+--- ağaçlar ne kadar farklı hata yaparsa, ortalamaları o kadar iyi olur.
+
+\begin{lstlisting}
+from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(
+    n_estimators=200,       # ağaç sayısı
+    max_depth=None,
+    max_features='sqrt',    # her bölme için rastgele özellik alt kümesi
+    random_state=42)
+rf.fit(X_train, y_train)
+print(rf.feature_importances_)
+\end{lstlisting}
+
+\gsub{Boosting: Hataları Ardışık Düzeltmek}
+
+\emph{Boosting}, bagging'in aksine ağaçları \emph{paralel} değil \emph{ardışık}
+kurar: her yeni model, önceki modellerin \emph{hatalarına} odaklanır. Gradient
+Boosting bunu, her adımda önceki modelin \emph{artıklarına} (residual) yeni bir
+ağaç uydurarak yapar --- adeta kaybın gradyanına gradient descent uygular.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{} & \color{anaMavi}\textbf{Bagging (RF)} & \color{anaMavi}\textbf{Boosting}\\
+\midrule
+Ağaçlar & Paralel, bağımsız & Ardışık, birbirine bağlı\\
+\rowcolor{acikGri} Azalttığı & Variance & Bias\\
+Aşırı öğrenme & Dayanıklı & Daha hassas (dikkatli ayar)\\
+\rowcolor{acikGri} Hız & Paralelleşir & Sıralı (yavaş)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+from sklearn.ensemble import GradientBoostingClassifier
+# from xgboost import XGBClassifier          # popüler, daha hızlı alternatif
+
+gb = GradientBoostingClassifier(
+    n_estimators=100,
+    learning_rate=0.1,      # her ağacın katkısını küçültür
+    max_depth=3)            # boosting sığ "zayıf" ağaçlar kullanır
+gb.fit(X_train, y_train)
+\end{lstlisting}
+
+\ipucu{Tablo (tabular) verisinde \textbf{gradient boosting} (XGBoost, LightGBM,
+CatBoost) genelde en iyi performansı verir ve Kaggle yarışmalarının çoğunu
+kazanır. Random Forest ise daha az ayar gerektiren, sağlam bir ilk tercihtir.
+Derin öğrenme, tablo verisinde çoğu zaman bu ağaç tabanlı yöntemleri
+geçemez --- asıl gücünü görüntü, ses ve metinde gösterir.}
+
+% #####################################################################
+\gpart{5}{Denetimsiz Öğrenme}
+% #####################################################################
+
+% =====================================================================
+\gsec{K-Means Kümeleme}
+% =====================================================================
+
+Denetimsiz öğrenmede etiket yoktur; amaç veride gizli yapı bulmaktır. K-Means,
+veriyi $k$ kümeye ayırır --- her kümeyi bir \emph{merkez} (centroid) temsil
+eder ve her nokta en yakın merkeze atanır.
+
+\gsub{Amaç Fonksiyonu}
+
+K-Means, küme içi kareli uzaklıkların toplamını (inertia / WCSS) minimize eder:
+\[
+J = \sum_{k=1}^{K}\sum_{\vek{x}_i \in C_k} \|\vek{x}_i - \vek{\mu}_k\|_2^2,
+\]
+burada $\vek{\mu}_k$, $C_k$ kümesinin merkezidir. Bu problemi kesin çözmek
+NP-zordur; bu yüzden \emph{Lloyd algoritması} ile yinelemeli olarak çözeriz.
+
+\gsub{Lloyd Algoritması}
+
+İki adım, yakınsayana dek tekrarlanır --- bu aslında bir tür ``koordinat inişi''
+optimizasyonudur:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Adım} & \color{anaMavi}\textbf{Yapılan}\\
+\midrule
+1. Atama & Her noktayı en yakın merkeze ata (merkezler sabit).\\
+\rowcolor{acikGri} 2. Güncelleme & Her merkezi, atanan noktaların ortalaması yap (atamalar sabit).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+import numpy as np
+
+class KMeansScratch:
+    def __init__(self, k=3, max_iters=100, seed=42):
+        self.k, self.max_iters, self.seed = k, max_iters, seed
+
+    def fit(self, X):
+        rng = np.random.default_rng(self.seed)
+        # merkezleri k rastgele veri noktası olarak başlat
+        idx = rng.choice(len(X), self.k, replace=False)
+        self.centroids = X[idx].copy()
+
+        for _ in range(self.max_iters):
+            # Adım 1: her noktayı en yakın merkeze ata
+            dists = np.linalg.norm(X[:, None] - self.centroids, axis=2)
+            labels = np.argmin(dists, axis=1)
+
+            # Adım 2: merkezleri atanan noktaların ortalaması olarak yeniden hesapla
+            new_centroids = np.array([
+                X[labels == j].mean(axis=0) if np.any(labels == j)
+                else self.centroids[j]
+                for j in range(self.k)
+            ])
+            if np.allclose(new_centroids, self.centroids):
+                break                       # yakınsadı
+            self.centroids = new_centroids
+        self.labels_ = labels
+        return self
+\end{lstlisting}
+
+\uyari{K-Means başlangıç merkezlerine \emph{duyarlıdır}: kötü başlangıç kötü
+kümeye yakınsayabilir. \code{k-means++} başlatması bu riski büyük ölçüde
+azaltır (scikit-learn varsayılanı budur). Ayrıca \emph{$k$'yı önceden bilmen
+gerekir}; doğru $k$ için ``dirsek yöntemi'' (inertia'nın kırıldığı nokta) veya
+``silhouette skoru'' kullanılır.}
+
+\begin{lstlisting}
+from sklearn.cluster import KMeans
+
+km = KMeans(n_clusters=3, init='k-means++', n_init=10, random_state=42)
+km.fit(X)
+print(km.inertia_)          # küme içi kareler toplamı (J)
+print(km.cluster_centers_)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Temel Bileşen Analizi (PCA)}
+% =====================================================================
+
+PCA, çok boyutlu veriyi, \emph{bilginin çoğunu koruyarak} daha az boyuta
+indirgeyen bir tekniktir. Fikir: verinin en çok \emph{yayıldığı} (en yüksek
+varyanslı) yönleri bul; bu yönler verinin ``en önemli'' eksenleridir. Bu
+yönlere \emph{temel bileşenler} denir.
+
+\gsub{Matematiksel Türetme}
+
+Veri $\vek{X}$'i önce \emph{merkezle} (her özellikten ortalamasını çıkar).
+Merkezlenmiş veri için kovaryans matrisi:
+\[
+\vek{\Sigma} = \frac{1}{m}\vek{X}^\top\vek{X} \in \R^{n\times n}.
+\]
+Amacımız, üzerine izdüşürüldüğünde varyansı maksimize eden birim yön
+$\vek{v}$'yi bulmaktır. İzdüşümün varyansı $\vek{v}^\top\vek{\Sigma}\vek{v}$'dir.
+
+\turetme{$\|\vek{v}\|=1$ kısıtı altında $\vek{v}^\top\vek{\Sigma}\vek{v}$'yi
+maksimize et. Lagrange çarpanı $\lambda$ ile:
+\[
+\mathcal{L}(\vek v,\lambda) = \vek{v}^\top\vek{\Sigma}\vek{v} - \lambda(\vek{v}^\top\vek{v}-1).
+\]
+$\vek v$'ye göre türev alıp sıfıra eşitleyince:
+\[
+2\vek{\Sigma}\vek{v} - 2\lambda\vek{v} = 0 \;\;\Longrightarrow\;\;
+\boxed{\;\vek{\Sigma}\vek{v} = \lambda\vek{v}\;}.
+\]
+Bu tam olarak bir \emph{özdeğer denklemidir}! Yani en çok varyansa sahip yön,
+kovaryans matrisinin \emph{en büyük özdeğerine} karşılık gelen özvektördür.
+Üstelik o yöndeki varyans $\vek{v}^\top\vek\Sigma\vek v = \lambda$'ya eşittir
+--- özdeğer, doğrudan o bileşenin açıkladığı varyanstır.}
+
+Böylece PCA'nın reçetesi: kovaryans matrisinin özvektörlerini bul, özdeğerlere
+göre büyükten küçüğe sırala, en büyük $d$ tanesini al --- bunlar aradığın
+$d$ temel bileşendir.
+
+\begin{lstlisting}
+import numpy as np
+
+class PCAScratch:
+    def __init__(self, n_components):
+        self.n_components = n_components
+
+    def fit(self, X):
+        self.mean_ = X.mean(axis=0)
+        X_centered = X - self.mean_             # veriyi merkezle
+        cov = np.cov(X_centered, rowvar=False)  # kovaryans matrisi (n, n)
+        eigvals, eigvecs = np.linalg.eigh(cov)  # simetrik -> eigh kullan
+        # özvektörleri özdeğere göre azalan sırada sırala
+        order = np.argsort(eigvals)[::-1]
+        self.components_ = eigvecs[:, order[:self.n_components]]
+        self.explained_variance_ = eigvals[order[:self.n_components]]
+        return self
+
+    def transform(self, X):
+        return (X - self.mean_) @ self.components_   # bileşenlere izdüşür
+\end{lstlisting}
+
+\begin{lstlisting}
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+X_scaled = StandardScaler().fit_transform(X)   # PCA ölçeklenmiş veri gerektirir
+pca = PCA(n_components=2)
+X_reduced = pca.fit_transform(X_scaled)
+print(pca.explained_variance_ratio_)           # korunan varyans oranı
+\end{lstlisting}
+
+\ipucu{PCA \emph{ölçeğe duyarlıdır}: büyük değerli özellikler varyansa hâkim
+olur. Bu yüzden PCA'dan önce mutlaka standartlaştır. \code{explained\_variance\_ratio\_}
+toplamı, kaç bileşenle bilginin ne kadarını koruduğunu söyler --- genelde
+\%95 varyansı koruyan bileşen sayısı seçilir.}
+
+% #####################################################################
+\gpart{6}{Sinir Ağları ve Derin Öğrenme}
+% #####################################################################
+
+% =====================================================================
+\gsec{Perceptron'dan Çok Katmanlı Ağlara}
+% =====================================================================
+
+Sinir ağları, basit hesap birimlerini (nöronlar) katmanlar halinde
+birleştirerek son derece karmaşık fonksiyonları öğrenebilen modellerdir.
+Beynin nöronlarından ilham alır ama özünde saf matematiktir: matris çarpımları
+ve doğrusal olmayan fonksiyonlar.
+
+\gsub{Yapay Nöron}
+
+Tek bir nöron, tıpkı lojistik regresyon gibi çalışır: girdilerin ağırlıklı
+toplamını alır, bir \emph{aktivasyon fonksiyonundan} geçirir:
+\[
+a = g\Big(\sum_{j} w_j x_j + b\Big) = g(\vek{w}^\top\vek{x} + b).
+\]
+Tek nöron yalnızca \emph{doğrusal} sınırlar çizebilir. Gücün sırrı, nöronları
+katmanlar halinde yığıp aralarına \emph{doğrusal olmayan} aktivasyonlar
+koymaktır --- bu, ağın doğrusal olmayan fonksiyonları temsil etmesini sağlar.
+
+\gsub{Aktivasyon Fonksiyonları}
+
+Doğrusal olmama şarttır: aktivasyon olmadan, kaç katman olursa olsun ağ tek bir
+doğrusal dönüşüme çöker. Yaygın seçenekler:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{$}l<{$} X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Fonksiyon} & \color{anaMavi}\textbf{g(z)} & \color{anaMavi}\textbf{Özellik}\\
+\midrule
+Sigmoid & \frac{1}{1+e^{-z}} & (0,1); doygunlukta gradyan kaybolur.\\
+\rowcolor{acikGri} Tanh & \tanh(z) & (-1,1); sıfır merkezli.\\
+ReLU & \max(0,z) & En yaygın; hızlı, gradyan kaybını azaltır.\\
+\rowcolor{acikGri} Softmax & \frac{e^{z_i}}{\sum_j e^{z_j}} & Çok sınıflı çıkış (olasılıklar).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{\textbf{Evrensel yaklaşım teoremi:} Yeterli sayıda nörona sahip tek
+gizli katmanlı bir ağ, herhangi bir sürekli fonksiyonu istenen doğrulukta
+yaklaşık temsil edebilir. Ama ``yapabilir'' ile ``öğrenebilir'' farklıdır ---
+pratikte derin (çok katmanlı) ağlar, aynı işi çok daha az nöronla ve daha
+kolay öğrenerek yapar. Derinliğin gücü buradadır.}
+
+\gsub{İleri Besleme (Forward Propagation)}
+
+Çok katmanlı bir ağda bilgi, girişten çıkışa katman katman akar. $l$. katman
+için (matris biçiminde, tüm örnekler birden):
+\[
+\vek{Z}^{[l]} = \vek{A}^{[l-1]}\vek{W}^{[l]} + \vek{b}^{[l]}, \qquad
+\vek{A}^{[l]} = g^{[l]}(\vek{Z}^{[l]}),
+\]
+burada $\vek{A}^{[0]}=\vek{X}$ (giriş), $\vek{A}^{[L]}=\hat{\vek{Y}}$ (çıkış).
+Her katman bir doğrusal dönüşüm + doğrusal olmayan aktivasyondan ibarettir.
+
+\begin{lstlisting}
+import numpy as np
+
+def relu(Z):
+    return np.maximum(0, Z)
+
+def softmax(Z):
+    Z = Z - Z.max(axis=1, keepdims=True)        # sayısal kararlılık
+    exp = np.exp(Z)
+    return exp / exp.sum(axis=1, keepdims=True)
+
+def forward(X, params):
+    """İki katmanlı ağ: X -> ReLU -> softmax."""
+    Z1 = X @ params['W1'] + params['b1']
+    A1 = relu(Z1)
+    Z2 = A1 @ params['W2'] + params['b2']
+    A2 = softmax(Z2)
+    cache = (X, Z1, A1, Z2, A2)                  # backprop için saklandı
+    return A2, cache
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Geri Yayılım (Backpropagation)}
+% =====================================================================
+
+Geri yayılım, sinir ağlarının nasıl öğrendiğinin kalbidir: kaybın, ağdaki
+\emph{her ağırlığa} göre gradyanını verimli biçimde hesaplar. Özü, Kısım 1'deki
+\emph{zincir kuralıdır} --- hata, çıkıştan girişe doğru katman katman ``geri
+yayılır''. Bu bölüm, iki katmanlı bir ağ için gradyanları baştan sona türetir.
+
+\gsub{Neden Zincir Kuralı?}
+
+Kayıp $J$, çıkışa; çıkış, son katman ağırlıklarına; o ağırlıklar bir önceki
+katmanın çıkışına\dots\ bağlıdır. Bir ara ağırlığın kaybı nasıl etkilediğini
+bulmak için zincir kuralıyla bu bağımlılık zincirini çarparız:
+\[
+\frac{\partial J}{\partial \vek{W}^{[l]}} =
+\frac{\partial J}{\partial \vek{A}^{[l]}}\cdot
+\frac{\partial \vek{A}^{[l]}}{\partial \vek{Z}^{[l]}}\cdot
+\frac{\partial \vek{Z}^{[l]}}{\partial \vek{W}^{[l]}}.
+\]
+
+\gsub{Tam Türetme (Softmax + Çapraz Entropi)}
+
+\turetme{Ağ: $\vek{X}\to\vek{Z}^{[1]}\to\vek{A}^{[1]}=\text{ReLU}\to
+\vek{Z}^{[2]}\to\vek{A}^{[2]}=\text{softmax}$, kayıp çapraz entropi.
+Türetmeyi çıkıştan geriye yaparız.
+
+\textbf{(1) Çıkış katmanı.} Softmax + çapraz entropinin birlikte türevi
+olağanüstü sadeleşir (bu ikilinin birlikte kullanılmasının nedeni budur):
+\[
+\frac{\partial J}{\partial \vek{Z}^{[2]}} = \vek{A}^{[2]} - \vek{Y}
+\;\equiv\; \vek{\delta}^{[2]}.
+\]
+Buradan son katman gradyanları:
+\[
+\frac{\partial J}{\partial \vek{W}^{[2]}} = \frac{1}{m}(\vek{A}^{[1]})^\top\vek{\delta}^{[2]},
+\qquad
+\frac{\partial J}{\partial \vek{b}^{[2]}} = \frac{1}{m}\sum_i \vek{\delta}^{[2]}_i.
+\]
+
+\textbf{(2) Hatayı geri yay.} Gizli katmanın hatası, çıkış hatasının ağırlıklarla
+geri taşınıp ReLU türeviyle çarpılmasıdır:
+\[
+\vek{\delta}^{[1]} = \big(\vek{\delta}^{[2]}(\vek{W}^{[2]})^\top\big)\odot g'(\vek{Z}^{[1]}),
+\qquad g'(z)=\mathbb{1}[z>0]\ \ (\text{ReLU türevi}).
+\]
+Burada $\odot$ eleman bazlı çarpımdır.
+
+\textbf{(3) İlk katman gradyanları.} Aynı kalıp:
+\[
+\frac{\partial J}{\partial \vek{W}^{[1]}} = \frac{1}{m}\vek{X}^\top\vek{\delta}^{[1]},
+\qquad
+\frac{\partial J}{\partial \vek{b}^{[1]}} = \frac{1}{m}\sum_i \vek{\delta}^{[1]}_i.
+\]}
+
+\begin{lstlisting}
+def backward(Y, cache, params):
+    """Yukarıdaki iki katmanlı ağ için geri yayılım.
+    Y: one-hot kodlanmış gerçek etiketler (m, n_classes)."""
+    X, Z1, A1, Z2, A2 = cache
+    m = X.shape[0]
+    grads = {}
+
+    # (1) Çıkış katmanı hatası: softmax + çapraz entropi => A2 - Y
+    dZ2 = A2 - Y                                  # (m, n_classes)
+    grads['W2'] = (A1.T @ dZ2) / m
+    grads['b2'] = dZ2.sum(axis=0, keepdims=True) / m
+
+    # (2) Hatayı gizli katmana geri yay (ReLU türevi)
+    dA1 = dZ2 @ params['W2'].T
+    dZ1 = dA1 * (Z1 > 0)                           # ReLU'(z) = 1[z>0]
+
+    # (3) İlk katman gradyanları
+    grads['W1'] = (X.T @ dZ1) / m
+    grads['b1'] = dZ1.sum(axis=0, keepdims=True) / m
+    return grads
+
+def update(params, grads, lr):
+    for key in params:
+        params[key] -= lr * grads[key]            # gradyan inişi adımı
+    return params
+\end{lstlisting}
+
+\bilgi{Backprop'un ``geri yayma'' kalıbına dikkat et: her katmanın gradyanı
+$\vek{A}^\top\vek{\delta}$ biçimindedir ve hata $\vek{\delta}$, bir üst
+katmandan $\vek{W}^\top$ ile geri taşınır. Bu tekrarlayan yapı, PyTorch/TensorFlow
+gibi kütüphanelerin \emph{otomatik türev} mekanizmasının temelidir --- sen
+ileri geçişi yaz, onlar bu zinciri otomatik kurar.}
+
+\gsub{Kaybolan/Patlayan Gradyan}
+
+Derin ağlarda gradyan, katmanlar boyunca çarpıla çarpıla geri yayılır. Çarpanlar
+sürekli $<1$ ise gradyan katman katman \emph{küçülüp kaybolur} (vanishing);
+$>1$ ise \emph{patlar} (exploding). Sigmoid/tanh doygunlukta gradyanı
+sıfıra iter --- bu yüzden derin ağlarda ReLU tercih edilir. Ayrıca dikkatli
+ağırlık başlatma (Xavier/He), batch normalization ve residual bağlantılar
+bu sorunu hafifletir.
+
+% =====================================================================
+\gsec{Optimizasyon Algoritmaları}
+% =====================================================================
+
+Düz gradient descent, sinir ağlarını eğitmek için genelde yavaştır ve dar
+vadilerde salınır. Modern optimize ediciler, geçmiş gradyanları kullanarak
+öğrenmeyi hızlandırır ve kararlı hale getirir.
+
+\gsub{Momentum}
+
+Momentum, gradyanların bir \emph{hareketli ortalamasını} (hız) tutar; böylece
+tutarlı yönlerde ivmelenir, gürültülü salınımları söndürür --- yokuş aşağı yuvarlanan
+bir topa benzer:
+\[
+\vek{v} \leftarrow \beta\vek{v} + (1-\beta)\nabla J, \qquad
+\vek{w} \leftarrow \vek{w} - \eta\vek{v}.
+\]
+
+\gsub{Adam: En Yaygın Optimize Edici}
+
+Adam (Adaptive Moment Estimation), momentum ile parametre-başına uyarlamalı
+öğrenme oranını birleştirir. Gradyanın hem birinci momentini (ortalama, $\vek m$)
+hem ikinci momentini (varyans, $\vek v$) tutar:
+\[
+\vek{m} \leftarrow \beta_1\vek{m} + (1-\beta_1)\vek{g},\qquad
+\vek{v} \leftarrow \beta_2\vek{v} + (1-\beta_2)\vek{g}^2,
+\]
+\[
+\hat{\vek m}=\frac{\vek m}{1-\beta_1^t},\quad
+\hat{\vek v}=\frac{\vek v}{1-\beta_2^t},\qquad
+\vek{w}\leftarrow\vek{w}-\eta\frac{\hat{\vek m}}{\sqrt{\hat{\vek v}}+\epsilon}.
+\]
+$\hat{\vek m},\hat{\vek v}$ ``bias düzeltmesidir'' (başlangıçta sıfıra yakın
+olmayı telafi eder). Adam çoğu problemde iyi çalışır ve az ayar gerektirir ---
+bu yüzden derin öğrenmede varsayılan tercihtir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Optimize edici} & \color{anaMavi}\textbf{Fikir} & \color{anaMavi}\textbf{Not}\\
+\midrule
+SGD & Saf gradyan adımı & Basit, ayar ister\\
+\rowcolor{acikGri} Momentum & Geçmiş gradyanla ivmelen & Salınımı azaltır\\
+RMSProp & Uyarlamalı öğrenme oranı & RNN'lerde iyi\\
+\rowcolor{acikGri} Adam & Momentum + RMSProp & En yaygın varsayılan\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Derin Öğrenme Mimarileri ve Pratik}
+% =====================================================================
+
+Tam bağlı ağlar (MLP) her şeyi öğrenebilir ama görüntü, dizi gibi \emph{yapılı}
+veride verimsizdir. Özel mimariler, verinin yapısını mimariye gömer.
+
+\gsub{Evrişimli Ağlar (CNN)}
+
+CNN'ler görüntü için tasarlanmıştır. Tam bağlantı yerine, küçük \emph{filtreleri}
+(kernel) görüntü üzerinde kaydırarak yerel örüntüleri (kenar, köşe, doku)
+yakalar. Üç temel fikir: \textbf{yerel bağlantı} (her nöron sadece küçük bir
+bölgeye bakar), \textbf{ağırlık paylaşımı} (aynı filtre her yerde kullanılır ---
+çok az parametre) ve \textbf{havuzlama} (pooling ile boyut indirgeme). Katmanlar
+derinleştikçe basit örüntülerden karmaşık nesnelere doğru hiyerarşik özellikler
+öğrenilir.
+
+\gsub{Tekrarlayan Ağlar (RNN) ve Transformer}
+
+RNN'ler dizisel veri (metin, zaman serisi, ses) içindir: bir \emph{gizli durum}
+tutarak geçmiş bilgiyi taşırlar. Uzun bağımlılıklarda kaybolan gradyan sorunu
+yaşarlar; \textbf{LSTM} ve \textbf{GRU} kapı (gate) mekanizmalarıyla bunu çözer.
+Günümüzde metin ve giderek daha çok alanda, dizinin tüm parçalarına aynı anda
+bakan \emph{dikkat} (attention) mekanizmasına dayalı \textbf{Transformer}
+mimarisi baskındır --- büyük dil modellerinin (LLM) temelidir.
+
+\begin{lstlisting}
+# Modern derin öğrenme sıfırdan değil, framework'lerle yapılır.
+# Yukarıda türettiğimiz iki katmanlı ağın minimal bir PyTorch örneği:
+import torch
+import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(784, 128),      # giriş -> gizli
+    nn.ReLU(),
+    nn.Linear(128, 10)        # gizli -> çıkış (10 sınıf)
+)
+criterion = nn.CrossEntropyLoss()          # softmax + çapraz entropi
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+for epoch in range(n_epochs):
+    for xb, yb in dataloader:              # mini-gruplar
+        optimizer.zero_grad()              # gradyanları sıfırla
+        preds = model(xb)                  # ileri geçiş
+        loss = criterion(preds, yb)
+        loss.backward()                    # backprop (otomatik!)
+        optimizer.step()                   # Adam güncellemesi
+\end{lstlisting}
+
+\ipucu{Otomatik türev sayesinde artık gradyanları elle yazmıyoruz ---
+\code{loss.backward()} tüm zinciri otomatik hesaplar. Ama bu rehberde backprop'u
+elle türetmemizin nedeni tam da bu: ``sihrin'' altında sadece zincir kuralı
+olduğunu bilmek, ağları hata ayıklamak, yeni katmanlar tasarlamak ve neyin
+neden çalışmadığını anlamak için vazgeçilmezdir.}
+
+% =====================================================================
+\gsec{Kapanış: Bir Bütün Olarak Makine Öğrenmesi}
+% =====================================================================
+
+Bu rehber boyunca gördük ki makine öğrenmesi, üç matematiksel temelin
+kaynaşmasıdır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Temel} & \color{anaMavi}\textbf{Rolü}\\
+\midrule
+Lineer cebir & Veriyi ve modeli temsil eder (vektör/matris işlemleri).\\
+\rowcolor{acikGri} Kalkülüs \& optimizasyon & Kaybı minimize ederek modeli eğitir (gradient descent).\\
+Olasılık \& istatistik & Belirsizliği modeller, kayıpları türetir (MLE, cross-entropy).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Aynı fikirlerin tekrar tekrar döndüğüne dikkat et: gradyan hem lineer
+regresyonda, hem lojistik regresyonda, hem sinir ağında \emph{aynı biçimi}
+alır ($\vek{X}^\top(\hat{\vek y}-\vek y)$). MLE hem MSE'yi hem çapraz entropiyi
+doğurur. Bir kez bu ortak yapıyı gördüğünde, yeni bir algoritma artık ezberlenecek
+bir formül değil, aynı temaların bir varyasyonu olur.
+
+\gsub{Bir Model Nasıl Seçilir?}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Durum} & \color{anaMavi}\textbf{Önerilen model}\\
+\midrule
+Az veri, yorumlanabilirlik & Lineer/lojistik regresyon, karar ağacı\\
+\rowcolor{acikGri} Tablo veri, en iyi performans & Gradient boosting (XGBoost/LightGBM)\\
+Sağlam, az ayarlı ilk deneme & Random Forest\\
+\rowcolor{acikGri} Görüntü & CNN (evrişimli ağ)\\
+Metin / dizi & Transformer (veya LSTM)\\
+\rowcolor{acikGri} Etiketsiz, grup bulma & K-Means, PCA\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Son bir tavsiye: \textbf{basit başla}. Her zaman basit bir temel çizgi
+(baseline) modelle başla --- lineer/lojistik regresyon veya random forest.
+Karmaşık bir modele ancak basit olan yetmediğinde geç. Çoğu zaman iyi
+\emph{özellik mühendisliği} ve temiz veri, fancy bir modelden çok daha fazla
+kazandırır. Ve her şeyi bir doğrulama kümesinde ölç --- eğitim skoruna asla
+güvenme. İyi öğrenmeler!}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.6pt}}\\[6pt]
+{\color{ortaGri}\small Rehberin sonu --- Matematikten koda, iyi öğrenmeler!}
+\end{center}
+
+\end{document}

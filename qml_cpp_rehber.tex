@@ -498,7 +498,7 @@ QML bunu okuyabilir, yazabilir ve — en önemlisi — değeri değiştiğinde a
 \subsection{Anatomi: READ, WRITE, NOTIFY}
 
 \begin{lstlisting}
-Q_PROPERTY(tip ad READ okuyucu WRITE yazici NOTIFY degistiSinyali)
+Q_PROPERTY(type name READ getter WRITE setter NOTIFY nameChanged)
 \end{lstlisting}
 
 \begin{center}
@@ -670,8 +670,8 @@ public:
     explicit Calculator(QObject *parent = nullptr) : QObject(parent) {}
 
     // Yontem 1: Q_INVOKABLE ile isaretle
-    Q_INVOKABLE double topla(double a, double b) { return a + b; }
-    Q_INVOKABLE double bol(double a, double b)
+    Q_INVOKABLE double add(double a, double b) { return a + b; }
+    Q_INVOKABLE double divide(double a, double b)
     {
         if (b == 0.0)
             return 0.0;      // Sifira bolme korumasi
@@ -680,9 +680,9 @@ public:
 
 public slots:
     // Yontem 2: public slot -> QML'den otomatik cagrilabilir
-    QString formatla(double sayi)
+    QString format(double number)
     {
-        return QString::number(sayi, 'f', 2);   // "3.14" gibi
+        return QString::number(number, 'f', 2);   // "3.14" gibi
     }
 };
 \end{lstlisting}
@@ -692,7 +692,7 @@ Calculator { id: calc }
 
 Text {
     // Her ucu de QML'den dogrudan cagrilabilir
-    text: calc.formatla(calc.bol(calc.topla(10, 5), 3))  // "5.00"
+    text: calc.format(calc.divide(calc.add(10, 5), 3))  // "5.00"
 }
 \end{lstlisting}
 
@@ -728,20 +728,20 @@ QDateTime & date & Tarih/saat \\
 QML'e yapılandırılmış veri döndürmenin pratik yolu \kls{QVariantMap}'tir:
 
 \begin{lstlisting}
-Q_INVOKABLE QVariantMap kullaniciBilgisi(int id)
+Q_INVOKABLE QVariantMap userInfo(int id)
 {
     QVariantMap m;
-    m["id"]    = id;
-    m["ad"]    = QStringLiteral("Ayse");
-    m["yas"]   = 30;
-    m["aktif"] = true;
+    m["id"]     = id;
+    m["name"]   = QStringLiteral("Ayse");
+    m["age"]    = 30;
+    m["active"] = true;
     return m;   // QML'de bir JS nesnesi olur
 }
 \end{lstlisting}
 
 \begin{lstlisting}[style=qmlstyle]
-var u = backend.kullaniciBilgisi(42)
-console.log(u.ad, u.yas)     // "Ayse 30"
+var u = backend.userInfo(42)
+console.log(u.name, u.age)     // "Ayse 30"
 \end{lstlisting}
 
 % =====================================================================
@@ -762,19 +762,19 @@ class Downloader : public QObject
 public:
     explicit Downloader(QObject *parent = nullptr) : QObject(parent) {}
 
-    Q_INVOKABLE void baslat(const QString &url)
+    Q_INVOKABLE void start(const QString &url)
     {
-        emit basladi(url);
+        emit started(url);
         // ... indirme mantigi (basitlestirilmis) ...
         for (int p = 0; p <= 100; p += 25)
-            emit ilerleme(p);         // Parametreli sinyal
-        emit tamamlandi(url, true);   // Cok parametreli sinyal
+            emit progress(p);         // Parametreli sinyal
+        emit finished(url, true);   // Cok parametreli sinyal
     }
 
 signals:
-    void basladi(const QString &url);
-    void ilerleme(int yuzde);
-    void tamamlandi(const QString &url, bool basarili);
+    void started(const QString &url);
+    void progress(int percent);
+    void finished(const QString &url, bool success);
 };
 \end{lstlisting}
 
@@ -787,14 +787,14 @@ Qt otomatik olarak her \kod{sinyalAdi} için \kod{onSinyalAdi} handler'ı üreti
 Downloader {
     id: downloader
 
-    // "basladi" -> "onBasladi"
-    onBasladi: (url) => console.log("Basladi:", url)
+    // "started" -> "onStarted"
+    onStarted: (url) => console.log("Basladi:", url)
 
-    // "ilerleme" -> "onIlerleme"; parametre adi sinyaldeki ile ayni
-    onIlerleme: (yuzde) => progressBar.value = yuzde / 100
+    // "progress" -> "onProgress"; parametre adi sinyaldeki ile ayni
+    onProgress: (percent) => progressBar.value = percent / 100
 
-    onTamamlandi: (url, basarili) => {
-        if (basarili)
+    onFinished: (url, success) => {
+        if (success)
             statusText.text = "Bitti: " + url
         else
             statusText.text = "Hata!"
@@ -810,7 +810,7 @@ gelen bir nesne) \kls{Connections} kullanın:
 \begin{lstlisting}[style=qmlstyle]
 Connections {
     target: downloader          // Hangi nesnenin sinyalleri
-    function onTamamlandi(url, basarili) {
+    function onFinished(url, success) {
         console.log("Connections ile yakalandi:", url)
     }
 }
@@ -1205,8 +1205,8 @@ root->setProperty("title", "C++ tarafindan degistirildi");
 QVariant w = root->property("width");
 
 // objectName ile bir alt nesne bul
-//   (QML'de: Text { objectName: "durumMetni" })
-QObject *label = root->findChild<QObject*>("durumMetni");
+//   (QML'de: Text { objectName: "statusText" })
+QObject *label = root->findChild<QObject*>("statusText");
 if (label)
     label->setProperty("text", "Guncellendi");
 \end{lstlisting}
@@ -1219,20 +1219,20 @@ ile çağırabilirsiniz:
 \begin{lstlisting}[style=qmlstyle]
 // Main.qml
 Window {
-    function mesajGoster(metin) {
-        console.log("QML fonksiyonu:", metin)
-        return "alindi: " + metin
+    function showMessage(text) {
+        console.log("QML fonksiyonu:", text)
+        return "alindi: " + text
     }
 }
 \end{lstlisting}
 
 \begin{lstlisting}
 QObject *root = engine.rootObjects().first();
-QVariant donus;
-QMetaObject::invokeMethod(root, "mesajGoster",
-    Q_RETURN_ARG(QVariant, donus),
+QVariant result;
+QMetaObject::invokeMethod(root, "showMessage",
+    Q_RETURN_ARG(QVariant, result),
     Q_ARG(QVariant, QString("Selam QML")));
-qDebug() << donus;   // "alindi: Selam QML"
+qDebug() << result;   // "alindi: Selam QML"
 \end{lstlisting}
 
 \begin{uyarikutu}

@@ -322,7 +322,7 @@ Genellikle bir bellek bloğunun/dizinin başlangıç adresini tutmak için kulla
 Gerçek modda dolaylı adreslemede sık kullanılır.
 
 \begin{lstlisting}
-mov bx, dizi      ; BX = dizinin baslangic adresi
+mov bx, array     ; BX = dizinin baslangic adresi
 mov al, [bx]      ; AL = dizinin ilk elemani
 inc bx            ; sonraki elemana gec
 mov al, [bx]      ; AL = ikinci eleman
@@ -335,9 +335,9 @@ sayısını, \kod{SHL}/\kod{SHR} komutlarında ise kaydırma miktarını belirle
 
 \begin{lstlisting}
 mov ecx, 5        ; 5 kez donecek
-etiket:
+label:
     ; ... yapilacak is ...
-    loop etiket   ; ECX--, sifir degilse etiket'e don
+    loop label    ; ECX--, sifir degilse label'e don
 
 ; SHL/SHR icin CL kullanimi:
 mov al, 1
@@ -379,7 +379,7 @@ yerel değişkenlere ve parametrelere sabit bir referans noktası sağlar.
 
 \begin{ornekkutu}[Standart fonksiyon prologu ve epilogu]
 \begin{lstlisting}
-topla:
+sum:
     push rbp          ; 1) eski taban isaretcisini sakla
     mov rbp, rsp      ; 2) yeni cerceve tabani olustur
     sub rsp, 16       ; 3) 16 bayt yerel degisken alani ayir
@@ -420,7 +420,7 @@ Taban + yer değiştirme & \kod{mov ax, [bx+4]} & Yapı alanlarına erişim \\
 \begin{ornekkutu}[Ölçekli indeks ile bir int dizisinde gezinme]
 \begin{lstlisting}
 ; int32 dizisi[i] elemanina erisim: adres = taban + i*4
-mov ebx, dizi     ; EBX = dizinin baslangici
+mov ebx, array    ; EBX = dizinin baslangici
 mov esi, 3        ; ESI = istenen indeks (i = 3)
 mov eax, [ebx+esi*4]  ; EAX = dizi[3]
                       ; olcek 4 cunku her eleman 4 bayt
@@ -511,8 +511,8 @@ bayrağına göre indeksleri otomatik artırır/azaltır.
 \begin{ornekkutu}[Bir bellek bloğunu kopyalama (memcpy)]
 \begin{lstlisting}
 cld               ; DF=0 -> SI ve DI artacak (ileri yon)
-mov si, kaynak    ; DS:SI = kaynak adres
-mov di, hedef     ; ES:DI = hedef adres
+mov si, source    ; DS:SI = kaynak adres
+mov di, dest      ; ES:DI = hedef adres
 mov cx, 100       ; 100 bayt kopyalanacak
 rep movsb         ; CX kez: [ES:DI] <- [DS:SI], SI++, DI++, CX--
 \end{lstlisting}
@@ -523,7 +523,7 @@ Tek satırlık \kod{rep movsb} ile 100 baytlık kopyalama tamamlanır. Bu, C'dek
 \begin{ornekkutu}[Bir alanı sabit değerle doldurma (memset)]
 \begin{lstlisting}
 cld
-mov di, tampon    ; ES:DI = doldurulacak alan
+mov di, buffer    ; ES:DI = doldurulacak alan
 mov al, 0         ; doldurulacak deger (0)
 mov cx, 256       ; 256 bayt
 rep stosb         ; CX kez: [ES:DI] <- AL, DI++, CX--
@@ -593,15 +593,15 @@ JAE / JNC & Büyük eşit & CF=0 & işaretsiz \\
 
 \begin{ornekkutu}[Karşılaştırma ve dallanma -- basit if/else]
 \begin{lstlisting}
-mov eax, [sayi]
+mov eax, [number]
 cmp eax, 10       ; EAX - 10 hesapla, bayraklari ayarla
-jg  buyuk         ; isaretli "buyuk mu?" -> EAX > 10 ise atla
+jg  greater       ; isaretli "buyuk mu?" -> EAX > 10 ise atla
     ; buraya gelindiyse EAX <= 10
     mov ebx, 0
-    jmp bitti
-buyuk:
+    jmp done
+greater:
     mov ebx, 1    ; EAX > 10 durumu
-bitti:
+done:
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -646,7 +646,7 @@ ZMM0'ın alt 256 bitidir. Tıpkı AX'in EAX'in içinde olması gibi. Örneğin b
 movups xmm0, [a]  ; XMM0 = {a0, a1, a2, a3}  (128-bit yukle)
 movups xmm1, [b]  ; XMM1 = {b0, b1, b2, b3}
 addps  xmm0, xmm1 ; XMM0 = {a0+b0, a1+b1, a2+b2, a3+b3} tek komutta!
-movups [sonuc], xmm0
+movups [result], xmm0
 \end{lstlisting}
 Skaler kodda 4 ayrı toplama gerekirken SSE bunu tek komutta yapar -- bu
 \emph{paralellik} SIMD'in gücüdür.
@@ -680,14 +680,14 @@ değerler aşağı kayar. İşlemler tepedeki değerler üzerinde yapılır.
 section .data
     a   dq 3.5         ; 64-bit double
     b   dq 2.25
-    sonuc dq 0.0
+    result dq 0.0
 
 section .text
     finit             ; FPU'yu baslat/sifirla
     fld qword [a]     ; ST0 = 3.5        (yigin: [3.5])
     fld qword [b]     ; ST0 = 2.25, ST1 = 3.5  (yigin: [2.25, 3.5])
     faddp             ; ST1 = ST1+ST0, sonra pop -> ST0 = 5.75
-    fstp qword [sonuc]; sonuc = 5.75, yigindan cek
+    fstp qword [result]; result = 5.75, yigindan cek
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -701,14 +701,14 @@ demektir. İşlem sonunda yığının boş kalması önemlidir.
 \begin{ornekkutu}[x87 ile bir sayının karekökü: sqrt(2.0)]
 \begin{lstlisting}
 section .data
-    x   dq 2.0
-    kok dq 0.0
+    x    dq 2.0
+    root dq 0.0
 
 section .text
     finit
     fld qword [x]     ; ST0 = 2.0
     fsqrt             ; ST0 = sqrt(2.0) = 1.41421...
-    fstp qword [kok]  ; kok = 1.41421
+    fstp qword [root] ; root = 1.41421
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -745,12 +745,12 @@ doğrudan \kod{mov} işe yaramaz çünkü bit düzenleri farklıdır.
 \begin{ornekkutu}[int → float ve float → int dönüşümü]
 \begin{lstlisting}
 section .data
-    tam   dd 7         ; tamsayi 7
-    flt   dd 3.9       ; float 3.9
+    intVal dd 7        ; tamsayi 7
+    flt    dd 3.9      ; float 3.9
 
 section .text
     ; --- tamsayi -> float ---
-    cvtsi2ss xmm0, [tam]   ; XMM0 = 7.0 (float olarak)
+    cvtsi2ss xmm0, [intVal] ; XMM0 = 7.0 (float olarak)
 
     ; --- float -> tamsayi (kesme/truncate) ---
     cvttss2si eax, [flt]   ; EAX = 3  (ondalik atilir, YUVARLAMAZ)
@@ -776,8 +776,8 @@ scalar single) iki float'ı karşılaştırıp normal bayrakları (\reg{ZF},
     movss xmm0, [a]
     movss xmm1, [b]
     comiss xmm0, xmm1  ; XMM0 ile XMM1'i karsilastir, bayraklari ayarla
-    ja  a_buyuk        ; a > b ise atla (isaretsiz atlama kullan!)
-    jb  b_buyuk        ; a < b ise
+    ja  a_greater      ; a > b ise atla (isaretsiz atlama kullan!)
+    jb  b_greater      ; a < b ise
     ; buraya gelindiyse esitler
 \end{lstlisting}
 \end{ornekkutu}
@@ -800,10 +800,10 @@ birleştirir.
 section .data
     dx  dd 3.0         ; x2 - x1
     dy  dd 4.0         ; y2 - y1
-    mesafe dd 0.0
+    distance dd 0.0
 
 section .text
-hesapla_mesafe:
+computeDistance:
     movss xmm0, [dx]   ; XMM0 = dx = 3.0
     mulss xmm0, xmm0   ; XMM0 = dx*dx = 9.0
 
@@ -813,7 +813,7 @@ hesapla_mesafe:
     addss xmm0, xmm1   ; XMM0 = 9.0 + 16.0 = 25.0
     sqrtss xmm0, xmm0  ; XMM0 = sqrt(25.0) = 5.0
 
-    movss [mesafe], xmm0  ; mesafe = 5.0
+    movss [distance], xmm0 ; distance = 5.0
     ret
 \end{lstlisting}
 \end{ornekkutu}
@@ -823,24 +823,24 @@ hesapla_mesafe:
 \begin{ornekkutu}[Float dizisinin ortalamasını hesaplama]
 \begin{lstlisting}
 section .data
-    dizi  dd 2.0, 4.0, 6.0, 8.0   ; 4 float
-    adet  dd 4
-    ort   dd 0.0
+    array dd 2.0, 4.0, 6.0, 8.0   ; 4 float
+    count dd 4
+    avg   dd 0.0
 
 section .text
-ortalama:
+average:
     xorps xmm0, xmm0       ; XMM0 = 0.0 (toplam biriktirici)
     mov   ecx, 4           ; eleman sayisi
-    mov   esi, dizi        ; ESI = dizi baslangici
-.dongu:
+    mov   esi, array       ; ESI = dizi baslangici
+.loop:
     movss xmm1, [esi]      ; siradaki elemani al
     addss xmm0, xmm1       ; toplama ekle
     add   esi, 4           ; sonraki float (4 bayt)
-    loop  .dongu           ; ECX-- , sifir degilse devam
+    loop  .loop            ; ECX-- , sifir degilse devam
 
-    cvtsi2ss xmm1, [adet]  ; XMM1 = 4.0 (adedi float yap)
+    cvtsi2ss xmm1, [count] ; XMM1 = 4.0 (adedi float yap)
     divss xmm0, xmm1       ; XMM0 = toplam / adet = 20.0/4.0 = 5.0
-    movss [ort], xmm0
+    movss [avg], xmm0
     ret
 \end{lstlisting}
 \end{ornekkutu}
@@ -1024,23 +1024,23 @@ Bu fonksiyon, imleci otomatik ilerleterek tek bir karakteri ekrana basar.
 
 \begin{ornekkutu}[Null ile biten metin yazan yeniden kullanılabilir rutin]
 \begin{lstlisting}
-yaz_metin:            ; giris: SI = metnin adresi
+printString:          ; giris: SI = metnin adresi
     push ax
     mov ah, 0x0E      ; teletype fonksiyonu
-.dongu:
+.loop:
     lodsb             ; DS:SI'daki bayti AL'e yukle, SI++
     test al, al       ; AL == 0 mi? (metin sonu)
-    jz  .bitti
+    jz  .done
     int 0x10          ; karakteri ekrana yaz
-    jmp .dongu
-.bitti:
+    jmp .loop
+.done:
     pop ax
     ret
 
 ; kullanimi:
-mov si, mesaj
-call yaz_metin
-mesaj: db "Merhaba, Assembly Dunyasi!", 0x0D, 0x0A, 0
+mov si, message
+call printString
+message: db "Merhaba, Assembly Dunyasi!", 0x0D, 0x0A, 0
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1169,11 +1169,11 @@ mov ah, 0x0C      ; piksel ciz
 mov al, 4         ; renk: kirmizi
 mov dx, 100       ; Y = 100 (sabit satir)
 mov cx, 0         ; X = 0 den basla
-.ciz:
+.draw:
     int 0x10      ; (CX, DX) noktasina piksel koy
     inc cx        ; X++
     cmp cx, 320   ; ekran genisligine ulastik mi?
-    jl  .ciz      ; hayirsa devam
+    jl  .draw     ; hayirsa devam
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1188,24 +1188,24 @@ tarama kodu (scan code) döner.
 
 \begin{ornekkutu}[Kullanıcıdan tuş bekleyip ekrana yankılama (echo terminali)]
 \begin{lstlisting}
-bekle_tus:
+waitKey:
     mov ah, 0x00  ; tus bekle ve oku
     int 0x16      ; AL = basilan tusun ASCII kodu
 
     cmp al, 0x0D  ; Enter'a mi basildi?
-    je  yeni_satir
+    je  newLine
 
     mov ah, 0x0E  ; teletype yazma
     int 0x10      ; okunan tusu ekrana yaz
-    jmp bekle_tus
+    jmp waitKey
 
-yeni_satir:
+newLine:
     mov ah, 0x0E
     mov al, 0x0D
     int 0x10
     mov al, 0x0A
     int 0x10
-    jmp bekle_tus
+    jmp waitKey
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1217,18 +1217,18 @@ kontrolü için idealdir.
 
 \begin{ornekkutu}[Oyun döngüsünde bloke etmeden tuş kontrolü]
 \begin{lstlisting}
-oyun_dongusu:
+gameLoop:
     ; ... oyun mantigini guncelle, ekrani ciz ...
 
     mov ah, 0x01  ; tampon dolu mu?
     int 0x16
-    jz  oyun_dongusu  ; ZF=1 -> tus yok, donguye devam
+    jz  gameLoop      ; ZF=1 -> tus yok, donguye devam
 
     ; buraya gelindiyse bir tus var, simdi tampondan al
     mov ah, 0x00
     int 0x16      ; AL = tus
     cmp al, 'q'   ; cikis tusu mu?
-    jne oyun_dongusu
+    jne gameLoop
     ; q'ya basildi -> oyundan cik
 \end{lstlisting}
 \end{ornekkutu}
@@ -1283,9 +1283,9 @@ int 0x13
 
 \begin{ornekkutu}[Yeniden deneme mantığıyla sağlam sektör okuma]
 \begin{lstlisting}
-disk_oku:             ; ES:BX hedef, sektor bilgileri ayarli varsayilir
+diskRead:             ; ES:BX hedef, sektor bilgileri ayarli varsayilir
     mov di, 3         ; en fazla 3 kez dene
-.dene:
+.retry:
     mov ah, 0x02      ; sektor oku
     mov al, 1         ; 1 sektor
     mov ch, 0         ; silindir 0
@@ -1293,16 +1293,16 @@ disk_oku:             ; ES:BX hedef, sektor bilgileri ayarli varsayilir
     mov dh, 0         ; kafa 0
     mov dl, 0x80      ; ilk sabit disk
     int 0x13
-    jnc .basarili     ; CF=0 -> okuma tamam
+    jnc .success      ; CF=0 -> okuma tamam
 
     ; hata olustu: diski resetle ve tekrar dene
     xor ah, ah        ; AH=0 -> reset fonksiyonu
     int 0x13
     dec di
-    jnz .dene         ; deneme hakki kaldiysa tekrar
-    jmp disk_hatasi   ; 3 deneme de basarisiz
+    jnz .retry        ; deneme hakki kaldiysa tekrar
+    jmp diskError     ; 3 deneme de basarisiz
 
-.basarili:
+.success:
     ret
 \end{lstlisting}
 \end{ornekkutu}
@@ -1326,7 +1326,7 @@ sektörleri 0'dan başlayan tek bir numarayla adresler. Parametreler bir
     mov dl, 0x80      ; disk
     mov si, dap       ; DS:SI = adres paketi
     int 0x13
-    jc  disk_hatasi
+    jc  diskError
 
 ; Disk Adres Paketi (16 bayt)
 dap:
@@ -1351,20 +1351,20 @@ Her çağrı, bir bellek bölgesini tanımlayan 20/24 baytlık bir yapı döndü
 
 \begin{ornekkutu}[E820 bellek haritası okuma döngüsü]
 \begin{lstlisting}
-bellek_haritasi:
-    mov di, tampon    ; ES:DI = sonucun yazilacagi yer
+memoryMap:
+    mov di, buffer    ; ES:DI = sonucun yazilacagi yer
     xor ebx, ebx      ; ilk cagri icin EBX = 0
     mov edx, 0x534D4150  ; 'SMAP' imzasi (sabit)
-.dongu:
+.loop:
     mov eax, 0xE820   ; her cagrida yeniden ayarla
     mov ecx, 24       ; bir girdinin boyutu (bayt)
     int 0x15
-    jc  .bitti        ; CF=1 -> hata veya liste sonu
+    jc  .done         ; CF=1 -> hata veya liste sonu
 
     add di, 24        ; sonraki girdi icin ilerle
     test ebx, ebx     ; EBX=0 -> son girdiydi
-    jnz .dongu
-.bitti:
+    jnz .loop
+.done:
     ; tampon artik bellek bolgelerinin listesini icerir
 \end{lstlisting}
 \end{ornekkutu}
@@ -1397,19 +1397,19 @@ E820'den daha basit bir alternatiftir. 15\,MB üstündeki belleği iki register
     xor bx, bx        ;   digerleri CX/DX kullanir)
     mov ax, 0xE801
     int 0x15
-    jc  .hata
+    jc  .error
     ; Bazi BIOS'lar sonucu AX:BX, bazilari CX:DX doner.
     ; CX=0 ise AX/BX'i kullan:
     test cx, cx
     jnz .cxdx
-    mov [dusuk_mem], ax   ; 1-16MB (KB cinsinden)
-    mov [yuksek_mem], bx  ; 16MB ustu (64KB cinsinden)
-    jmp .son
+    mov [lowMem], ax      ; 1-16MB (KB cinsinden)
+    mov [highMem], bx     ; 16MB ustu (64KB cinsinden)
+    jmp .end
 .cxdx:
-    mov [dusuk_mem], cx
-    mov [yuksek_mem], dx
-.son:
-.hata:
+    mov [lowMem], cx
+    mov [highMem], dx
+.end:
+.error:
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1433,19 +1433,19 @@ A20 adres hattı, 1\,MB üstündeki belleğe erişim için açılmalıdır (tari
 \begin{lstlisting}
     mov ax, 0x2403    ; once A20 destegi var mi diye sor
     int 0x15
-    jc  .desteklenmiyor
+    jc  .notSupported
 
     mov ax, 0x2402    ; A20 mevcut durumunu oku
     int 0x15
     cmp al, 1
-    je  .zaten_acik   ; AL=1 ise zaten aciktir
+    je  .alreadyOn    ; AL=1 ise zaten aciktir
 
     mov ax, 0x2401    ; A20 hattini ETKINLESTIR
     int 0x15
-    jc  .hata
-.zaten_acik:
-.desteklenmiyor:
-.hata:
+    jc  .error
+.alreadyOn:
+.notSupported:
+.error:
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1482,15 +1482,15 @@ için kullanılabilir.
 ; Baslangic zamanini oku
 mov ah, 0x00
 int 0x1A          ; CX:DX = gun basindan beri gecen tik sayisi
-mov [baslangic], dx
+mov [startTick], dx
 
-bekle:
+wait:
     mov ah, 0x00
     int 0x1A
     mov ax, dx
-    sub ax, [baslangic]
+    sub ax, [startTick]
     cmp ax, 18     ; ~18 tik = ~1 saniye
-    jl  bekle      ; 1 saniye gecene kadar bekle
+    jl  wait       ; 1 saniye gecene kadar bekle
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1841,12 +1841,12 @@ start:
     sti               ; kesmeleri geri ac
 
     ; --- 2. Karsilama mesaji yazdir ---
-    mov si, mesaj
-    call yaz_metin
+    mov si, message
+    call printString
 
     ; --- 3. Diskten ikinci asamayi yukle (sektor 2) ---
     mov di, 3         ; 3 deneme hakki
-.oku:
+.read:
     mov ah, 0x02      ; sektor oku
     mov al, 1         ; 1 sektor
     mov ch, 0         ; silindir 0
@@ -1855,37 +1855,37 @@ start:
     mov dl, 0x80      ; ilk sabit disk
     mov bx, 0x8000    ; ES:BX = 0000:8000 hedef adres
     int 0x13
-    jnc .yuklendi
+    jnc .loaded
     xor ah, ah        ; hata -> diski resetle
     int 0x13
     dec di
-    jnz .oku
-    mov si, hata_msj  ; 3 deneme basarisiz -> hata mesaji
-    call yaz_metin
-    jmp dur
+    jnz .read
+    mov si, errorMsg  ; 3 deneme basarisiz -> hata mesaji
+    call printString
+    jmp halt
 
-.yuklendi:
+.loaded:
     ; --- 4. Ikinci asamaya atla ---
     jmp 0x0000:0x8000 ; 0x8000 adresindeki koda gec
 
-dur:
+halt:
     hlt
-    jmp dur
+    jmp halt
 
 ; --- Yardimci rutin: SI'daki null-terminated metni yazar ---
-yaz_metin:
+printString:
     mov ah, 0x0E
-.dongu:
+.loop:
     lodsb
     test al, al
-    jz  .son
+    jz  .end
     int 0x10
-    jmp .dongu
-.son:
+    jmp .loop
+.end:
     ret
 
-mesaj:    db "Onyukleyici basladi, kernel yukleniyor...", 0x0D, 0x0A, 0
-hata_msj: db "DISK HATASI!", 0x0D, 0x0A, 0
+message:  db "Onyukleyici basladi, kernel yukleniyor...", 0x0D, 0x0A, 0
+errorMsg: db "DISK HATASI!", 0x0D, 0x0A, 0
 
 times 510-($-$$) db 0 ; 510. bayta kadar sifirla doldur
 dw 0xAA55             ; onyukleme imzasi (son 2 bayt)
@@ -1909,17 +1909,17 @@ biti set edilir.
 \begin{ornekkutu}[Gerçek moddan korumalı moda geçiş]
 \begin{lstlisting}
     cli               ; kesmeleri kapat (IDT henuz hazir degil)
-    lgdt [gdt_tanim]  ; GDT'yi islemciye tanit
+    lgdt [gdtDescriptor]  ; GDT'yi islemciye tanit
 
     mov eax, cr0
     or  eax, 1        ; PE bitini (bit 0) set et
     mov cr0, eax      ; artik korumali moddayiz!
 
     ; boru hattini temizlemek icin uzak atlama sart:
-    jmp 0x08:korumali_mod  ; 0x08 = GDT'deki kod segmenti secici
+    jmp 0x08:protectedMode ; 0x08 = GDT'deki kod segmenti secici
 
 bits 32               ; artik 32-bit kod
-korumali_mod:
+protectedMode:
     mov ax, 0x10      ; 0x10 = veri segmenti secici
     mov ds, ax
     mov es, ax
@@ -1928,17 +1928,17 @@ korumali_mod:
     ; ... 32-bit cekirdek kodu buradan devam eder ...
 
 ; --- Global Descriptor Table ---
-gdt_baslangic:
+gdtStart:
     dq 0x0000000000000000  ; null tanimlayici (zorunlu)
-gdt_kod:
+gdtCode:
     dq 0x00CF9A000000FFFF  ; kod segmenti (taban=0, limit=4GB)
-gdt_veri:
+gdtData:
     dq 0x00CF92000000FFFF  ; veri segmenti (taban=0, limit=4GB)
-gdt_son:
+gdtEnd:
 
-gdt_tanim:
-    dw gdt_son - gdt_baslangic - 1  ; GDT boyutu - 1
-    dd gdt_baslangic                ; GDT adresi
+gdtDescriptor:
+    dw gdtEnd - gdtStart - 1        ; GDT boyutu - 1
+    dd gdtStart                     ; GDT adresi
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -1988,17 +1988,17 @@ edebilmesi için bu şarttır.
 \begin{ornekkutu}[Birebir eşlemeli sayfa tablosu kurma (32-bit)]
 \begin{lstlisting}
 bits 32
-kur_sayfalama:
+setupPaging:
     ; --- 1. Sayfa tablosunu birebir eslemeyle doldur ---
     mov edi, 0x101000     ; sayfa tablosunun adresi (PT)
     mov cr3, edi          ; ileride PD adresini yazacagiz
     mov eax, 0x00000003   ; ilk sayfa: adres=0, bayrak=Present+RW
     mov ecx, 1024         ; 1024 girdi = 4MB kapsam
-.doldur:
+.fill:
     mov [edi], eax        ; girdiyi yaz
     add eax, 0x1000       ; sonraki 4KB sayfaya gec
     add edi, 4            ; sonraki girdi (her girdi 4 bayt)
-    loop .doldur
+    loop .fill
 
     ; --- 2. Sayfa dizinini kur (tek girdi PT'yi gosterir) ---
     mov edi, 0x100000     ; sayfa dizini (PD) adresi
@@ -2087,7 +2087,7 @@ Offset (16--31) & İşleyici adresinin üst 16 biti \\
 \begin{lstlisting}
 bits 32
 ; Giris: AL = kesme numarasi, EBX = isleyici adresi
-idt_girdi_ayarla:
+idtSetEntry:
     push edi
     movzx edi, al         ; EDI = kesme numarasi
     shl edi, 3            ; her girdi 8 bayt -> indeks*8
@@ -2104,7 +2104,7 @@ idt_girdi_ayarla:
 
 ; IDT: 256 girdi x 8 bayt
 idt:      times 256*8 db 0
-idt_tanim:
+idtDescriptor:
     dw 256*8 - 1          ; IDT boyutu - 1
     dd idt                ; IDT adresi
 \end{lstlisting}
@@ -2118,7 +2118,7 @@ idt_tanim:
 \begin{ornekkutu}[Ekrana nokta basan basit ISR (örneğin zamanlayıcı)]
 \begin{lstlisting}
 bits 32
-zamanlayici_isr:
+timerIsr:
     pusha                 ; TUM genel register'lari sakla
 
     ; --- isleyici govdesi: ekranin sol ustune '.' yaz ---
@@ -2152,7 +2152,7 @@ yeniden programlanarak IRQ'lar \hx{0x20}--\hx{0x2F} aralığına taşınır.
 \begin{ornekkutu}[PIC'i 0x20 ofsetine yeniden haritalama]
 \begin{lstlisting}
 bits 32
-pic_yeniden_haritala:
+picRemap:
     mov al, 0x11          ; baslatma komutu (ICW1)
     out 0x20, al          ; ana PIC'e
     out 0xA0, al          ; slave PIC'e
@@ -2186,26 +2186,26 @@ tarama kodunu port \hx{0x60}'tan okumalıdır.
 \begin{ornekkutu}[Klavyeden tarama kodu okuyan ISR]
 \begin{lstlisting}
 bits 32
-klavye_isr:
+keyboardIsr:
     pusha
     in  al, 0x60          ; klavye veri portundan tarama kodunu oku
 
     ; AL simdi tarama kodunu icerir.
     ; Ust bit 1 ise tus BIRAKILDI, 0 ise BASILDI:
     test al, 0x80
-    jnz .birakildi
+    jnz .released
 
     ; --- tusa basildi: burada isle ---
     ; ornek: tarama kodunu bir tampona kaydet
-    mov [son_tus], al
+    mov [lastKey], al
 
-.birakildi:
+.released:
     mov al, 0x20          ; PIC'e EOI gonder
     out 0x20, al
     popa
     iret
 
-son_tus: db 0
+lastKey: db 0
 \end{lstlisting}
 \end{ornekkutu}
 
@@ -2263,16 +2263,16 @@ bir fonksiyon bunları değiştirirse geri yüklemekle yükümlüdür.
 \begin{ornekkutu}[64-bit Linux'ta "Merhaba" yazan syscall örneği]
 \begin{lstlisting}
 section .data
-    mesaj db "Merhaba", 10   ; 10 = yeni satir
-    uzunluk equ $ - mesaj    ; metnin uzunlugu
+    message db "Merhaba", 10 ; 10 = yeni satir
+    msgLen equ $ - message   ; metnin uzunlugu
 
 section .text
     global _start
 _start:
     mov rax, 1        ; sys_write cagri numarasi
     mov rdi, 1        ; dosya tanimlayici: stdout
-    mov rsi, mesaj    ; tampon adresi
-    mov rdx, uzunluk  ; yazilacak bayt sayisi
+    mov rsi, message  ; tampon adresi
+    mov rdx, msgLen   ; yazilacak bayt sayisi
     syscall           ; cekirdegi cagir
 
     mov rax, 60       ; sys_exit cagri numarasi
@@ -2295,14 +2295,14 @@ Null ile biten bir metnin uzunluğunu sayar -- C'deki \kod{strlen} karşılığ�
 \begin{lstlisting}
 strlen:               ; giris: SI = metin,  cikis: CX = uzunluk
     xor cx, cx        ; sayac = 0
-.dongu:
+.loop:
     mov al, [si]      ; siradaki karakter
     test al, al       ; null mu?
-    jz  .son
+    jz  .end
     inc cx            ; uzunlugu artir
     inc si            ; sonraki karaktere gec
-    jmp .dongu
-.son:
+    jmp .loop
+.end:
     ret
 \end{lstlisting}
 \end{ornekkutu}
@@ -2312,20 +2312,20 @@ strlen:               ; giris: SI = metin,  cikis: CX = uzunluk
 \begin{ornekkutu}[SCASB/CMPSB olmadan elle karşılaştırma]
 \begin{lstlisting}
 strcmp:               ; SI ve DI: iki metin.  Esitse ZF=1 doner
-.dongu:
+.loop:
     mov al, [si]
     mov bl, [di]
     cmp al, bl
-    jne .farkli       ; karakterler farkli -> esit degil
+    jne .notEqual     ; karakterler farkli -> esit degil
     test al, al       ; ikisi de null mu? (metin sonu)
-    jz  .esit         ; evet -> metinler ayni
+    jz  .equal        ; evet -> metinler ayni
     inc si
     inc di
-    jmp .dongu
-.farkli:
+    jmp .loop
+.notEqual:
     ; ZF=0 (cmp farkli oldugu icin)
     ret
-.esit:
+.equal:
     ; ZF=1
     ret
 \end{lstlisting}
@@ -2338,26 +2338,26 @@ sırada toplamayı gerektirir. Klasik bir alçak seviye problemi.
 
 \begin{ornekkutu}[AX'teki işaretsiz sayıyı ekrana yazdırma (gerçek mod)]
 \begin{lstlisting}
-yaz_sayi:             ; giris: AX = yazdirilacak sayi
+printNumber:          ; giris: AX = yazdirilacak sayi
     push bx
     push cx
     push dx
     mov cx, 0         ; kac rakam yiginda oldugunu say
     mov bx, 10        ; bolen (taban 10)
-.bol:
+.divide:
     xor dx, dx        ; DX'i temizle (DX:AX / BX icin)
     div bx            ; AX = AX/10,  DX = kalan (bir rakam)
     add dl, '0'       ; rakami ASCII'ye cevir
     push dx           ; yigina at (ters sirada birikir)
     inc cx
     test ax, ax       ; sayi bitti mi?
-    jnz .bol
-.yaz:
+    jnz .divide
+.write:
     pop dx            ; rakamlari dogru sirada geri cek
     mov ah, 0x0E
     mov al, dl
     int 0x10          ; ekrana yaz
-    loop .yaz
+    loop .write
     pop dx
     pop cx
     pop bx
@@ -2369,7 +2369,7 @@ yaz_sayi:             ; giris: AX = yazdirilacak sayi
 
 \begin{ornekkutu}[AL'deki baytı iki hex rakamı olarak yazma]
 \begin{lstlisting}
-yaz_hex:              ; giris: AL = bayt
+printHex:             ; giris: AL = bayt
     push ax
     mov ah, al        ; kopyala
     shr al, 4         ; ust yarim-bayti al (yuksek nibble)
@@ -2381,12 +2381,12 @@ yaz_hex:              ; giris: AL = bayt
     ret
 .nibble:              ; AL'deki 0-15 degerini hex rakamina cevir
     cmp al, 10
-    jl  .rakam
+    jl  .digit
     add al, 'A' - 10  ; 10-15 -> 'A'-'F'
-    jmp .yaz
-.rakam:
+    jmp .write
+.digit:
     add al, '0'       ; 0-9 -> '0'-'9'
-.yaz:
+.write:
     mov ah, 0x0E
     int 0x10
     ret
@@ -2397,15 +2397,15 @@ yaz_hex:              ; giris: AL = bayt
 
 \begin{ornekkutu}[İç içe döngüyle kaba gecikme]
 \begin{lstlisting}
-gecikme:
+delay:
     mov cx, 0xFFFF    ; dis dongu sayaci
-.dis:
+.outer:
     mov dx, 0xFFFF    ; ic dongu sayaci
-.ic:
+.inner:
     dec dx
-    jnz .ic           ; ic dongu bitene kadar
+    jnz .inner        ; ic dongu bitene kadar
     dec cx
-    jnz .dis          ; dis dongu bitene kadar
+    jnz .outer        ; dis dongu bitene kadar
     ret
 \end{lstlisting}
 \end{ornekkutu}
@@ -2425,8 +2425,8 @@ içindir.
 \textbf{Önyükleyici örneklerini test etmek} için NASM ile derleyip QEMU'da
 çalıştırabilirsiniz:
 \begin{lstlisting}[numbers=none]
-nasm -f bin onyukleyici.asm -o onyukleyici.bin
-qemu-system-x86_64 -drive format=raw,file=onyukleyici.bin
+nasm -f bin bootloader.asm -o bootloader.bin
+qemu-system-x86_64 -drive format=raw,file=bootloader.bin
 \end{lstlisting}
 \textbf{64-bit Linux programını} derleyip çalıştırmak için:
 \begin{lstlisting}[numbers=none]

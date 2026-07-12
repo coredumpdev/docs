@@ -1,0 +1,2499 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={STM32 Gömülü Sistemler ve ARM Assembly Rehberi},
+  pdfauthor={Gömülü Rehber},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}STM32 Gömülü \& ARM Assembly}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C - gömülü) ====================
+\lstdefinestyle{cstyle}{
+  language=C,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+  morekeywords={uint8_t,uint16_t,uint32_t,int32_t,volatile,GPIO_TypeDef,
+    RCC_TypeDef,TIM_TypeDef,USART_TypeDef,__IO,static,inline,void,
+    HAL_StatusTypeDef,uint64_t,size_t,bool,SysTick,NVIC_Type}
+}
+\lstset{style=cstyle}
+
+% Assembly listeleme stili (düz - dile bağlı hata riskini önler)
+\lstdefinestyle{asmstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  commentstyle=\color{yesil}\itshape,
+  backgroundcolor=\color{kodArka},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  numberstyle=\tiny\color{ortaGri},numbers=left,numbersep=8pt,
+  breaklines=true,showstringspaces=false,tabsize=8,columns=fullflexible,
+  keepspaces=true,extendedchars=true,
+  morecomment=[l]{;},
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries STM32 Gömülü Sistemler}\\[10pt]
+{\color{vurguMavi}\LARGE ve ARM Assembly Rehberi}\\[8pt]
+{\color{ortaGri}\large Register Seviyesinden Assembly'ye Uygulamalı Başvuru}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge, STM32 (ARM Cortex-M) mikrodenetleyicilerini \textbf{register
+seviyesinden} başlayarak, çevre birimleri, kesmeler ve DMA ile
+\textbf{çalışan kod örnekleriyle} anlatır; ardından donanımın altındaki
+\textbf{ARM Cortex-M assembly} dilini komut komut öğretir.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kısım 1 --- STM32 \& Cortex-M Temelleri:} mimari \textbullet\ bellek
+haritası \textbullet\ saat (clock) sistemi \textbullet\ CMSIS \textbullet\ araç zinciri.\vspace{3pt}
+
+\textbf{Kısım 2 --- GPIO ve Register Programlama:} register erişimi \textbullet\
+bit işlemleri \textbullet\ LED yakma \textbullet\ buton okuma \textbullet\ bare-metal vs HAL.\vspace{3pt}
+
+\textbf{Kısım 3 --- Çevre Birimleri:} zamanlayıcı (timer) \& PWM \textbullet\
+UART \textbullet\ ADC \textbullet\ SPI \& I2C.\vspace{3pt}
+
+\textbf{Kısım 4 --- Kesmeler:} NVIC \textbullet\ EXTI \textbullet\ SysTick
+\textbullet\ kesme öncelikleri \textbullet\ DMA.\vspace{3pt}
+
+\textbf{Kısım 5 --- ARM Assembly Temelleri:} Cortex-M programlama modeli
+\textbullet\ register'lar \textbullet\ Thumb-2 \textbullet\ temel komutlar.\vspace{3pt}
+
+\textbf{Kısım 6 --- ARM Assembly İleri:} akış kontrolü \textbullet\ fonksiyonlar
+\& yığın (AAPCS) \textbullet\ diziler \textbullet\ C ile karıştırma.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 13 Temmuz 2026}\\[4pt]
+{\color{ortaGri} STM32 \textbullet\ ARM Cortex-M \textbullet\ Kodlar İngilizce, açıklamalar Türkçe}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{STM32 ve Cortex-M Temelleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{Giriş: Mikrodenetleyiciler ve STM32}
+% =====================================================================
+
+Mikrodenetleyici (MCU), bir işlemci çekirdeği, bellek (Flash + RAM) ve çevre
+birimlerini (GPIO, timer, UART\dots) tek bir çip üzerinde toplayan küçük bir
+bilgisayardır. STM32, STMicroelectronics'in ARM \emph{Cortex-M} çekirdeği
+kullanan popüler MCU ailesidir; endüstride, robotikte ve hobide yaygındır.
+
+\gsub{Mikroişlemci vs Mikrodenetleyici}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{} & \color{anaMavi}\textbf{Mikroişlemci (PC/telefon)} & \color{anaMavi}\textbf{Mikrodenetleyici (STM32)}\\
+\midrule
+Bellek & Harici GB'larca RAM & Dahili KB'larca RAM/Flash\\
+\rowcolor{acikGri} İşletim sistemi & Linux/Windows & Genelde yok (bare-metal) veya RTOS\\
+Çevre birimleri & Harici çipler & Çip içinde tümleşik\\
+\rowcolor{acikGri} Güç & Watt'lar & Miliwatt'lar\\
+Gerçek zaman & Zor (OS gecikmesi) & Deterministik, kolay\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{STM32 Ailesi ve Cortex-M Çekirdekleri}
+
+STM32 ailesi, ihtiyaca göre farklı Cortex-M çekirdekleri kullanır. Hepsi aynı
+komut setini (Thumb-2) paylaşır, bu yüzden bilgiler taşınabilirdir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Seri} & \color{anaMavi}\textbf{Çekirdek} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+STM32F0/L0 & Cortex-M0/M0+ & Düşük maliyet, düşük güç\\
+\rowcolor{acikGri} STM32F1/F3 & Cortex-M3/M4 & Genel amaçlı (ör. ünlü ``Blue Pill'')\\
+STM32F4/F7 & Cortex-M4/M7 & Yüksek performans, FPU, DSP\\
+\rowcolor{acikGri} STM32H7 & Cortex-M7 & En yüksek performans (480 MHz+)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Neden Register Seviyesi Öğrenmeli?}
+
+Çoğu proje ST'nin HAL (Hardware Abstraction Layer) kütüphanesiyle yazılır ---
+hızlıdır ama neyin nasıl çalıştığını gizler. Bu rehber önce \emph{register
+seviyesini} (bare-metal) öğretir, çünkü:
+
+\begin{itemize}\itemsep2pt
+\item Donanımın gerçekte nasıl çalıştığını anlarsın (datasheet okuma becerisi).
+\item HAL'ın gizlediği hataları ayıklayabilirsin.
+\item Kritik yerlerde daha hızlı, daha küçük kod yazabilirsin.
+\item Assembly'ye (Kısım 5-6) geçiş doğal olur.
+\end{itemize}
+
+\bilgi{Öğrenmek için gerçek bir karta ihtiyacın var. Ucuz ve yaygın seçenekler:
+\textbf{STM32F103 ``Blue Pill''} (Cortex-M3, çok ucuz), \textbf{STM32 Nucleo}
+kartları (dahili ST-Link programlayıcı ile) ve \textbf{STM32 Discovery}
+kartları. Programlamak için bir \code{ST-Link} programlayıcı/hata ayıklayıcı
+gerekir (Nucleo'da dahili).}
+
+% =====================================================================
+\gsec{Bellek Haritası ve Register Modeli}
+% =====================================================================
+
+STM32'yi register seviyesinde programlamak, aslında \emph{belirli bellek
+adreslerine} değer yazıp okumaktır. Her çevre birimi, bellek haritasında
+sabit bir adrese ``eşlenmiştir'' (memory-mapped I/O). Bir GPIO pinini yakmak,
+o pine karşılık gelen bir register'a bir bit yazmaktan ibarettir.
+
+\gsub{Cortex-M Bellek Haritası}
+
+Cortex-M, 4 GB'lık düz (flat) bir adres uzayına sahiptir; bu uzay sabit
+bölgelere ayrılmıştır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l >{\bfseries}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Adres} & \color{anaMavi}\textbf{Bölge} & \color{anaMavi}\textbf{İçerik}\\
+\midrule
+0x0000\_0000 & Code & Flash (program kodu), vektör tablosu\\
+\rowcolor{acikGri} 0x2000\_0000 & SRAM & Değişkenler, yığın (stack), heap\\
+0x4000\_0000 & Peripheral & Çevre birimi register'ları (GPIO, TIM\dots)\\
+\rowcolor{acikGri} 0xE000\_0000 & Cortex-M iç & NVIC, SysTick, SCB (sistem register'ları)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Register'a Erişim: volatile İşaretçiler}
+
+Bir çevre birimi register'ına C'de erişmek için, adresini bir \code{volatile}
+işaretçi olarak ele alırız. \code{volatile} anahtar kelimesi kritiktir:
+derleyiciye ``bu değer her an donanım tarafından değişebilir, okumaları/yazmaları
+optimize etme'' der.
+
+\begin{lstlisting}
+#include <stdint.h>
+
+/* GPIOC çevre biriminin taban adresi (STM32F1 için) */
+#define GPIOC_BASE   0x40011000UL
+#define RCC_BASE     0x40021000UL
+
+/* Register'lara volatile işaretçilerle eriş */
+#define RCC_APB2ENR  (*(volatile uint32_t *)(RCC_BASE + 0x18))
+#define GPIOC_CRH    (*(volatile uint32_t *)(GPIOC_BASE + 0x04))
+#define GPIOC_ODR    (*(volatile uint32_t *)(GPIOC_BASE + 0x0C))
+
+/* Kullanım: bir register'a doğrudan yaz/oku */
+/* RCC_APB2ENR |= (1 << 4);   // GPIOC saatini aç (birazdan açıklanacak) */
+\end{lstlisting}
+
+\uyari{\code{volatile}'i unutmak, gömülü sistemlerdeki en sinsi hatalardan
+biridir. Derleyici, ``değişmeyen'' sandığı bir register okumasını döngüden
+çıkarabilir veya bir yazmayı tamamen atabilir --- kod ``bazen çalışır bazen
+çalışmaz''. Donanım register'larına erişim \textbf{her zaman} \code{volatile}
+olmalıdır.}
+
+\gsub{CMSIS: Standart Register Tanımları}
+
+Yukarıdaki gibi adresleri elle tanımlamak yerine, ARM'ın \emph{CMSIS}
+(Cortex Microcontroller Software Interface Standard) standardı ve ST'nin aygıt
+başlıkları (\code{stm32f1xx.h}) her register'ı hazır, tip güvenli
+\code{struct}'larla tanımlar. Gerçek projede bunları kullanırız.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"      /* CMSIS aygıt başlığı: tüm register'lar tanımlı */
+
+/* CMSIS ile aynı işlem çok daha okunaklı: */
+/* Her çevre birimi bir struct işaretçisidir (GPIOC, RCC, TIM2...) */
+RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;   /* GPIOC saatini aç */
+GPIOC->ODR   |= (1 << 13);            /* PC13 pinini yüksek yap */
+\end{lstlisting}
+
+\bilgi{CMSIS başlıkları, bir çevre biriminin taban adresini bir \code{struct}
+işaretçisi olarak tanımlar; struct alanları da register'lara karşılık gelir.
+Örneğin \code{GPIOC->ODR}, derleyici tarafından tam olarak
+\code{*(volatile uint32\_t*)(0x40011000 + 0x0C)} adresine çevrilir --- yani
+elle yaptığımızla aynı, ama okunaklı ve hatasız.}
+
+% =====================================================================
+\gsec{Saat Sistemi ve Araç Zinciri}
+% =====================================================================
+
+\gsub{Saat (Clock) Sistemi ve RCC}
+
+Güç tasarrufu için STM32'de çevre birimlerinin saatleri \emph{varsayılan olarak
+kapalıdır}. Bir çevre birimini (GPIO, timer, UART\dots) kullanmadan önce, onun
+saatini \emph{RCC} (Reset and Clock Control) üzerinden \textbf{açmalısın}. Bu,
+yeni başlayanların en sık unuttuğu adımdır.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+/* Bir çevre birimini kullanmadan ÖNCE saatini aç: */
+RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;   /* GPIOC (APB2 veri yolunda) */
+RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;   /* TIM2 (APB1 veri yolunda) */
+RCC->APB2ENR |= RCC_APB2ENR_USART1EN; /* USART1 */
+\end{lstlisting}
+
+\uyari{\textbf{``Kodum çalışmıyor'' vakalarının bir numaralı sebebi:} çevre
+biriminin saatini açmayı unutmak. Saat kapalıysa register'lara yazdığın değerler
+\emph{hiçbir etki yapmaz} (ve okumalar 0 döner). Yeni bir çevre birimi
+kullanırken ilk yapman gereken, doğru RCC register'ında saatini açmaktır ---
+hangi veri yolunda (AHB/APB1/APB2) olduğunu datasheet'ten kontrol et.}
+
+\gsub{Araç Zinciri ve Derleme}
+
+STM32 için kod, \code{arm-none-eabi-gcc} çapraz derleyicisiyle (cross-compiler)
+derlenir --- kodu PC'de derleyip MCU için makine kodu üretir.
+
+\begin{lstlisting}[style=shstyle]
+# ARM GCC araç zincirini kur (Debian/Ubuntu)
+$ sudo apt install gcc-arm-none-eabi gdb-multiarch openocd stlink-tools
+
+# Derle: startup + linker script gerekir
+$ arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Wall -g \
+    -T stm32f103.ld -nostartfiles \
+    startup.s main.c -o firmware.elf
+
+# ELF'ten ikili (binary) üret
+$ arm-none-eabi-objcopy -O binary firmware.elf firmware.bin
+
+# Karta yükle (ST-Link ile)
+$ st-flash write firmware.bin 0x08000000
+
+# Boyutu gör (Flash/RAM kullanımı)
+$ arm-none-eabi-size firmware.elf
+\end{lstlisting}
+
+\bilgi{\textbf{Bare-metal derleme üç özel parça gerektirir:} (1) \emph{startup
+kodu} (\code{startup.s}) --- reset sonrası çalışan, yığını kuran ve
+\code{main}'e atlayan assembly; (2) \emph{linker script} (\code{.ld}) --- kodun
+Flash'ta, değişkenlerin RAM'de nereye yerleşeceğini tarif eder; (3)
+\emph{vektör tablosu} --- kesme işleyici adreslerini tutar. STM32CubeIDE bunları
+otomatik üretir; ama nasıl çalıştıklarını bilmek şarttır. Startup kodunu
+Kısım 6'da assembly ile inceleyeceğiz.}
+
+% =====================================================================
+\gsec{Saat Ağacı (Clock Tree) Detayı}
+% =====================================================================
+
+STM32'nin ne kadar hızlı çalışacağını ve her çevre biriminin hangi frekansı
+alacağını \emph{saat ağacı} belirler. Reset sonrası MCU yavaş dahili bir
+osilatörle çalışır; tam hıza ulaşmak için saat ağacını yapılandırmak gerekir.
+
+\gsub{Saat Kaynakları ve PLL}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l >{\bfseries}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kaynak} & \color{anaMavi}\textbf{Ad} & \color{anaMavi}\textbf{Özellik}\\
+\midrule
+HSI & Dahili yüksek hız & RC osilatör (ör. 8/16 MHz), hazır ama az hassas.\\
+\rowcolor{acikGri} HSE & Harici yüksek hız & Kristal (ör. 8 MHz), hassas.\\
+PLL & Faz kilitli çevrim & Kaynağı çarparak yüksek frekans üretir (ör. 72 MHz).\\
+\rowcolor{acikGri} LSE / LSI & Düşük hız & 32.768 kHz --- RTC ve watchdog için.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Tipik yol: HSE (8 MHz kristal) $\to$ PLL ile $\times 9$ $\to$ 72 MHz sistem
+saati (SYSCLK). Ardından \emph{prescaler}'lar ile AHB, APB1, APB2 veri yolları
+için türev saatler üretilir.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+/* HSE + PLL ile 72 MHz'e çık (STM32F103) */
+void clock_init_72mhz(void)
+{
+    RCC->CR |= RCC_CR_HSEON;                    /* harici kristali başlat */
+    while (!(RCC->CR & RCC_CR_HSERDY));         /* hazır olmasını bekle */
+
+    FLASH->ACR |= FLASH_ACR_LATENCY_2;         /* 72 MHz için 2 flash bekleme */
+
+    /* PLL: kaynak HSE, çarpan x9 -> 8 MHz * 9 = 72 MHz */
+    RCC->CFGR |= RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL9;
+    RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;          /* APB1 max 36 MHz -> /2 */
+
+    RCC->CR |= RCC_CR_PLLON;                    /* PLL'i başlat */
+    while (!(RCC->CR & RCC_CR_PLLRDY));
+
+    RCC->CFGR |= RCC_CFGR_SW_PLL;              /* sistem saatini PLL yap */
+    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
+}
+\end{lstlisting}
+
+\uyari{Saat frekansını artırırken \textbf{Flash bekleme durumunu} (wait state,
+\code{FLASH\_ACR\_LATENCY}) doğru ayarlamalısın: Flash belleği CPU kadar hızlı
+okunamaz, bu yüzden yüksek frekansta ek bekleme gerekir. Ayarı unutmak, MCU'nun
+kilitlenmesine veya kararsız çalışmasına yol açar. Her frekans aralığı için
+gereken bekleme sayısı datasheet'te belirtilir.}
+
+\bilgi{Saat ağacını elle kurmak yorucudur; ST'nin \textbf{STM32CubeMX} aracı,
+grafik bir saat ağacı editörüyle bu kodu otomatik üretir. Yine de mekanizmayı
+bilmek, ``çevre birimim yanlış frekansta çalışıyor'' tarzı hataları çözmek için
+gereklidir. Timer ve UART frekansları doğrudan APB saatlerine bağlıdır.}
+
+% #####################################################################
+\gpart{2}{GPIO ve Register Seviyesi Programlama}
+% #####################################################################
+
+% =====================================================================
+\gsec{GPIO: Genel Amaçlı Giriş/Çıkış}
+% =====================================================================
+
+GPIO (General-Purpose Input/Output) pinleri, MCU'nun dış dünyayla en temel
+bağlantısıdır: bir LED yakmak, bir butonu okumak, bir röleyi tetiklemek hep
+GPIO ile yapılır. Her pin ya \emph{çıkış} (output --- MCU pini sürer) ya da
+\emph{giriş} (input --- MCU pini okur) olarak yapılandırılır.
+
+\gsub{GPIO Register'ları}
+
+Her GPIO portu (GPIOA, GPIOB\dots) birkaç register'a sahiptir. En önemlileri:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{İşlevi}\\
+\midrule
+CRL / CRH & Yapılandırma: pin giriş mi çıkış mı, hız, mod (F1 serisi).\\
+\rowcolor{acikGri} MODER & Pin modu (F0/F4 serisinde CRL/CRH yerine).\\
+IDR & Input Data Register: giriş pinlerinin durumunu \emph{okur}.\\
+\rowcolor{acikGri} ODR & Output Data Register: çıkış pinlerine değer \emph{yazar}.\\
+BSRR & Bit Set/Reset: pinleri atomik olarak 1 veya 0 yapar.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Bit İşlemleri: Register Programlamanın Dili}
+
+Register'larla çalışmak, tek tek \emph{bitleri} ayarlamaktır. Diğer bitleri
+bozmadan belirli bitleri değiştirmek için bit maskeleri kullanılır. Bu dört
+işlem, gömülü programlamanın temelidir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\ttfamily}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{İşlem} & \color{anaMavi}\textbf{Kod} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+Bit kur (set) & REG |= (1 << n); & $n$. biti 1 yap (diğerlerine dokunma).\\
+\rowcolor{acikGri} Bit temizle (clear) & REG \&= \~{}(1 << n); & $n$. biti 0 yap.\\
+Bit çevir (toggle) & REG \^{}= (1 << n); & $n$. biti tersle.\\
+\rowcolor{acikGri} Bit oku (test) & (REG >> n) \& 1 & $n$. bit 1 mi?\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{\textbf{``Read-modify-write''} kalıbı: \code{REG |= (1 << n)} aslında
+üç işlemdir --- register'ı oku, biti değiştir, geri yaz. Bu yüzden bir kesme
+araya girerse yarış koşulu olabilir. STM32'nin \code{BSRR} register'ı bunu
+çözer: tek bir yazmayla, atomik olarak pin set/reset yapar --- read-modify-write
+gerekmez.}
+
+% =====================================================================
+\gsec{İlk Program: LED Yakma (Blink)}
+% =====================================================================
+
+Gömülü dünyanın ``merhaba dünya''sı bir LED yakıp söndürmektir. STM32F103
+``Blue Pill'' kartında dahili LED \emph{PC13} pinine bağlıdır. Adım adım
+register seviyesinde yapalım.
+
+\gsub{Bare-Metal LED Blink}
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+/* Basit gecikme: işlemciyi meşgul tutan bir döngü (kaba, kalibre değil) */
+static void delay(volatile uint32_t count)
+{
+    while (count--) {
+        __asm__("nop");   /* "no operation" -- derleyici döngüyü silmesin */
+    }
+}
+
+int main(void)
+{
+    /* 1) GPIOC saatini aç (RCC üzerinden) */
+    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
+
+    /* 2) PC13'ü çıkış olarak yapılandır (F1: CRH, pin 13 -> bit 20-23)
+          MODE = 0b10 (2 MHz çıkış), CNF = 0b00 (push-pull) */
+    GPIOC->CRH &= ~(0xF << 20);        /* önce PC13 alanını temizle */
+    GPIOC->CRH |=  (0x2 << 20);        /* sonra çıkış modunu kur */
+
+    /* 3) Sonsuz döngüde LED'i çevir */
+    while (1) {
+        GPIOC->ODR ^= (1 << 13);       /* PC13'ü tersle (toggle) */
+        delay(500000);                 /* bir süre bekle */
+    }
+}
+\end{lstlisting}
+
+\notk[BSRR ile atomik kontrol]{Yukarıda \code{ODR \^{}= ...} kullandık; ama
+pini kesin olarak açıp kapamak için \code{BSRR} daha güvenlidir. BSRR'nin alt
+16 biti pini \emph{set} eder (1 yapar), üst 16 biti \emph{reset} eder (0 yapar):
+\code{GPIOC->BSRR = (1 << 13);} pini yakar,
+\code{GPIOC->BSRR = (1 << (13+16));} söndürür --- her ikisi de tek, atomik
+yazmadır.}
+
+\gsub{Aynı İş HAL ile}
+
+Karşılaştırma için, aynı işi ST'nin HAL kütüphanesi çok daha yüksek seviyede
+yapar (ama arkada aynı register'lara yazar):
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+int main(void)
+{
+    HAL_Init();
+    __HAL_RCC_GPIOC_CLK_ENABLE();          /* saati aç */
+
+    GPIO_InitTypeDef cfg = {0};
+    cfg.Pin   = GPIO_PIN_13;
+    cfg.Mode  = GPIO_MODE_OUTPUT_PP;       /* push-pull çıkış */
+    cfg.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &cfg);
+
+    while (1) {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+        HAL_Delay(500);                    /* 500 ms (SysTick tabanlı) */
+    }
+}
+\end{lstlisting}
+
+\bilgi{\textbf{Bare-metal vs HAL:} Bare-metal kod küçük, hızlı ve şeffaftır ama
+her register'ı elle ayarlaman gerekir (datasheet okuma). HAL taşınabilir ve
+hızlı geliştirme sağlar ama daha büyük/yavaştır ve bazen davranışı gizler.
+Öğrenirken bare-metal, üretimde çoğu zaman HAL (veya LL --- Low-Layer)
+kullanılır. İkisini de anlamak en iyisidir.}
+
+% =====================================================================
+\gsec{Giriş Okuma: Buton}
+% =====================================================================
+
+Bir butonu okumak, bir GPIO pinini \emph{giriş} olarak yapılandırıp \code{IDR}
+register'ından durumunu okumaktır. Butonun elektriksel olarak tanımlı bir
+seviyede durması için \emph{pull-up} veya \emph{pull-down} direnci gerekir
+(STM32'de dahili olarak etkinleştirilebilir).
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+int main(void)
+{
+    /* GPIOA ve GPIOC saatlerini aç */
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPCEN;
+
+    /* PA0'ı giriş + pull-up olarak yapılandır (CRL, pin 0 -> bit 0-3)
+       MODE=0b00 (giriş), CNF=0b10 (pull-up/pull-down) */
+    GPIOA->CRL &= ~(0xF << 0);
+    GPIOA->CRL |=  (0x8 << 0);
+    GPIOA->ODR |=  (1 << 0);            /* ODR biti pull-UP seçer */
+
+    /* PC13'ü çıkış yap (LED) */
+    GPIOC->CRH &= ~(0xF << 20);
+    GPIOC->CRH |=  (0x2 << 20);
+
+    while (1) {
+        /* Butona basılınca PA0 düşer (pull-up olduğu için basılı = 0) */
+        if (((GPIOA->IDR >> 0) & 1) == 0) {
+            GPIOC->BSRR = (1 << 13);       /* LED aç */
+        } else {
+            GPIOC->BSRR = (1 << (13 + 16)); /* LED kapat */
+        }
+    }
+}
+\end{lstlisting}
+
+\uyari{\textbf{Buton sıçraması (debouncing):} Mekanik butonlar, basıldığında
+birkaç milisaniye boyunca hızla açılıp kapanır (bounce). Ham okuma tek bir
+basışı ``çok basış'' olarak algılayabilir. Çözüm: bir okuma sonrası kısa bir
+gecikme (ör. 20 ms) koymak veya durumu birkaç kez üst üste teyit etmek
+(software debouncing).}
+
+% #####################################################################
+\gpart{3}{Çevre Birimleri (Peripherals)}
+% #####################################################################
+
+STM32'nin gücü, çip içindeki zengin çevre birimlerinden gelir: zamanlayıcılar,
+seri iletişim (UART, SPI, I2C), analog-dijital çevirici (ADC) ve daha fazlası.
+Her biri kendi register'larıyla yapılandırılır. Bu kısım en yaygın olanları
+tanıtır.
+
+% =====================================================================
+\gsec{Zamanlayıcılar (Timers) ve PWM}
+% =====================================================================
+
+Zamanlayıcı (timer), belirli bir saat frekansıyla sayan bir sayaçtır. Kesin
+zaman aralıkları üretmek, olayları saymak, gecikme oluşturmak ve \emph{PWM}
+(darbe genişlik modülasyonu) üretmek için kullanılır. PWM, LED parlaklığı
+ayarlama ve motor/servo kontrolünün temelidir.
+
+\gsub{Zamanlayıcı Nasıl Çalışır?}
+
+Bir timer, \code{PSC} (prescaler --- ön bölücü) ile saati böler, sonra
+\code{ARR} (auto-reload register) değerine kadar sayar; oraya ulaşınca sıfırlanıp
+bir olay (ve isteğe bağlı kesme) üretir. Timer frekansı:
+$f_{\text{timer}} = \dfrac{f_{\text{clock}}}{(PSC+1)\times(ARR+1)}$.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+/* TIM2'yi 1 Hz periyotla (72 MHz saat varsayımı) yapılandır */
+void timer_init(void)
+{
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;    /* TIM2 saatini aç */
+
+    TIM2->PSC = 7200 - 1;                  /* 72 MHz / 7200 = 10 kHz */
+    TIM2->ARR = 10000 - 1;                 /* 10 kHz / 10000 = 1 Hz */
+    TIM2->CR1 |= TIM_CR1_CEN;              /* sayacı başlat (counter enable) */
+}
+
+/* Sayacın taşmasını (update event) yoklayarak bekle */
+void timer_wait_update(void)
+{
+    while (!(TIM2->SR & TIM_SR_UIF));      /* update flag'i bekle */
+    TIM2->SR &= ~TIM_SR_UIF;               /* flag'i temizle */
+}
+\end{lstlisting}
+
+\gsub{PWM Üretme}
+
+PWM, sabit frekanslı ama değişken \emph{doluluk oranına} (duty cycle) sahip bir
+kare dalgadır. \code{CCR} (capture/compare register) doluluk oranını belirler.
+Örneğin bir LED'in parlaklığını, göz ortalamayı algıladığı için, PWM ile
+ayarlarız.
+
+\begin{lstlisting}
+/* TIM3 Kanal 1'de PWM (PA6 pini) -- LED parlaklık kontrolü */
+void pwm_init(void)
+{
+    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+
+    /* PA6'yı alternatif fonksiyon push-pull çıkış yap (CRL bit 24-27) */
+    GPIOA->CRL &= ~(0xF << 24);
+    GPIOA->CRL |=  (0xB << 24);            /* MODE=0b11 (50MHz), CNF=0b10 (AF-PP) */
+
+    TIM3->PSC = 72 - 1;                    /* 72 MHz / 72 = 1 MHz sayım */
+    TIM3->ARR = 1000 - 1;                  /* 1 MHz / 1000 = 1 kHz PWM */
+    TIM3->CCR1 = 250;                      /* doluluk = 250/1000 = %25 */
+    TIM3->CCMR1 |= (6 << 4);               /* PWM mode 1 (OC1M = 110) */
+    TIM3->CCER  |= TIM_CCER_CC1E;          /* kanal 1 çıkışını etkinleştir */
+    TIM3->CR1   |= TIM_CR1_CEN;
+}
+/* Parlaklığı değiştirmek için: TIM3->CCR1 = yeni_deger; (0..999) */
+\end{lstlisting}
+
+\ipucu{PWM'in doluluk oranını (\code{CCR}) çalışırken değiştirerek bir LED'i
+yavaşça parlatıp söndürebilir (fade), bir servo motorun açısını ayarlayabilir
+veya bir DC motorun hızını kontrol edebilirsin. Frekans (\code{PSC}/\code{ARR})
+sabit kalır, yalnızca \code{CCR} değişir.}
+
+\gsub{HAL Driver ile Timer ve PWM}
+
+\gsubsub{Periyodik Timer Kesmesi}
+
+HAL ile bir timer'ı periyodik kesme üretecek şekilde kurmak birkaç satırdır;
+her taşmada \code{HAL\_TIM\_PeriodElapsedCallback} çağrılır.
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+TIM_HandleTypeDef htim2;
+
+void timer_hal_init(void)
+{
+    __HAL_RCC_TIM2_CLK_ENABLE();
+
+    htim2.Instance           = TIM2;
+    htim2.Init.Prescaler     = 7200 - 1;   /* 72 MHz / 7200 = 10 kHz */
+    htim2.Init.Period        = 10000 - 1;  /* 10 kHz / 10000 = 1 Hz */
+    htim2.Init.CounterMode   = TIM_COUNTERMODE_UP;
+    HAL_TIM_Base_Init(&htim2);
+
+    HAL_TIM_Base_Start_IT(&htim2);         /* kesmeli olarak başlat */
+    HAL_NVIC_EnableIRQ(TIM2_IRQn);
+}
+
+/* Her periyot dolduğunda (1 Hz) çağrılır */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM2) {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);   /* LED çevir */
+    }
+}
+
+void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
+\end{lstlisting}
+
+\gsubsub{HAL ile PWM}
+
+\begin{lstlisting}
+TIM_HandleTypeDef htim3;
+
+void pwm_hal_init(void)
+{
+    __HAL_RCC_TIM3_CLK_ENABLE();
+
+    htim3.Instance        = TIM3;
+    htim3.Init.Prescaler  = 72 - 1;        /* 1 MHz sayım */
+    htim3.Init.Period     = 1000 - 1;      /* 1 kHz PWM */
+    HAL_TIM_PWM_Init(&htim3);
+
+    TIM_OC_InitTypeDef oc = {0};
+    oc.OCMode     = TIM_OCMODE_PWM1;
+    oc.Pulse      = 250;                    /* doluluk = %25 (250/1000) */
+    oc.OCPolarity = TIM_OCPOLARITY_HIGH;
+    HAL_TIM_PWM_ConfigChannel(&htim3, &oc, TIM_CHANNEL_1);
+
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);   /* PWM çıkışını başlat */
+}
+
+/* Çalışırken doluluk oranını değiştir (ör. LED parlaklığı / motor hızı) */
+void pwm_set_duty(uint16_t duty)           /* 0..999 */
+{
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, duty);
+}
+\end{lstlisting}
+
+\gsubsub{Input Capture: Sinyal Ölçme}
+
+Timer'ın bir başka gücü \emph{input capture}'dır: bir giriş pinindeki kenar
+geldiğinde sayaç değerini yakalar. Böylece bir sinyalin frekansını veya darbe
+genişliğini (ör. HC-SR04 mesafe sensörü, RC alıcı) ölçebilirsin.
+
+\begin{lstlisting}
+/* Kenar yakalandığında çağrılır -- iki yakalama arası fark periyodu verir */
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
+        uint32_t captured = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+        /* Ardışık iki 'captured' farkı -> periyot -> frekans hesaplanır */
+    }
+}
+/* Başlatma: HAL_TIM_IC_Start_IT(&htim, TIM_CHANNEL_1); */
+\end{lstlisting}
+
+\notk[Encoder modu]{Timer'lar ayrıca \emph{encoder modunda} çalışabilir:
+bir rotary encoder'ın (kadran/motor mili) iki fazını (A, B) sayarak konum ve
+yön bilgisini donanımda üretir. HAL'da \code{HAL\_TIM\_Encoder\_Start()} ile
+başlatılır ve sayaç değeri (\code{\_\_HAL\_TIM\_GET\_COUNTER}) doğrudan pozisyonu
+verir --- CPU hiç yorulmaz.}
+
+% =====================================================================
+\gsec{Seri İletişim: UART}
+% =====================================================================
+
+UART (Universal Asynchronous Receiver/Transmitter), iki cihaz arasında iki tel
+(TX, RX) üzerinden seri veri gönderen en yaygın iletişim yöntemidir. PC ile
+hata ayıklama mesajı alışverişinde (\code{printf} tarzı) vazgeçilmezdir.
+
+\gsub{UART Yapılandırma ve Gönderme}
+
+UART'ın en önemli ayarı \emph{baud rate}'tir (saniyedeki bit sayısı, ör. 9600
+veya 115200) --- iki taraf aynı olmalıdır. Baud, \code{BRR} register'ıyla
+ayarlanır.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+void uart_init(void)
+{
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN | RCC_APB2ENR_IOPAEN;
+
+    /* PA9 = TX (alternatif fonksiyon push-pull) */
+    GPIOA->CRH &= ~(0xF << 4);
+    GPIOA->CRH |=  (0xB << 4);
+
+    /* Baud = 115200 @ 72 MHz -> BRR = 72e6 / 115200 = 625 */
+    USART1->BRR = 625;
+    USART1->CR1 |= USART_CR1_TE;           /* verici (transmitter) etkin */
+    USART1->CR1 |= USART_CR1_UE;           /* USART'ı etkinleştir */
+}
+
+/* Tek bir karakter gönder (gönderme tamponu boşalana kadar bekle) */
+void uart_send_char(char c)
+{
+    while (!(USART1->SR & USART_SR_TXE));  /* TXE: tampon boş mu? */
+    USART1->DR = c;                        /* veriyi yaz -> otomatik gönderilir */
+}
+
+/* Bir string gönder */
+void uart_send_string(const char *s)
+{
+    while (*s) {
+        uart_send_char(*s++);
+    }
+}
+\end{lstlisting}
+
+\bilgi{UART ile PC'ye mesaj göndermek, gömülü hata ayıklamanın en pratik
+yoludur (bir tür ``\code{printf} debugging''). Bir USB-Serial dönüştürücü
+(FTDI/CP2102) ile MCU'nun TX pinini PC'ye bağlar, PC'de bir terminal
+(\code{minicom}, PuTTY, \code{screen}) açarsın. \code{printf}'i UART'a
+yönlendirmek için \code{\_write} sistem çağrısını yeniden tanımlayabilirsin.}
+
+\gsub{HAL Driver ile UART}
+
+Gerçek projelerde UART'ı register seviyesinde yönetmek yerine ST'nin
+\emph{HAL} (Hardware Abstraction Layer) sürücüsü kullanılır. HAL, tüm register
+detaylarını gizler; sadece bir \emph{handle} yapısını (\code{UART\_HandleTypeDef})
+doldurup hazır fonksiyonları çağırırsın. Aşağıda üç çalışma modu gösterilir:
+\emph{blocking} (yoklamalı), \emph{interrupt} ve \emph{DMA}.
+
+\gsubsub{Yapılandırma (Init)}
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+UART_HandleTypeDef huart1;                 /* UART handle (durum + ayarlar) */
+
+void uart_hal_init(void)
+{
+    __HAL_RCC_USART1_CLK_ENABLE();         /* saatleri aç */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* PA9=TX, PA10=RX pinlerini alternatif fonksiyon olarak ayarla */
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin   = GPIO_PIN_9;
+    gpio.Mode  = GPIO_MODE_AF_PP;          /* alternatif fonksiyon push-pull */
+    gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &gpio);
+    gpio.Pin  = GPIO_PIN_10;
+    gpio.Mode = GPIO_MODE_INPUT;           /* RX giriş */
+    HAL_GPIO_Init(GPIOA, &gpio);
+
+    /* UART parametreleri */
+    huart1.Instance          = USART1;
+    huart1.Init.BaudRate     = 115200;     /* baud hızı */
+    huart1.Init.WordLength   = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits     = UART_STOPBITS_1;
+    huart1.Init.Parity       = UART_PARITY_NONE;
+    huart1.Init.Mode         = UART_MODE_TX_RX;   /* hem gönder hem al */
+    huart1.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    HAL_UART_Init(&huart1);                /* tüm register'ları HAL ayarlar */
+}
+\end{lstlisting}
+
+\gsubsub{Blocking (Yoklamalı) Gönderme ve Alma}
+
+En basit mod: fonksiyon, işlem bitene (veya zaman aşımına) kadar \emph{bekler}.
+
+\begin{lstlisting}
+uint8_t rx_byte;
+char msg[] = "Merhaba UART\r\n";
+
+/* Gönder: işlem bitene kadar bekle (son parametre = zaman aşımı ms) */
+HAL_UART_Transmit(&huart1, (uint8_t *)msg, sizeof(msg) - 1, HAL_MAX_DELAY);
+
+/* Al: 1 bayt gelene kadar bekle */
+HAL_UART_Receive(&huart1, &rx_byte, 1, HAL_MAX_DELAY);
+\end{lstlisting}
+
+\gsubsub{Interrupt Modu (Non-Blocking)}
+
+Interrupt modunda CPU beklemez; veri gelince/gidince HAL bir \emph{callback}
+çağırır. Bu, işlemciyi bloklamadan arka planda iletişim sağlar.
+
+\begin{lstlisting}
+uint8_t rx_buffer[1];
+
+void uart_start_receive(void)
+{
+    /* 1 bayt için kesmeli alım başlat -- hemen döner, beklemez */
+    HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
+}
+
+/* Alım tamamlanınca HAL bunu otomatik çağırır (callback'i sen yazarsın) */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART1) {
+        /* Gelen baytı işle (örneğin geri gönder - echo) */
+        HAL_UART_Transmit_IT(&huart1, rx_buffer, 1);
+        HAL_UART_Receive_IT(&huart1, rx_buffer, 1);  /* tekrar dinle */
+    }
+}
+
+/* USART1 kesmesi HAL'ın işleyicisine yönlendirilmeli (ISR): */
+void USART1_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&huart1);          /* HAL kesmeyi çözer, callback'i çağırır */
+}
+\end{lstlisting}
+
+\gsubsub{DMA Modu (Yüksek Verim)}
+
+Büyük veri bloklarını CPU'yu hiç meşgul etmeden aktarmak için DMA kullanılır.
+
+\begin{lstlisting}
+/* Bir bloğu DMA ile gönder -- CPU başka iş yaparken transfer arka planda olur */
+HAL_UART_Transmit_DMA(&huart1, (uint8_t *)msg, sizeof(msg) - 1);
+
+/* DMA transferi bitince çağrılır */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    /* Gönderim tamamlandı -- bir sonraki bloğu başlatabilirsin */
+}
+\end{lstlisting}
+
+\gsubsub{printf'i UART'a Yönlendirme}
+
+\code{printf}'in UART'a çıkmasını sağlamak için \code{\_write} (veya
+\code{\_\_io\_putchar}) sistem fonksiyonunu HAL üzerinden yeniden tanımlarız:
+
+\begin{lstlisting}
+#include <stdio.h>
+
+/* newlib'in printf'i sonunda buraya gelir -> UART'a yaz */
+int _write(int file, char *ptr, int len)
+{
+    HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
+    return len;
+}
+/* Artık: printf("Sicaklik: %d C\n", temp);  -> UART terminaline çıkar */
+\end{lstlisting}
+
+\bilgi{\textbf{Hangi mod ne zaman?} \emph{Blocking} en basittir, kısa mesajlar
+için idealdir ama CPU'yu bekletir. \emph{Interrupt} modu, arka planda sürekli
+komut/veri alışverişi (ör. bir konsol) için uygundur. \emph{DMA}, yüksek hızlı
+veya büyük bloklar (ör. sensör akışı, log) için CPU'yu tamamen serbest bırakır.
+HAL'ın güzelliği, aynı sürücüyle üç modu da kolayca kullanabilmendir.}
+
+% =====================================================================
+\gsec{ADC ve Diğer Veri Yolları (SPI, I2C)}
+% =====================================================================
+
+\gsub{ADC: Analog Okuma}
+
+ADC (Analog-to-Digital Converter), bir pindeki analog gerilimi (0--3.3 V) bir
+sayıya çevirir. Potansiyometre, sıcaklık sensörü, ışık sensörü gibi analog
+kaynakları okumak için kullanılır. STM32'nin 12-bit ADC'si 0--4095 arası değer
+üretir.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+void adc_init(void)
+{
+    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN | RCC_APB2ENR_IOPAEN;
+    /* PA0 varsayılan olarak analog giriş yapabilir (CRL sıfırla) */
+    GPIOA->CRL &= ~(0xF << 0);             /* PA0 = analog mod (0b0000) */
+
+    ADC1->CR2 |= ADC_CR2_ADON;             /* ADC'yi aç */
+}
+
+/* Kanal 0'dan (PA0) bir örnek oku */
+uint16_t adc_read(void)
+{
+    ADC1->SQR3 = 0;                        /* dönüşüm sırası: kanal 0 */
+    ADC1->CR2 |= ADC_CR2_ADON;             /* dönüşümü başlat */
+    while (!(ADC1->SR & ADC_SR_EOC));      /* dönüşüm bitti mi? (EOC) */
+    return ADC1->DR;                       /* 12-bit sonucu oku (0..4095) */
+}
+
+/* Değeri gerilime çevir: voltage = adc_read() * 3.3 / 4095 */
+\end{lstlisting}
+
+\gsub{HAL Driver ile ADC}
+
+Aynı ADC okumasını HAL sürücüsüyle yapmak hem daha okunaklı hem de kesme/DMA
+modlarına kolayca geçilebilir. Bir \code{ADC\_HandleTypeDef} handle'ı yapılandırıp
+hazır fonksiyonları çağırırız.
+
+\gsubsub{Yapılandırma ve Yoklamalı (Polling) Okuma}
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+ADC_HandleTypeDef hadc1;                   /* ADC handle */
+
+void adc_hal_init(void)
+{
+    __HAL_RCC_ADC1_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin  = GPIO_PIN_0;
+    gpio.Mode = GPIO_MODE_ANALOG;          /* PA0 = analog giriş */
+    HAL_GPIO_Init(GPIOA, &gpio);
+
+    hadc1.Instance                   = ADC1;
+    hadc1.Init.ContinuousConvMode    = DISABLE;   /* tek seferlik dönüşüm */
+    hadc1.Init.ScanConvMode          = DISABLE;
+    hadc1.Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+    hadc1.Init.NbrOfConversion       = 1;
+    HAL_ADC_Init(&hadc1);
+
+    /* Kanal 0'ı (PA0) dönüşüm sırasına ekle */
+    ADC_ChannelConfTypeDef ch = {0};
+    ch.Channel      = ADC_CHANNEL_0;
+    ch.Rank         = 1;
+    ch.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
+    HAL_ADC_ConfigChannel(&hadc1, &ch);
+}
+
+/* Yoklamalı okuma: dönüşümü başlat, bitmesini bekle, değeri al */
+uint16_t adc_hal_read(void)
+{
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);   /* dönüşümü bekle */
+    uint16_t value = HAL_ADC_GetValue(&hadc1);          /* 12-bit sonuç */
+    HAL_ADC_Stop(&hadc1);
+    return value;
+}
+\end{lstlisting}
+
+\gsubsub{Interrupt Modu}
+
+\begin{lstlisting}
+volatile uint16_t adc_value;
+
+void adc_start_it(void)
+{
+    HAL_ADC_Start_IT(&hadc1);              /* kesmeli dönüşüm başlat, beklemez */
+}
+
+/* Dönüşüm bitince HAL bunu otomatik çağırır */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+    adc_value = HAL_ADC_GetValue(hadc);    /* sonucu al */
+}
+
+void ADC1_2_IRQHandler(void)
+{
+    HAL_ADC_IRQHandler(&hadc1);
+}
+\end{lstlisting}
+
+\gsubsub{DMA ile Sürekli Çok-Kanal Okuma}
+
+Birden çok analog kanalı sürekli ve CPU'suz okumanın en verimli yolu DMA'dır.
+HAL, DMA'yı ADC'ye bağlayıp bir tampona otomatik yazar.
+
+\begin{lstlisting}
+uint16_t adc_buffer[3];                    /* 3 kanal için tampon */
+
+/* ScanConvMode=ENABLE, ContinuousConvMode=ENABLE, NbrOfConversion=3 ile
+   init edilmiş varsayılır; 3 kanal rank 1,2,3'e atanır. */
+void adc_start_dma(void)
+{
+    /* Dönüşümleri başlat; her sonuç otomatik adc_buffer[]'a yazılır */
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_buffer, 3);
+}
+/* Artık adc_buffer[0..2] her zaman en güncel 3 kanal değerini tutar -- CPU serbest */
+\end{lstlisting}
+
+\ipucu{DMA + \emph{scan mode} kombinasyonu, birden çok sensörü (ör. 3 eksenli
+potansiyometre veya çoklu sıcaklık) tek ADC ile sürekli okumanın standart
+yoludur. Değerler arka planda tampona akar; ana kod sadece tampondan en güncel
+değeri okur. Bu kalıp gömülü sistemlerde çok yaygındır.}
+
+\gsub{SPI ve I2C: Sensör Veri Yolları}
+
+Çoğu sensör ve harici çip (ekran, EEPROM, IMU) MCU ile \emph{SPI} veya
+\emph{I2C} veri yolu üzerinden konuşur. İkisi de senkron seri protokoldür ama
+farklı ödünleşmeleri vardır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Özellik} & \color{anaMavi}\textbf{SPI} & \color{anaMavi}\textbf{I2C}\\
+\midrule
+Tel sayısı & 4 (MOSI, MISO, SCK, CS) & 2 (SDA, SCL)\\
+\rowcolor{acikGri} Hız & Çok hızlı (10+ MHz) & Orta (100k--400k--1M)\\
+Cihaz sayısı & Her cihaza ayrı CS & Adresle çok cihaz (aynı 2 tel)\\
+\rowcolor{acikGri} Karmaşıklık & Basit & Adresleme + ACK protokolü\\
+Kullanım & Ekran, SD kart, hızlı ADC & Sensör, EEPROM, RTC\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+/* SPI ile tek bayt gönder/al (full-duplex: aynı anda hem gönderir hem alır) */
+uint8_t spi_transfer(uint8_t data)
+{
+    while (!(SPI1->SR & SPI_SR_TXE));      /* gönderme tamponu boş mu? */
+    SPI1->DR = data;                       /* veriyi gönder */
+    while (!(SPI1->SR & SPI_SR_RXNE));     /* yanıt geldi mi? */
+    return SPI1->DR;                       /* gelen baytı oku */
+}
+\end{lstlisting}
+
+\gsubsub{HAL ile SPI}
+
+HAL, SPI protokolünün tüm zamanlama detaylarını gizler. Bir
+\code{SPI\_HandleTypeDef} yapılandırıp gönder/al fonksiyonlarını çağırırsın.
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+SPI_HandleTypeDef hspi1;
+
+void spi_hal_init(void)
+{
+    __HAL_RCC_SPI1_CLK_ENABLE();
+    /* ... GPIO: SCK, MOSI, MISO pinlerini AF olarak ayarla ... */
+
+    hspi1.Instance           = SPI1;
+    hspi1.Init.Mode          = SPI_MODE_MASTER;      /* ana (master) cihaz */
+    hspi1.Init.Direction     = SPI_DIRECTION_2LINES; /* full-duplex */
+    hspi1.Init.DataSize      = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity   = SPI_POLARITY_LOW;     /* SPI mode 0 */
+    hspi1.Init.CLKPhase      = SPI_PHASE_1EDGE;
+    hspi1.Init.NSS           = SPI_NSS_SOFT;         /* CS'i yazılım yönetir */
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    HAL_SPI_Init(&hspi1);
+}
+
+void spi_hal_example(void)
+{
+    uint8_t tx[2] = {0x9F, 0x00};          /* gönderilecek komut */
+    uint8_t rx[2];
+
+    /* CS'i indir (bir GPIO pini) -> aktarım -> CS'i kaldır */
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(&hspi1, tx, rx, 2, HAL_MAX_DELAY);  /* aynı anda gönder+al */
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    /* Sadece göndermek için: HAL_SPI_Transmit(&hspi1, tx, 2, HAL_MAX_DELAY); */
+}
+\end{lstlisting}
+
+\gsubsub{HAL ile I2C}
+
+I2C'de her cihazın bir \emph{adresi} vardır. HAL, adresleme + ACK protokolünü
+otomatik yönetir. Özellikle \emph{register okuma/yazma} için \code{Mem\_Read}/
+\code{Mem\_Write} fonksiyonları çok pratiktir (sensörlerin çoğu register
+tabanlıdır).
+
+\begin{lstlisting}
+I2C_HandleTypeDef hi2c1;
+
+void i2c_hal_init(void)
+{
+    __HAL_RCC_I2C1_CLK_ENABLE();
+    /* ... GPIO: SCL, SDA pinlerini AF open-drain olarak ayarla ... */
+
+    hi2c1.Instance       = I2C1;
+    hi2c1.Init.ClockSpeed = 100000;        /* 100 kHz standart mod */
+    hi2c1.Init.DutyCycle  = I2C_DUTYCYCLE_2;
+    hi2c1.Init.OwnAddress1 = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    HAL_I2C_Init(&hi2c1);
+}
+
+void i2c_hal_example(void)
+{
+    uint8_t dev_addr = 0x68 << 1;          /* 7-bit adres, HAL 8-bit ister */
+    uint8_t data;
+
+    /* Bir sensör register'ından oku (ör. MPU6050 WHO_AM_I = reg 0x75) */
+    HAL_I2C_Mem_Read(&hi2c1, dev_addr, 0x75, I2C_MEMADD_SIZE_8BIT,
+                     &data, 1, HAL_MAX_DELAY);
+
+    /* Bir register'a yaz */
+    uint8_t config = 0x00;
+    HAL_I2C_Mem_Write(&hi2c1, dev_addr, 0x6B, I2C_MEMADD_SIZE_8BIT,
+                      &config, 1, HAL_MAX_DELAY);
+}
+\end{lstlisting}
+
+\bilgi{SPI ve I2C'yi register seviyesinde elle yönetmek zahmetlidir (zamanlama,
+protokol detayları). Bu iki veri yolu, HAL kütüphanesinin gerçekten değer
+kattığı yerlerdir. Her ikisinin de kesme (\code{\_IT}) ve DMA (\code{\_DMA})
+sürümleri vardır: örneğin \code{HAL\_SPI\_Transmit\_DMA()} ile bir ekranı CPU'yu
+meşgul etmeden güncelleyebilirsin. Register seviyesini anlamak yine de hata
+ayıklama için faydalıdır.}
+
+% #####################################################################
+\gpart{4}{Kesmeler, NVIC ve DMA}
+% #####################################################################
+
+% =====================================================================
+\gsec{Kesmeler ve NVIC}
+% =====================================================================
+
+Şimdiye kadarki örneklerde donanımı sürekli \emph{yokladık} (polling ---
+``veri geldi mi? geldi mi?''). Bu, işlemciyi meşgul eder ve verimsizdir.
+\emph{Kesme} (interrupt), donanımın ``bir olay oldu!'' diye işlemciyi
+\emph{uyandırmasıdır}: işlemci ne yapıyorsa duraklatır, olaya özel bir işleyici
+(ISR) çalıştırır, sonra kaldığı yerden devam eder.
+
+\gsub{NVIC: Kesme Denetleyicisi}
+
+Cortex-M'de kesmeleri \emph{NVIC} (Nested Vectored Interrupt Controller)
+yönetir. NVIC, hangi kesmelerin etkin olduğunu, önceliklerini ve iç içe
+(nested) çalışmasını denetler. Her kesme kaynağının bir numarası (IRQ number)
+ve bir işleyici adresi (vektör tablosunda) vardır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kavram} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Vektör tablosu & Her kesme için işleyici fonksiyon adresini tutan tablo (Flash başında).\\
+\rowcolor{acikGri} IRQ numarası & Her kesme kaynağının kimliği (ör. \code{TIM2\_IRQn}).\\
+Öncelik (priority) & Küçük sayı = yüksek öncelik; yüksek olan düşüğü kesebilir.\\
+\rowcolor{acikGri} ISR & Interrupt Service Routine --- kesme gelince çalışan fonksiyon.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Timer Kesmesi Örneği}
+
+Bir timer'ın periyodik olarak kesme üretmesini sağlayalım --- böylece
+\code{delay} ile beklemek yerine, işlemci başka iş yaparken timer arka planda
+LED'i çevirir.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+void timer_irq_init(void)
+{
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+    TIM2->PSC = 7200 - 1;                  /* 10 kHz */
+    TIM2->ARR = 10000 - 1;                 /* 1 Hz taşma */
+    TIM2->DIER |= TIM_DIER_UIE;            /* update kesmesini etkinleştir */
+    TIM2->CR1  |= TIM_CR1_CEN;
+
+    NVIC_SetPriority(TIM2_IRQn, 2);        /* öncelik ata */
+    NVIC_EnableIRQ(TIM2_IRQn);             /* NVIC'te bu kesmeyi aç */
+}
+
+/* ISR: adı vektör tablosundaki isimle TAM eşleşmeli (startup dosyasından) */
+void TIM2_IRQHandler(void)
+{
+    if (TIM2->SR & TIM_SR_UIF) {           /* kesme kaynağını doğrula */
+        TIM2->SR &= ~TIM_SR_UIF;           /* bayrağı temizle (ŞART!) */
+        GPIOC->ODR ^= (1 << 13);           /* LED'i çevir */
+    }
+}
+\end{lstlisting}
+
+\uyari{\textbf{ISR'de kesme bayrağını temizlemeyi unutma!} Bayrağı
+temizlemezsen, işleyiciden çıkar çıkmaz kesme \emph{hemen tekrar} tetiklenir ---
+program sonsuza dek ISR'de kalır (kilitlenme gibi görünür). Ayrıca ISR'lerin
+\emph{kısa} olması ve içinde \code{HAL\_Delay} gibi bloklayan çağrılar
+bulunmaması gerekir. ISR adının startup dosyasındaki vektör adıyla birebir aynı
+olması da şarttır.}
+
+\gsub{Harici Kesme (EXTI): Buton ile}
+
+Bir GPIO pinindeki değişimi (butona basılması) yoklamadan yakalamak için
+\emph{EXTI} (External Interrupt) kullanılır. Pin durumu değiştiğinde otomatik
+kesme üretilir.
+
+\begin{lstlisting}
+void exti_button_init(void)
+{
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_AFIOEN;
+    /* PA0'ı giriş yap (CRL) ... (giriş yapılandırması yukarıdaki gibi) */
+
+    /* EXTI hattı 0'ı PA0'a bağla (AFIO üzerinden) */
+    AFIO->EXTICR[0] &= ~AFIO_EXTICR1_EXTI0;   /* port A seç */
+    EXTI->IMR  |= EXTI_IMR_MR0;                /* hat 0 kesmesini aç */
+    EXTI->FTSR |= EXTI_FTSR_TR0;               /* düşen kenarda tetikle */
+
+    NVIC_EnableIRQ(EXTI0_IRQn);
+}
+
+void EXTI0_IRQHandler(void)
+{
+    if (EXTI->PR & EXTI_PR_PR0) {          /* hat 0 mı tetikledi? */
+        EXTI->PR = EXTI_PR_PR0;            /* pending bit'i temizle (1 yazarak) */
+        GPIOC->ODR ^= (1 << 13);          /* butona basılınca LED çevir */
+    }
+}
+\end{lstlisting}
+
+\gsub{HAL Driver ile Harici Kesme}
+
+HAL ile EXTI kurmak çok daha kısadır: pini \code{GPIO\_MODE\_IT\_FALLING}
+moduyla ilklendirir, NVIC'i açar ve ortak \code{HAL\_GPIO\_EXTI\_Callback}
+fonksiyonunu yazarsın.
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+void exti_hal_init(void)
+{
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin  = GPIO_PIN_0;
+    gpio.Mode = GPIO_MODE_IT_FALLING;      /* düşen kenarda kesme */
+    gpio.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOA, &gpio);
+
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+}
+
+/* ISR sadece HAL'a yönlendirir */
+void EXTI0_IRQHandler(void) { HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0); }
+
+/* HAL, doğru pini bulup bu ortak callback'i çağırır */
+void HAL_GPIO_EXTI_Callback(uint16_t pin)
+{
+    if (pin == GPIO_PIN_0) {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+    }
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{SysTick ve Zamanlama}
+% =====================================================================
+
+SysTick, her Cortex-M çekirdeğinde bulunan basit bir 24-bit geri sayım
+zamanlayıcısıdır. Genelde işletim sistemleri veya \code{HAL\_Delay} için
+periyodik bir ``sistem tik''i (ör. her 1 ms) üretmek üzere kullanılır ---
+donanımdan bağımsız olduğu için taşınabilirdir.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+volatile uint32_t ms_ticks = 0;            /* geçen milisaniye sayacı */
+
+void systick_init(void)
+{
+    /* Her 1 ms'de bir kesme: 72 MHz / 1000 = 72000 sayım */
+    SysTick_Config(72000);                 /* CMSIS: yükle + kesmeyi aç */
+}
+
+/* SysTick ISR'si: her 1 ms'de bir çalışır */
+void SysTick_Handler(void)
+{
+    ms_ticks++;
+}
+
+/* Milisaniye cinsinden bloklamalı gecikme */
+void delay_ms(uint32_t ms)
+{
+    uint32_t start = ms_ticks;
+    while ((ms_ticks - start) < ms);       /* hedef süre geçene kadar bekle */
+}
+\end{lstlisting}
+
+\bilgi{SysTick tabanlı \code{delay\_ms}, meşgul döngüyle (\code{nop} sayan)
+gecikmeden çok daha doğrudur: kesin milisaniye verir ve derleyici
+optimizasyonundan etkilenmez. \code{ms\_ticks}'in \code{volatile} olması
+kritiktir --- çünkü ISR'de değişir, ana kod ise onu okur. \code{volatile}
+olmazsa derleyici \code{delay\_ms} döngüsünü sonsuza kadar sürdürebilir.}
+
+% =====================================================================
+\gsec{DMA: İşlemciyi Meşgul Etmeden Veri Taşıma}
+% =====================================================================
+
+DMA (Direct Memory Access), bellek ile çevre birimleri (veya bellekten belleğe)
+arasında veriyi \emph{işlemci olmadan} taşıyan bir birimdir. Örneğin ADC'den
+1000 örneği okuyup RAM'e yazmak; DMA olmadan işlemci her örneği tek tek
+kopyalar (yavaş, meşgul), DMA ile ise işlemci başka iş yaparken transfer arka
+planda yapılır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{DMA olmadan} & \color{anaMavi}\textbf{DMA ile}\\
+\midrule
+İşlemci her baytı elle kopyalar & Donanım kopyalar; işlemci serbest\\
+\rowcolor{acikGri} Yüksek CPU yükü & Neredeyse sıfır CPU yükü\\
+Yüksek hızda veri kaybı riski & Hızlı, sürekli akış (ADC, UART, SPI)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+/* ADC'den belleğe DMA ile sürekli okuma (kavramsal iskelet) */
+void adc_dma_init(uint16_t *buffer, uint16_t length)
+{
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;      /* DMA1 saatini aç */
+
+    DMA1_Channel1->CPAR = (uint32_t)&ADC1->DR;    /* kaynak: ADC veri register'ı */
+    DMA1_Channel1->CMAR = (uint32_t)buffer;       /* hedef: RAM tamponu */
+    DMA1_Channel1->CNDTR = length;                /* aktarılacak eleman sayısı */
+    DMA1_Channel1->CCR = DMA_CCR_MINC |           /* bellek adresini artır */
+                         DMA_CCR_CIRC |           /* dairesel mod (sürekli) */
+                         DMA_CCR_EN;              /* DMA kanalını başlat */
+    /* Artık ADC her dönüşümü otomatik olarak buffer[]'a yazar -- CPU serbest */
+}
+\end{lstlisting}
+
+\ipucu{DMA, gömülü sistemlerde yüksek verimin anahtarıdır. Sürekli ADC
+örnekleme, hızlı UART/SPI akışı, ekran güncelleme gibi işlerde işlemciyi
+tamamen boşa çıkarır. HAL'da \code{HAL\_ADC\_Start\_DMA()} gibi fonksiyonlar
+DMA kurulumunu kolaylaştırır. Dairesel (circular) mod, aynı tamponu sürekli
+döngüde doldurarak kesintisiz akış sağlar.}
+
+% #####################################################################
+\gpart{5}{Sistem Kaynakları: RTC, Watchdog ve Düşük Güç (HAL)}
+% #####################################################################
+
+STM32, çevresel iletişimin ötesinde sistem düzeyinde birçok kaynak sunar:
+gerçek zaman saati (RTC), sistemi kilitlenmelerden koruyan watchdog ve pil
+ömrünü uzatan düşük güç modları. Bunları HAL sürücüleriyle inceliyoruz.
+
+% =====================================================================
+\gsec{RTC: Gerçek Zaman Saati}
+% =====================================================================
+
+RTC (Real-Time Clock), tarih ve saati (yıl/ay/gün, saat/dakika/saniye) tutan
+bir çevre birimidir. Ayrı bir düşük hızlı kristalle (LSE, 32.768 kHz) çalışır
+ve ana güç kesilse bile bir pil (VBAT) ile saymaya devam edebilir. Veri
+kaydedicilerde ve zamanlama gerektiren uygulamalarda temeldir.
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+RTC_HandleTypeDef hrtc;
+
+void rtc_hal_init(void)
+{
+    hrtc.Instance = RTC;
+    hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;   /* 1 saniyelik tik */
+    HAL_RTC_Init(&hrtc);
+}
+
+void rtc_set_time(void)
+{
+    RTC_TimeTypeDef t = {0};
+    t.Hours = 14; t.Minutes = 30; t.Seconds = 0;
+    HAL_RTC_SetTime(&hrtc, &t, RTC_FORMAT_BIN);
+
+    RTC_DateTypeDef d = {0};
+    d.Year = 26; d.Month = 7; d.Date = 13;        /* 13 Temmuz 2026 */
+    HAL_RTC_SetDate(&hrtc, &d, RTC_FORMAT_BIN);
+}
+
+void rtc_read_time(void)
+{
+    RTC_TimeTypeDef t;
+    RTC_DateTypeDef d;
+    HAL_RTC_GetTime(&hrtc, &t, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, &d, RTC_FORMAT_BIN);    /* GetTime'dan SONRA çağır! */
+    printf("%02d:%02d:%02d\n", t.Hours, t.Minutes, t.Seconds);
+}
+\end{lstlisting}
+
+\uyari{RTC'de \code{HAL\_RTC\_GetTime}'dan sonra \textbf{mutlaka}
+\code{HAL\_RTC\_GetDate} çağır --- saati okumak, tarih register'ını kilitler ve
+tarihi okuyana kadar güncellenmez. Sırayı bozarsan tarih/saat tutarsız okunur.
+Ayrıca RTC'yi yeniden başlatmamak için ilk kurulumda backup register'a bir
+imza yazıp kontrol etmek yaygın bir kalıptır.}
+
+% =====================================================================
+\gsec{Watchdog: Sistemi Kilitlenmeden Koruma}
+% =====================================================================
+
+Watchdog (bekçi köpeği), yazılım kilitlenirse (sonsuz döngü, çökme) sistemi
+otomatik \emph{yeniden başlatan} bir zamanlayıcıdır. Fikir: kod düzenli
+aralıklarla watchdog'u ``besler'' (reset'ler); beslemeyi durdurursa (kilitlendi
+demektir) watchdog süre dolunca MCU'yu resetler. Güvenlik kritik gömülü
+sistemlerde şarttır.
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+IWDG_HandleTypeDef hiwdg;
+
+void watchdog_hal_init(void)
+{
+    hiwdg.Instance       = IWDG;
+    hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
+    hiwdg.Init.Reload    = 1250;           /* ~2 saniye zaman aşımı (40kHz LSI) */
+    HAL_IWDG_Init(&hiwdg);                 /* başlar başlamaz saymaya başlar */
+}
+
+int main(void)
+{
+    HAL_Init();
+    watchdog_hal_init();
+
+    while (1) {
+        do_work();                         /* normal iş */
+        HAL_IWDG_Refresh(&hiwdg);          /* watchdog'u besle (reset'i geciktir) */
+        /* Eğer do_work() kilitlenirse Refresh çağrılmaz -> MCU resetlenir */
+    }
+}
+\end{lstlisting}
+
+\bilgi{İki tür watchdog vardır: \textbf{IWDG} (Independent Watchdog) bağımsız
+düşük hızlı saatle çalışır --- ana saat dursa bile korur, en sağlamı.
+\textbf{WWDG} (Window Watchdog) ise beslemenin belirli bir ``pencere''
+içinde yapılmasını ister --- hem çok geç hem çok erken beslemeyi hata sayar,
+daha katı zamanlama denetimi sağlar. Kritik uygulamalarda IWDG standarttır.}
+
+% =====================================================================
+\gsec{Düşük Güç Modları}
+% =====================================================================
+
+Pil ile çalışan cihazlarda (IoT sensörü, giyilebilir) güç tüketimi kritiktir.
+STM32, işi olmadığında uykuya geçerek akımı miliamperlerden mikroamperlere
+düşürebilir. Üç temel mod vardır; ne kadar çok kapatırsan o kadar az güç ama
+o kadar yavaş uyanış.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Mod} & \color{anaMavi}\textbf{Ne kapanır?} & \color{anaMavi}\textbf{Uyanma}\\
+\midrule
+Sleep & CPU durur, çevre birimleri çalışır & Herhangi bir kesme\\
+\rowcolor{acikGri} Stop & CPU + saatlerin çoğu durur, RAM korunur & EXTI / RTC alarmı\\
+Standby & Neredeyse her şey kapanır (en düşük güç) & Reset / WKUP pini / RTC\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+/* Sleep: en hafif uyku -- kesme gelene kadar CPU'yu durdur (WFI) */
+void enter_sleep(void)
+{
+    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+    /* Bir kesme gelince buradan devam eder */
+}
+
+/* Stop: düşük güç; EXTI (ör. buton) veya RTC alarmı ile uyanır */
+void enter_stop(void)
+{
+    HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+    SystemClock_Config();                  /* uyandıktan sonra saati YENİDEN kur */
+}
+
+/* Standby: en düşük güç; sadece reset/WKUP/RTC ile uyanır, RAM kaybolur */
+void enter_standby(void)
+{
+    HAL_PWR_EnterSTANDBYMode();            /* uyanınca sistem baştan başlar */
+}
+\end{lstlisting}
+
+\uyari{\textbf{Stop modundan sonra saati yeniden kur!} Stop modu PLL ve yüksek
+hızlı saatleri kapattığından, uyandıktan sonra MCU varsayılan yavaş HSI ile
+çalışır; \code{SystemClock\_Config()}'i tekrar çağırmazsan çevre birimleri
+yanlış frekansta çalışır. Standby modunda ise cihaz uyanınca \code{main}'den
+baştan başlar (RAM içeriği kaybolur) --- durumu korumak için backup
+register'ları kullanılır.}
+
+\ipucu{Tipik düşük güçlü IoT kalıbı: MCU çoğu zaman \emph{Stop} veya
+\emph{Standby}'da uyur, RTC alarmı (ör. her 10 dakika) onu uyandırır, bir
+sensör okur, veriyi gönderir ve tekrar uyur. Bu sayede bir pil aylarca hatta
+yıllarca dayanabilir. Güç ölçümü için bir ampermetre veya ST'nin
+\emph{Power Shield}'ı kullanılır.}
+
+% =====================================================================
+\gsec{CRC ve Diğer Sistem Birimleri}
+% =====================================================================
+
+STM32, veri bütünlüğünü donanımda hızlıca doğrulayan bir \emph{CRC} (Cyclic
+Redundancy Check) birimi içerir. İletişim protokollerinde ve firmware
+doğrulamada verinin bozulmadığını kontrol etmek için kullanılır.
+
+\begin{lstlisting}
+#include "stm32f1xx_hal.h"
+
+CRC_HandleTypeDef hcrc;
+
+void crc_hal_init(void)
+{
+    __HAL_RCC_CRC_CLK_ENABLE();
+    hcrc.Instance = CRC;
+    HAL_CRC_Init(&hcrc);
+}
+
+uint32_t compute_crc(uint32_t *data, uint32_t length)
+{
+    /* Donanım CRC'yi anında hesaplar (yazılım döngüsünden çok hızlı) */
+    return HAL_CRC_Calculate(&hcrc, data, length);
+}
+\end{lstlisting}
+
+\bilgi{STM32 ailesine göre başka sistem birimleri de bulunur: \textbf{DAC}
+(dijital-analog çevirici --- ses/dalga üretimi), \textbf{RNG} (donanım rastgele
+sayı üreteci --- kriptografi), \textbf{FSMC} (harici bellek/ekran arayüzü) ve
+\textbf{option bytes} (Flash koruma, önyükleme seçimi). Hepsi CMSIS/HAL ile
+erişilebilir; hangi çevre birimlerinin mevcut olduğu kartının datasheet'inde
+listelenir.}
+
+% =====================================================================
+\gsec{Hata Ayıklama ve İzleme (Debugging)}
+% =====================================================================
+
+Gömülü kodda hata ayıklamak, PC'dekinden farklıdır: bir ekran veya konsol
+yoktur. STM32, donanım hata ayıklama için \emph{SWD} (Serial Wire Debug)
+arayüzü sunar --- sadece iki telle (SWDIO, SWCLK) kesme noktası koyma, adım
+adım ilerleme ve değişken inceleme yapılır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Yöntem} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+SWD + GDB & Kesme noktası, adımlama, register/bellek inceleme (en güçlü).\\
+\rowcolor{acikGri} SWO / ITM & Tek telle ``printf'' izleme (trace), CPU'yu durdurmadan.\\
+UART printf & Basit mesaj çıktısı (ekstra pin gerekir).\\
+\rowcolor{acikGri} LED / GPIO & En ilkel ama bazen en hızlı (bir pini yakıp söndür).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=shstyle]
+# OpenOCD ile GDB sunucusu başlat (ST-Link üzerinden)
+$ openocd -f interface/stlink.cfg -f target/stm32f1x.cfg
+
+# Başka terminalde GDB ile bağlan
+$ arm-none-eabi-gdb firmware.elf
+(gdb) target remote localhost:3333
+(gdb) load                       # firmware'i karta yükle
+(gdb) break main                 # main'e kesme noktası
+(gdb) continue                   # çalıştır
+(gdb) print my_variable          # değişken değerini gör
+(gdb) step                       # tek satır ilerle
+\end{lstlisting}
+
+\gsub{SWO ile printf İzleme (ITM)}
+
+SWO (Serial Wire Output), \code{printf} çıktısını tek bir izleme teli üzerinden
+gönderir --- UART pini harcamadan ve CPU'yu neredeyse hiç yavaşlatmadan.
+
+\begin{lstlisting}
+#include "stm32f1xx.h"
+
+/* printf'i ITM (SWO) üzerinden gönder */
+int _write(int file, char *ptr, int len)
+{
+    for (int i = 0; i < len; i++) {
+        ITM_SendChar(*ptr++);      /* CMSIS: karakteri ITM stimulus portuna yaz */
+    }
+    return len;
+}
+/* PC'de: st-link'in SWO görüntüleyicisi veya "openocd + itmdump" ile okunur */
+\end{lstlisting}
+
+\gsub{HardFault Ayıklama}
+
+Bir program çökerse (geçersiz bellek erişimi, hizalanmamış erişim, sıfıra
+bölme) çekirdek \code{HardFault\_Handler}'a atlar. Buradaki fault register'larını
+inceleyerek çökme sebebini bulabilirsin.
+
+\begin{lstlisting}
+/* HardFault işleyici: çökme anındaki durumu incele */
+void HardFault_Handler(void)
+{
+    /* SCB->CFSR: hangi fault türü (bus/usage/memory) olduğunu söyler */
+    volatile uint32_t cfsr = SCB->CFSR;    /* Configurable Fault Status Reg */
+    volatile uint32_t hfsr = SCB->HFSR;    /* HardFault Status Reg */
+    volatile uint32_t faddr = SCB->BFAR;   /* hataya neden olan adres */
+    (void)cfsr; (void)hfsr; (void)faddr;
+
+    while (1);                             /* debugger ile buraya bakılır */
+}
+\end{lstlisting}
+
+\ipucu{Bir HardFault yakaladığında, hata ayıklayıcıyla durup \code{CFSR}
+register'ını (adres \code{0xE000ED28}) inceleyerek türü (bus fault, usage
+fault\dots), \code{BFAR}/\code{MMFAR} ile de hatalı adresi öğrenebilirsin.
+Ayrıca yığına itilmiş PC değeri (çökme anındaki komut) çökmenin \emph{tam
+satırını} verir. \code{arm-none-eabi-addr2line} ile o adresi kaynak satırına
+çevir.}
+
+% =====================================================================
+\gsec{FreeRTOS: Gerçek Zamanlı İşletim Sistemi}
+% =====================================================================
+
+Bir uygulama büyüdüğünde, tek bir \code{while(1)} döngüsünde her şeyi yönetmek
+zorlaşır. \emph{RTOS} (Real-Time Operating System), programı bağımsız
+\emph{görevlere} (task) böler ve bir \emph{zamanlayıcı} (scheduler) onları
+sırayla/önceliğe göre çalıştırır --- her biri ayrı bir \code{while(1)} gibi.
+FreeRTOS, STM32'de en yaygın RTOS'tur ve CubeMX ile hazır gelir.
+
+\gsub{Görevler (Tasks)}
+
+\begin{lstlisting}
+#include "FreeRTOS.h"
+#include "task.h"
+
+/* Her görev sonsuz döngülü bir fonksiyondur, asla return etmez */
+void led_task(void *params)
+{
+    while (1) {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+        vTaskDelay(pdMS_TO_TICKS(500));    /* 500 ms uyu -- CPU'yu bırakır! */
+    }
+}
+
+void sensor_task(void *params)
+{
+    while (1) {
+        read_sensor();
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+int main(void)
+{
+    HAL_Init();
+    /* ... donanım kurulumu ... */
+
+    /* Görevleri oluştur (fonksiyon, ad, yığın boyutu, param, öncelik, handle) */
+    xTaskCreate(led_task,    "LED",    128, NULL, 1, NULL);
+    xTaskCreate(sensor_task, "Sensor", 256, NULL, 2, NULL);
+
+    vTaskStartScheduler();                 /* zamanlayıcıyı başlat -- geri dönmez */
+    while (1);
+}
+\end{lstlisting}
+
+\notk[\code{vTaskDelay} vs meşgul bekleme]{Kritik fark: \code{vTaskDelay},
+görevi uyuttuğunda CPU'yu \emph{başka görevlere} bırakır --- meşgul döngü gibi
+boşa harcamaz. Zamanlayıcı, uyuyan görev beklerken diğerlerini çalıştırır. Bu
+sayede birden çok iş, tek çekirdekte eşzamanlı gibi yürür.}
+
+\gsub{Görevler Arası İletişim: Kuyruk ve Semafor}
+
+Görevler veriyi güvenle paylaşmak için \emph{kuyruk} (queue), senkronizasyon
+için \emph{semafor}/\emph{mutex} kullanır. Bunlar yarış koşullarını önler.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Nesne} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+Queue & Görevler/ISR arası veri aktarımı (thread-safe FIFO).\\
+\rowcolor{acikGri} Semaphore & Olay bildirimi / kaynak sayımı (ör. ISR görevi uyandırır).\\
+Mutex & Paylaşılan kaynağı (UART, SPI) tek görevin kullanmasını sağlar.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+#include "queue.h"
+
+QueueHandle_t data_queue;
+
+void producer_task(void *params)
+{
+    uint32_t value = 0;
+    while (1) {
+        value = read_sensor();
+        xQueueSend(data_queue, &value, portMAX_DELAY);   /* kuyruğa koy */
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+void consumer_task(void *params)
+{
+    uint32_t received;
+    while (1) {
+        /* Veri gelene kadar UYU (CPU harcamaz), gelince işle */
+        if (xQueueReceive(data_queue, &received, portMAX_DELAY) == pdTRUE) {
+            process(received);
+        }
+    }
+}
+
+/* main içinde: data_queue = xQueueCreate(10, sizeof(uint32_t)); */
+\end{lstlisting}
+
+\bilgi{FreeRTOS'un ISR ile birlikte çalışan sürümleri vardır (\code{...FromISR}):
+bir kesme, \code{xQueueSendFromISR} veya \code{xSemaphoreGiveFromISR} ile bir
+görevi uyandırabilir. Böylece kesme işleyicisi kısa kalır (sadece bildirir),
+asıl işi bir görev yapar --- Kısım 3'teki ``üst/alt yarı'' fikrinin RTOS
+karşılığı. FreeRTOS, arka planda Kısım 8'de göreceğimiz \code{PendSV} kesmesiyle
+görevler arası geçiş yapar.}
+
+% #####################################################################
+\gpart{6}{ARM Cortex-M Assembly Temelleri}
+% #####################################################################
+
+Şimdiye kadar STM32'yi C ile programladık. Artık bir kat aşağıya --- C
+kodunun çevrildiği \emph{assembly} diline --- iniyoruz. Assembly bilmek;
+startup kodunu anlamak, hata ayıklamada disassembly okumak, kritik döngüleri
+optimize etmek ve donanımın gerçekte nasıl çalıştığını kavramak için gereklidir.
+
+% =====================================================================
+\gsec{ARM Mimarisi ve Programlama Modeli}
+% =====================================================================
+
+\gsub{RISC ve Load/Store Mimarisi}
+
+ARM bir \emph{RISC} (Reduced Instruction Set Computer) mimarisidir: az sayıda,
+basit ve sabit boyutlu komutları vardır. En önemli özelliği \emph{load/store}
+mimarisi olmasıdır: aritmetik/mantık işlemleri \textbf{yalnızca register'lar}
+üzerinde yapılır; bellek yalnızca özel \code{LDR} (load) ve \code{STR} (store)
+komutlarıyla okunur/yazılır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{} & \color{anaMavi}\textbf{ARM (RISC)} & \color{anaMavi}\textbf{x86 (CISC)}\\
+\midrule
+Komut sayısı & Az, basit & Çok, karmaşık\\
+\rowcolor{acikGri} Bellek işlemi & Sadece LDR/STR & Çoğu komut belleğe erişebilir\\
+Komut boyutu & Sabit (2/4 bayt) & Değişken (1--15 bayt)\\
+\rowcolor{acikGri} Güç verimi & Yüksek (gömülü için ideal) & Düşük\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Register'lar (Cortex-M Programlama Modeli)}
+
+Cortex-M'de 16 adet 32-bit register vardır. \code{R0}--\code{R12} genel
+amaçlıdır; \code{R13}--\code{R15}'in özel görevleri vardır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l >{\bfseries}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{Ad} & \color{anaMavi}\textbf{Görev}\\
+\midrule
+R0--R12 & Genel amaçlı & Veri ve ara hesaplamalar.\\
+\rowcolor{acikGri} R13 & SP (Stack Pointer) & Yığının tepesini gösterir.\\
+R14 & LR (Link Register) & Fonksiyon dönüş adresini tutar.\\
+\rowcolor{acikGri} R15 & PC (Program Counter) & Çalışan komutun adresi.\\
+--- & xPSR & Durum bayrakları (N, Z, C, V) ve durum.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Durum Bayrakları (Condition Flags)}
+
+Aritmetik ve karşılaştırma komutları, sonuç hakkında \emph{bayrakları}
+(APSR içinde) günceller. Dallanma (branch) kararları bu bayraklara bakar.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l >{\bfseries}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bayrak} & \color{anaMavi}\textbf{Ad} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+N & Negative & Sonuç negatif (en yüksek bit 1).\\
+\rowcolor{acikGri} Z & Zero & Sonuç sıfır.\\
+C & Carry & Elde/ödünç oluştu (taşma, işaretsiz).\\
+\rowcolor{acikGri} V & Overflow & İşaretli taşma.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Thumb ve Thumb-2}
+
+Klasik ARM komutları 32-bit'tir. \emph{Thumb}, aynı işleri 16-bit komutlarla
+yaparak kod boyutunu küçültür. \emph{Thumb-2}, 16 ve 32-bit komutları karıştırıp
+hem küçük hem güçlü olur. \textbf{Cortex-M yalnızca Thumb-2 kullanır} --- bu
+yüzden STM32 assembly'sinde ARM state yoktur; her şey Thumb'dır.
+
+\bilgi{Bu rehberde \textbf{GNU assembler} (\code{arm-none-eabi-as}) sözdizimini
+kullanacağız. Dosyanın başında \code{.syntax unified} (birleşik sözdizimi) ve
+\code{.thumb} (Thumb-2 modu) yönergeleri bulunur. Yorumlar \code{;} veya
+\code{//} ile, etiketler \code{label:} biçiminde yazılır.}
+
+% =====================================================================
+\gsec{Temel Komutlar: Veri ve Aritmetik}
+% =====================================================================
+
+\gsub{Veri Taşıma: MOV ve LDR}
+
+\code{MOV}, register'lar arasında veya küçük bir sabiti bir register'a taşır.
+Büyük 32-bit sabitler tek komuta sığmaz; onlar için \code{MOVW}/\code{MOVT}
+çifti veya \code{LDR Rd, =sabit} sözde-komutu (literal pool) kullanılır.
+
+\begin{lstlisting}[style=asmstyle]
+    MOV   r0, #5          ; r0 = 5 (küçük sabit doğrudan)
+    MOV   r1, r0          ; r1 = r0 (register kopyala)
+    MOVW  r2, #0x1234     ; r2'nin alt 16 biti = 0x1234
+    MOVT  r2, #0x5678     ; r2'nin üst 16 biti = 0x5678 -> r2 = 0x56781234
+    LDR   r3, =0x40011000 ; büyük sabiti yükle (literal pool ile) -- GPIOC adresi
+\end{lstlisting}
+
+\gsub{Bellek Erişimi: LDR ve STR}
+
+Load/store mimarisinin kalbi: \code{LDR} bellekten register'a \emph{yükler},
+\code{STR} register'dan belleğe \emph{yazar}. Bayt için \code{LDRB}/\code{STRB},
+yarım kelime için \code{LDRH}/\code{STRH} kullanılır.
+
+\begin{lstlisting}[style=asmstyle]
+    LDR   r1, =myvar     ; r1 = myvar'ın ADRESİ
+    LDR   r0, [r1]       ; r0 = *r1 (adresteki değeri yükle)
+    ADD   r0, r0, #1     ; r0 = r0 + 1
+    STR   r0, [r1]       ; *r1 = r0 (değeri belleğe geri yaz)
+
+    LDRB  r2, [r1]       ; tek bayt yükle (alt 8 bit)
+    STRB  r2, [r1, #4]   ; r1+4 adresine bayt yaz (offset ile)
+\end{lstlisting}
+
+\uyari{Aritmetik komutlar (\code{ADD}, \code{SUB}\dots) \textbf{belleğe
+doğrudan erişemez}. Bir bellek konumunu artırmak üç adım gerektirir:
+\code{LDR} (yükle) $\to$ \code{ADD} (değiştir) $\to$ \code{STR} (geri yaz).
+Bu, x86'dan gelenler için ilk şaşırtıcı noktadır; ama load/store mimarisinin
+özüdür.}
+
+\gsub{Aritmetik ve Mantık Komutları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Komut} & \color{anaMavi}\textbf{İşlevi}\\
+\midrule
+ADD Rd, Rn, Rm & Rd = Rn + Rm (topla)\\
+\rowcolor{acikGri} SUB Rd, Rn, Rm & Rd = Rn $-$ Rm (çıkar)\\
+MUL Rd, Rn, Rm & Rd = Rn $\times$ Rm (çarp)\\
+\rowcolor{acikGri} UDIV / SDIV & Bölme (işaretsiz / işaretli)\\
+AND / ORR / EOR & Bit bazlı VE / VEYA / ÖZEL-VEYA (XOR)\\
+\rowcolor{acikGri} BIC & Bit temizle (Rn AND NOT Rm)\\
+LSL / LSR & Sola / sağa mantıksal kaydır\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=asmstyle]
+    ADD   r0, r1, r2     ; r0 = r1 + r2
+    SUB   r0, r0, #10    ; r0 = r0 - 10 (sabit ile)
+    MUL   r3, r1, r2     ; r3 = r1 * r2
+    ADDS  r0, r1, r2     ; topla VE bayrakları güncelle (S soneki)
+
+    ORR   r0, r0, #(1 << 13)   ; r0'ın 13. bitini kur (register set örneği)
+    BIC   r0, r0, #(1 << 13)   ; r0'ın 13. bitini temizle
+    LSL   r0, r1, #2           ; r0 = r1 << 2 (4 ile çarpma)
+\end{lstlisting}
+
+\notk[``S'' soneki]{\code{ADD} bayrakları değiştirmez, ama \code{ADDS}
+(sondaki \code{S}) sonuç hakkında N/Z/C/V bayraklarını günceller. Bir sonraki
+bölümdeki koşullu dallanmalar bu bayraklara baktığından, karşılaştırma/döngü
+kodunda çoğu zaman \code{S}'li sürümler veya \code{CMP} kullanılır.}
+
+% #####################################################################
+\gpart{7}{ARM Assembly: Akış, Fonksiyonlar ve Uygulama}
+% #####################################################################
+
+% =====================================================================
+\gsec{Akış Kontrolü: Dallanma ve Döngüler}
+% =====================================================================
+
+Yüksek seviyeli dillerdeki \code{if}, \code{while}, \code{for} yapıları
+assembly'de \emph{karşılaştırma} + \emph{koşullu dallanma} (branch) ikilisiyle
+kurulur. Önce \code{CMP} ile bayraklar ayarlanır, sonra koşullu bir \code{B}
+komutu bayraklara bakarak atlar.
+
+\gsub{Karşılaştırma ve Koşullu Dallanma}
+
+\code{CMP r0, r1} aslında \code{r0 - r1} yapar ama sonucu \emph{saklamaz};
+yalnızca bayrakları günceller. Ardından koşul ekli bir dal komutu gelir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l l >{\ttfamily\bfseries\color{anaMavi}}l l@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Komut} & \color{anaMavi}\textbf{Koşul} & \color{anaMavi}\textbf{Komut} & \color{anaMavi}\textbf{Koşul}\\
+\midrule
+BEQ & eşit ($=$) & BNE & eşit değil ($\ne$)\\
+\rowcolor{acikGri} BGT & büyük ($>$, işaretli) & BLT & küçük ($<$, işaretli)\\
+BGE & büyük/eşit ($\ge$) & BLE & küçük/eşit ($\le$)\\
+\rowcolor{acikGri} BHI & büyük (işaretsiz) & BLO & küçük (işaretsiz)\\
+B & koşulsuz (her zaman) & BX & register'a dallan (dönüş)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{if Yapısı}
+
+\begin{lstlisting}[style=asmstyle]
+    ; C karşılığı:  if (r0 > 10) { r1 = 1; } else { r1 = 0; }
+    CMP   r0, #10        ; r0 ile 10'u karşılaştır (bayrakları ayarla)
+    BLE   else_branch    ; r0 <= 10 ise else'e atla
+    MOV   r1, #1         ; if bloğu: r1 = 1
+    B     end_if         ; else'i atla
+else_branch:
+    MOV   r1, #0         ; else bloğu: r1 = 0
+end_if:
+    ; devam...
+\end{lstlisting}
+
+\gsub{Döngü: Bir Diziyi Toplama}
+
+\begin{lstlisting}[style=asmstyle]
+    ; C karşılığı:  sum = 0; for (i=0; i<n; i++) sum += array[i];
+    LDR   r1, =data_array ; r1 = dizinin adresi
+    MOV   r2, #0          ; r2 = sum = 0
+    MOV   r3, #0          ; r3 = i = 0
+    MOV   r4, #5          ; r4 = n = 5 (eleman sayısı)
+loop_start:
+    CMP   r3, r4          ; i < n mi?
+    BGE   loop_end        ; i >= n ise döngüden çık
+    LDR   r5, [r1, r3, LSL #2]  ; r5 = array[i]  (i*4 offset ile)
+    ADD   r2, r2, r5      ; sum += array[i]
+    ADD   r3, r3, #1      ; i++
+    B     loop_start      ; döngü başına dön
+loop_end:
+    ; r2 artık toplamı içerir
+\end{lstlisting}
+
+\bilgi{\code{LDR r5, [r1, r3, LSL \#2]} tek bir komutta güçlü bir iş yapar:
+\code{r3}'ü (indeks) 2 bit sola kaydırıp (yani 4 ile çarpıp --- \code{int}
+boyutu) \code{r1}'e (taban adres) ekler ve o adresteki değeri yükler. Yani
+\code{array[i]}'yi tek komutta okur. Buna \emph{ölçekli register offset}
+adresleme denir --- ARM'ın verimliliğinin bir örneği.}
+
+% =====================================================================
+\gsec{Fonksiyonlar, Yığın ve Çağrı Kuralı (AAPCS)}
+% =====================================================================
+
+Fonksiyon çağırmak, \code{BL} (Branch with Link) ile yapılır: hedefe atlar ve
+dönüş adresini \code{LR}'ye kaydeder. Fonksiyondan \code{BX LR} ile dönülür.
+Ama fonksiyonların birlikte çalışabilmesi için herkesin uyduğu bir sözleşme
+gerekir: \emph{AAPCS} (ARM Architecture Procedure Call Standard).
+
+\gsub{Çağrı Kuralı (Calling Convention)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{Rol}\\
+\midrule
+R0--R3 & İlk 4 argüman; ve scratch (çağıran korumaz). R0 = dönüş değeri.\\
+\rowcolor{acikGri} R4--R11 & Yerel değişkenler; \textbf{callee-saved} (kullanan korumalı).\\
+R12 (IP) & Scratch (ara).\\
+\rowcolor{acikGri} LR (R14) & Dönüş adresi.\\
+SP (R13) & Yığın işaretçisi; 8 bayt hizalı tutulmalı.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Basit Fonksiyon (Leaf Function)}
+
+Başka fonksiyon çağırmayan (leaf) bir fonksiyon, \code{LR}'yi saklamaya gerek
+duymaz --- doğrudan \code{BX LR} ile döner.
+
+\begin{lstlisting}[style=asmstyle]
+    ; int add(int a, int b) { return a + b; }
+    ; a -> r0, b -> r1, dönüş -> r0
+add:
+    ADD   r0, r0, r1     ; r0 = a + b (dönüş değeri r0'da)
+    BX    lr             ; çağırana dön
+\end{lstlisting}
+
+\gsub{Yığın (Stack): PUSH ve POP}
+
+Bir fonksiyon başka fonksiyon çağıracaksa, \code{BL} \code{LR}'nin üzerine
+yazacağı için önce \code{LR}'yi \emph{yığına} kaydetmelidir. Ayrıca callee-saved
+register'ları (R4--R11) kullanıyorsa onları da saklamalıdır. Yığın
+\emph{full-descending}'dir: aşağı doğru büyür.
+
+\begin{lstlisting}[style=asmstyle]
+    ; int compute(int x) { return add(x, 10) * 2; }
+compute:
+    PUSH  {r4, lr}       ; r4 ve LR'yi yığına kaydet (çağrı LR'yi bozacak)
+    MOV   r4, r0         ; x'i r4'te sakla (add çağrısı r0'ı bozacak)
+    MOV   r1, #10
+    BL    add            ; r0 = add(x, 10) -- LR değişir, r0-r3 bozulur
+    LSL   r0, r0, #1     ; r0 = sonuç * 2
+    POP   {r4, pc}       ; r4'ü geri yükle; LR'yi PC'ye yükleyerek DÖN
+\end{lstlisting}
+
+\notk[\code{POP \{..., pc\}} hilesi]{Dönüş adresini \code{LR}'ye geri yükleyip
+sonra \code{BX LR} yapmak yerine, \code{PUSH \{..., lr\}} ile kaydedilen
+dönüş adresini doğrudan \code{POP \{..., pc\}} ile \code{PC}'ye yüklemek ---
+tek komutta hem register'ları geri yükler hem de fonksiyondan döner. Bu, ARM
+kodunda çok yaygın ve verimli bir kalıptır.}
+
+\gsub{Özyinelemeli Fonksiyon: Faktöriyel}
+
+\begin{lstlisting}[style=asmstyle]
+    ; int factorial(int n) { return n<=1 ? 1 : n*factorial(n-1); }
+factorial:
+    PUSH  {r4, lr}       ; n'i ve dönüş adresini koru
+    CMP   r0, #1         ; n <= 1 mi?
+    BGT   recurse        ; n > 1 ise özyinele
+    MOV   r0, #1         ; taban durum: return 1
+    POP   {r4, pc}
+recurse:
+    MOV   r4, r0         ; n'i sakla
+    SUB   r0, r0, #1     ; r0 = n - 1
+    BL    factorial      ; r0 = factorial(n-1)
+    MUL   r0, r4, r0     ; r0 = n * factorial(n-1)
+    POP   {r4, pc}       ; geri yükle ve dön
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Donanım, Startup ve C ile Karıştırma}
+% =====================================================================
+
+\gsub{Assembly'den GPIO Register'ına Yazma}
+
+Kısım 2'deki LED yakmayı, şimdi doğrudan assembly ile yapalım. Sadece
+register adresine bir değer yazmaktan ibarettir.
+
+\begin{lstlisting}[style=asmstyle]
+    ; GPIOC->BSRR = (1 << 13);  -- PC13 LED'ini yak (register seviyesi)
+    LDR   r0, =0x40011010 ; r0 = GPIOC_BSRR adresi (BSRR ofseti 0x10)
+    MOV   r1, #(1 << 13)  ; r1 = PC13 için bit maskesi
+    STR   r1, [r0]        ; BSRR'ye yaz -> pin atomik olarak set edilir
+\end{lstlisting}
+
+\gsub{C ile Inline Assembly}
+
+C kodunun içine, GCC'nin \code{asm} sözdizimiyle assembly gömebiliriz.
+Kesme kapatma/açma gibi çekirdek işlemler genelde böyle yapılır.
+
+\begin{lstlisting}
+/* Cortex-M çekirdek komutlarını C'den çağırma (inline assembly) */
+static inline void disable_irq(void)
+{
+    __asm__ volatile ("cpsid i");    /* tüm kesmeleri kapat (interrupt disable) */
+}
+
+static inline void enable_irq(void)
+{
+    __asm__ volatile ("cpsie i");    /* kesmeleri aç */
+}
+
+static inline void wait_for_interrupt(void)
+{
+    __asm__ volatile ("wfi");        /* kesme gelene kadar uyu (düşük güç) */
+}
+\end{lstlisting}
+
+\gsub{Cortex-M Startup Kodu ve Vektör Tablosu}
+
+Reset sonrası ilk çalışan kod, assembly ile yazılmış \emph{startup} kodudur.
+Cortex-M'de vektör tablosunun ilk iki girdisi özeldir: başlangıç yığın
+işaretçisi (SP) ve reset işleyicisinin (ilk çalışacak kod) adresi.
+
+\begin{lstlisting}[style=asmstyle]
+    .syntax unified
+    .thumb
+
+    .section .isr_vector, "a"     ; vektör tablosu (Flash başında)
+    .word   _stack_top            ; [0] başlangıç SP değeri
+    .word   Reset_Handler         ; [1] reset sonrası çalışacak adres
+    .word   NMI_Handler           ; [2] NMI
+    .word   HardFault_Handler     ; [3] hard fault
+    ; ... diğer işleyiciler ...
+
+    .section .text
+    .thumb_func
+Reset_Handler:
+    LDR   sp, =_stack_top         ; yığın işaretçisini kur
+    BL    main                    ; C main() fonksiyonuna atla
+hang:
+    B     hang                    ; main dönerse burada takıl (sonsuz döngü)
+\end{lstlisting}
+
+\bilgi{Gerçek startup kodu ek işler de yapar: \code{.data} bölümünü Flash'tan
+RAM'e kopyalamak (ilklendirilmiş global değişkenler) ve \code{.bss} bölümünü
+sıfırlamak (ilklendirilmemiş globaller). Bunlar C'nin \code{main}'den önce
+beklediği ortamı hazırlar. STM32CubeIDE bu startup dosyasını (\code{startup\_stm32f103.s})
+otomatik üretir; ama içinde ne olduğunu bilmek, gömülü sistemi gerçekten
+anlamak demektir.}
+
+% #####################################################################
+\gpart{8}{ARM Assembly: İleri Konular}
+% #####################################################################
+
+Bu kısım, Cortex-M assembly'sinin daha güçlü özelliklerini kapsar: tek komutta
+kaydırma yapan barrel shifter, zengin adresleme modları, atomik erişim, özel
+register'lar, kayan nokta (FPU) ve donanım exception'larını assembly ile
+işleme. Bunlar, verimli sürücüler, işletim sistemi çekirdekleri ve gerçek
+zamanlı kod yazmanın anahtarıdır.
+
+% =====================================================================
+\gsec{Barrel Shifter ve Adresleme Modları}
+% =====================================================================
+
+\gsub{Barrel Shifter: Bedava Kaydırma}
+
+ARM'ın ayırt edici özelliği \emph{barrel shifter}'dır: birçok komutun ikinci
+operandı, \emph{aynı komut içinde} ekstra çevrim harcamadan kaydırılabilir.
+Böylece ``4 ile çarp ve topla'' gibi işlemler tek komutta yapılır.
+
+\begin{lstlisting}[style=asmstyle]
+    ADD   r0, r1, r2, LSL #2   ; r0 = r1 + (r2 << 2)  yani r1 + r2*4
+    MOV   r0, r1, LSR #1       ; r0 = r1 >> 1  (2'ye bölme)
+    ADD   r0, r1, r1, LSL #3   ; r0 = r1 + r1*8 = r1*9  (çarpmasız!)
+    RSB   r0, r1, r1, LSL #4   ; r0 = r1*16 - r1 = r1*15
+\end{lstlisting}
+
+\bilgi{Barrel shifter, derleyicilerin sabitle çarpmayı neden nadiren gerçek
+\code{MUL} ile yaptığını açıklar: \code{x*9} yerine
+\code{ADD r0, r1, r1, LSL \#3} tek çevrimde biter. Kaydırma türleri: \code{LSL}
+(mantıksal sol), \code{LSR} (mantıksal sağ), \code{ASR} (aritmetik sağ ---
+işaret korur), \code{ROR} (döndür).}
+
+\gsub{Adresleme Modları}
+
+\code{LDR}/\code{STR} komutlarının adres hesaplama biçimleri (addressing modes)
+zengindir. Özellikle \emph{ön/son indeksleme}, bir işaretçiyi ilerletirken
+belleğe erişmeyi tek komutta yapar --- dizi/tampon döngülerinde çok verimli.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Mod} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+{[r1]} & Adres = r1 (doğrudan).\\
+\rowcolor{acikGri} {[r1, \#4]} & Adres = r1 + 4 (offset; r1 değişmez).\\
+{[r1, r2]} & Adres = r1 + r2 (register offset).\\
+\rowcolor{acikGri} {[r1, r2, LSL \#2]} & Adres = r1 + r2*4 (ölçekli --- array[i]).\\
+{[r1, \#4]!} & Ön-indeks: r1 += 4, sonra eriş (r1 güncellenir).\\
+\rowcolor{acikGri} {[r1], \#4} & Son-indeks: eriş, sonra r1 += 4.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=asmstyle]
+    ; Bir diziyi son-indeksleme ile gez (işaretçi otomatik ilerler)
+    LDR   r1, =buffer        ; r1 = tampon başlangıcı
+copy_loop:
+    LDR   r0, [r1], #4       ; r0 = *r1; sonra r1 += 4 (bir sonraki word)
+    ; ... r0'ı işle ...
+    ; döngü koşulu ile copy_loop'a dön
+\end{lstlisting}
+
+\gsub{LDM / STM: Çoklu Yükleme/Saklama}
+
+Tek komutla birden çok register'ı arka arkaya belleğe yazabilir veya
+okuyabiliriz. Bu, blok kopyalama ve yığın işlemlerinin (\code{PUSH}/\code{POP}
+aslında \code{STMDB}/\code{LDMIA}'dır) temelidir.
+
+\begin{lstlisting}[style=asmstyle]
+    ; 8 word'ü tek komutta kopyala (blok transfer)
+    LDMIA r0!, {r4-r7}       ; r0'dan 4 word yükle -> r4,r5,r6,r7; r0 += 16
+    STMIA r1!, {r4-r7}       ; r1'e 4 word yaz; r1 += 16
+    ; IA = Increment After (adres arttıkça); PUSH = STMDB sp!, POP = LDMIA sp!
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Koşullu Yürütme ve Bit Komutları}
+% =====================================================================
+
+\gsub{IT Blokları (If-Then)}
+
+Thumb-2'de, dallanma yapmadan bir-dört komutu koşullu çalıştırmak için
+\emph{IT} (If-Then) bloğu kullanılır. Kısa \code{if} yapılarında dal
+maliyetinden (pipeline flush) kaçınır.
+
+\begin{lstlisting}[style=asmstyle]
+    ; if (r0 == 0) r1 = 1; else r1 = 2;
+    CMP   r0, #0
+    ITE   EQ                 ; If-Then-Else: sonraki EQ, ondan sonraki NE
+    MOVEQ r1, #1             ; r0 == 0 ise çalışır
+    MOVNE r1, #2             ; r0 != 0 ise çalışır
+\end{lstlisting}
+
+\gsub{Bit Alanı ve Sıralama Komutları}
+
+Cortex-M, bit manipülasyonu için özel komutlar sunar --- gömülü register
+işlemede çok kullanışlıdır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Komut} & \color{anaMavi}\textbf{İşlevi}\\
+\midrule
+UBFX / SBFX & Bir bit alanını çıkar (unsigned/signed bit field extract).\\
+\rowcolor{acikGri} BFI / BFC & Bit alanı ekle / temizle (insert/clear).\\
+CLZ & Baştaki sıfır bitleri say (count leading zeros).\\
+\rowcolor{acikGri} RBIT & Bit sırasını tersine çevir.\\
+REV / REV16 & Bayt sırasını tersle (endian dönüşümü).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=asmstyle]
+    UBFX  r0, r1, #4, #3     ; r1'in 4. bitinden başlayan 3 biti r0'a çıkar
+    BFI   r1, r0, #8, #4     ; r0'ın alt 4 bitini r1'in 8. bitine yerleştir
+    CLZ   r0, r1             ; r1'de baştaki sıfır sayısı (öncelik kodlama)
+    REV   r0, r1             ; bayt sırasını tersle (big<->little endian)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Özel Register'lar, Atomik Erişim ve Bariyerler}
+% =====================================================================
+
+\gsub{Özel Register Erişimi: MRS ve MSR}
+
+Genel register'ların dışındaki \emph{özel} register'lara (durum, kesme maskesi,
+yığın işaretçileri) yalnızca \code{MRS} (oku) ve \code{MSR} (yaz) komutlarıyla
+erişilir. RTOS ve çekirdek kodu bunları yoğun kullanır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Register} & \color{anaMavi}\textbf{İşlevi}\\
+\midrule
+PRIMASK & Tüm kesmeleri kapat/aç (cpsid/cpsie i bunu değiştirir).\\
+\rowcolor{acikGri} BASEPRI & Belirli öncelik altındaki kesmeleri maskele.\\
+CONTROL & Ayrıcalık seviyesi ve MSP/PSP seçimi.\\
+\rowcolor{acikGri} MSP / PSP & Main / Process yığın işaretçileri (RTOS ayrımı).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=asmstyle]
+    MRS   r0, PRIMASK        ; mevcut kesme maskesini oku (kaydet)
+    CPSID i                  ; tüm kesmeleri kapat (kritik bölge)
+    ; ... kritik kod ...
+    MSR   PRIMASK, r0        ; önceki maske durumunu geri yükle
+
+    MRS   r0, PSP            ; process yığın işaretçisini oku (RTOS bağlam değiştirme)
+\end{lstlisting}
+
+\gsub{Atomik Erişim: LDREX ve STREX}
+
+Çok görevli veya kesme paylaşımlı kodda ``oku-değiştir-yaz'' atomik olmalıdır.
+\code{LDREX}/\code{STREX} çifti bunu sağlar: \code{LDREX} özel bir işaretle
+okur, \code{STREX} yalnızca arada kimse yazmadıysa başarılı olur. RTOS
+kilitlerinin (mutex, semafor) temelidir.
+
+\begin{lstlisting}[style=asmstyle]
+    ; Atomik artırma: *r0 += 1 (kesintiye dayanıklı)
+atomic_inc:
+    LDREX r1, [r0]           ; değeri özel (exclusive) olarak oku
+    ADD   r1, r1, #1         ; artır
+    STREX r2, r1, [r0]       ; geri yaz; r2=0 başarı, r2=1 başarısız
+    CMP   r2, #0             ; başarısızsa (araya girildiyse)...
+    BNE   atomic_inc         ; ...baştan dene
+    BX    lr
+\end{lstlisting}
+
+\gsub{Bellek Bariyerleri: DMB, DSB, ISB}
+
+Cortex-M işlemcileri bellek erişimlerini yeniden sıralayabilir. Belirli
+sıralamanın garanti edilmesi gereken yerlerde (çevre birimi yapılandırması,
+bağlam değiştirme) \emph{bellek bariyerleri} kullanılır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bariyer} & \color{anaMavi}\textbf{Garantisi}\\
+\midrule
+DMB & Data Memory Barrier: önceki bellek erişimleri sonrakilerden önce görünür.\\
+\rowcolor{acikGri} DSB & Data Sync Barrier: önceki tüm erişimler tamamlanmadan devam etmez.\\
+ISB & Instruction Sync Barrier: pipeline'ı temizler (yeni ayarları uygula).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\notk[Ne zaman gerekir?]{Günlük C kodunda nadiren; ama bir çevre biriminin
+saatini açtıktan hemen sonra register'ına yazarken, veya vektör tablosunu
+değiştirdikten sonra \code{DSB}/\code{ISB} gerekebilir. CMSIS bunları
+\code{\_\_DMB()}, \code{\_\_DSB()}, \code{\_\_ISB()} intrinsic'leriyle sunar ---
+assembly yazmadan C'den çağırabilirsin.}
+
+% =====================================================================
+\gsec{FPU ve Assembly'de Exception İşleme}
+% =====================================================================
+
+\gsub{Kayan Nokta (FPU) Komutları}
+
+Cortex-M4F ve M7 çekirdekleri bir donanım \emph{FPU} (Floating-Point Unit)
+içerir; kayan nokta işlemlerini yazılım öykünmesinden çok daha hızlı yapar.
+FPU komutları \code{V} ile başlar ve ayrı \code{S0}--\code{S31} register'larını
+kullanır.
+
+\begin{lstlisting}[style=asmstyle]
+    VLDR  s0, [r0]          ; bellekten float yükle -> s0
+    VLDR  s1, [r1]
+    VADD.F32 s2, s0, s1     ; s2 = s0 + s1 (tek hassasiyetli float toplama)
+    VMUL.F32 s2, s2, s0     ; s2 = s2 * s0
+    VSTR  s2, [r2]          ; sonucu belleğe yaz
+    VCVT.S32.F32 r3, s2     ; float -> int dönüşümü
+\end{lstlisting}
+
+\uyari{FPU'yu kullanmadan önce \textbf{etkinleştirmelisin}: \code{CPACR}
+register'ında CP10/CP11 erişimini açman gerekir (genelde startup kodu yapar).
+Ayrıca FPU register'ları da bağlam (context) parçasıdır; bir RTOS veya kesme
+FPU kullanıyorsa, bağlam değiştirmede \code{S0-S31}'in de kaydedilmesi gerekir
+--- Cortex-M bunun için ``lazy stacking'' mekanizması sunar.}
+
+\gsub{Assembly ile Exception İşleyici}
+
+Cortex-M'de bir kesme/exception oluştuğunda, donanım \emph{otomatik olarak}
+sekiz register'ı (R0-R3, R12, LR, PC, xPSR) yığına iter ve LR'ye özel bir
+\code{EXC\_RETURN} değeri koyar. Bu sayede ISR'ler \emph{normal C fonksiyonu}
+gibi yazılabilir. Assembly ile bir işleyici yazmak, bağlam değiştirme
+(context switch) gibi işler için gerekir.
+
+\begin{lstlisting}[style=asmstyle]
+    .thumb_func
+PendSV_Handler:              ; RTOS bağlam değiştirme genelde burada olur
+    MRS   r0, PSP            ; mevcut görevin yığın işaretçisini al
+    STMDB r0!, {r4-r11}      ; kalan register'ları (donanım R0-R3'ü zaten itti) kaydet
+    ; ... görev yığın işaretçisini kaydet, sonraki görevi yükle ...
+    LDMIA r0!, {r4-r11}      ; yeni görevin register'larını geri yükle
+    MSR   PSP, r0
+    BX    lr                 ; EXC_RETURN ile normal göreve dön (donanım gerisini yükler)
+\end{lstlisting}
+
+\bilgi{Donanımın otomatik ``stacking''i (R0-R3, R12, LR, PC, xPSR'yi itmesi),
+ISR'leri C'de yazmayı mümkün kılar --- çünkü çağıran-korumalı (caller-saved)
+register'lar zaten kaydedilmiştir. \code{EXC\_RETURN} (LR'deki $0xFFFF\_FFFx$
+değeri), işlemciye hangi yığına (MSP/PSP) döneceğini ve FPU bağlamı olup
+olmadığını söyler. Bu mekanizma, FreeRTOS gibi çekirdeklerin \code{PendSV}
+ile görevler arası geçiş yapmasının temelidir.}
+
+% =====================================================================
+\gsec{Kapanış: Gömülü Geliştirme Yol Haritası}
+% =====================================================================
+
+Bu rehberde STM32'yi register seviyesinden başlayıp assembly'ye kadar iki yönde
+inceledik. İki bakış birbirini tamamlar: C ile hızlı geliştirir, assembly ile
+altta ne olduğunu anlarsın.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{İhtiyaç} & \color{anaMavi}\textbf{Kullanılan mekanizma}\\
+\midrule
+Pin sürme/okuma & GPIO register'ları (ODR, IDR, BSRR)\\
+\rowcolor{acikGri} Çevre birimini açma & RCC saat etkinleştirme\\
+Kesin zamanlama / PWM & Timer (PSC, ARR, CCR)\\
+\rowcolor{acikGri} PC ile iletişim & UART\\
+Analog okuma & ADC\\
+\rowcolor{acikGri} Sensör veri yolu & SPI / I2C\\
+Olay tabanlı tepki & Kesme + NVIC (yoklama yerine)\\
+\rowcolor{acikGri} CPU'suz veri taşıma & DMA\\
+Altyapıyı anlama / optimizasyon & ARM Cortex-M assembly\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Öğrenmenin en iyi yolu \textbf{gerçek donanımla pratik yapmaktır}.
+Ucuz bir ``Blue Pill'' veya Nucleo kartı al, önce LED yak, sonra buton oku,
+UART ile PC'ye mesaj gönder, bir kesme kur. Her adımda \code{arm-none-eabi-objdump
+-d} ile C kodunun ürettiği assembly'yi incele --- bu, iki kısmı birbirine bağlar.
+Başvuru için: STM32 \emph{Reference Manual} (register detayları),
+\emph{Cortex-M Generic User Guide} ve \emph{ARMv7-M Architecture Reference
+Manual} (assembly). Bol dene, boz, hata ayıkla --- gömülü sistemi öğrenmenin
+tek yolu budur. İyi kodlamalar!}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.6pt}}\\[6pt]
+{\color{ortaGri}\small Rehberin sonu --- Register'lardan komutlara, iyi gömülü geliştirmeler!}
+\end{center}
+
+\end{document}

@@ -1,0 +1,1611 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={Python ile Veri Bilimi Rehberi},
+  pdfauthor={Veri Bilimi Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}Python ile Veri Bilimi}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (Python) ====================
+\lstdefinestyle{pystyle}{
+  language=Python,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+  morekeywords={np,pd,plt,sns,as,with,yield,lambda,None,True,False,
+    self,assert,async,await,nonlocal,DataFrame,Series,array,ndarray,
+    fit,transform,predict,fit_transform}
+}
+\lstset{style=pystyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries Python ile Veri Bilimi}\\[10pt]
+{\color{vurguMavi}\LARGE Teoriden Uygulamaya Kapsamlı Rehber}\\[8pt]
+{\color{ortaGri}\large NumPy \textbullet\ Pandas \textbullet\ Matplotlib \textbullet\ scikit-learn}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge, veri bilimini Python ekosistemiyle --- \textbf{teorisi ve çalışan
+kod örnekleriyle} --- baştan sona anlatır. Sayısal hesaplamadan (NumPy) veri
+işlemeye (Pandas), görselleştirmeden (Matplotlib/Seaborn) istatistik ve makine
+öğrenmesine (scikit-learn) kadar tam bir veri bilimi hattını kapsar.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.8cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kapsam --- Kısım 1 (Temeller \& NumPy):} veri bilimi iş akışı
+\textbullet\ Python ekosistemi \textbullet\ \code{ndarray} \textbullet\ dtype
+\textbullet\ yayınlama (broadcasting) \textbullet\ vektörleştirme \textbullet\
+indeksleme \textbullet\ doğrusal cebir \& rastgelelik.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 2 (Pandas):} \code{Series} \& \code{DataFrame}
+\textbullet\ veri okuma/yazma \textbullet\ seçme \& filtreleme \textbullet\
+veri temizleme \textbullet\ \code{groupby} \& pivot \textbullet\ birleştirme
+\textbullet\ zaman serileri.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 3 (Görselleştirme):} Matplotlib temelleri \textbullet\
+alt grafikler \& stil \textbullet\ Seaborn ile istatistiksel grafikler.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 4 (İstatistik):} betimsel istatistik \textbullet\
+olasılık dağılımları \textbullet\ korelasyon \textbullet\ hipotez testleri.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 5 (Makine Öğrenmesi):} veri hazırlama \textbullet\
+regresyon \textbullet\ sınıflandırma \textbullet\ kümeleme \textbullet\
+model değerlendirme \textbullet\ pipeline'lar.\vspace{4pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 12 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Python 3 \textbullet\ NumPy \textbullet\ Pandas \textbullet\ scikit-learn}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Temeller ve NumPy}
+% #####################################################################
+
+% =====================================================================
+\gsec{Veri Bilimine Giriş}
+% =====================================================================
+
+Veri bilimi, ham veriden anlamlı bilgi ve öngörü çıkarma disiplinidir;
+istatistik, programlama ve alan bilgisinin kesişiminde durur. Bir veri bilimi
+projesi nadiren ``model eğitmek''ten ibarettir; zamanın büyük kısmı veriyi
+toplamak, temizlemek ve anlamakla geçer.
+
+\gsub{Veri Bilimi İş Akışı}
+
+Tipik bir proje şu aşamalardan geçer. Bu rehber, her aşama için gereken
+araçları sırayla öğretir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X c@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Aşama} & \color{anaMavi}\textbf{Ne yapılır?} & \color{anaMavi}\textbf{Araç}\\
+\midrule
+1. Toplama & Veriyi kaynaklardan al (CSV, SQL, API) & Pandas\\
+\rowcolor{acikGri} 2. Temizleme & Eksik/hatalı/tekrar veriyi düzelt & Pandas\\
+3. Keşif (EDA) & İstatistik ve grafiklerle veriyi anla & Pandas, Matplotlib\\
+\rowcolor{acikGri} 4. Modelleme & İstatistik/ML modeli kur & scikit-learn\\
+5. Değerlendirme & Modeli ölç, yorumla & scikit-learn\\
+\rowcolor{acikGri} 6. İletişim & Sonuçları görselleştir, sun & Matplotlib, Seaborn\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Python Veri Bilimi Ekosistemi}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kütüphane} & \color{anaMavi}\textbf{Rol}\\
+\midrule
+NumPy & Sayısal hesaplama; çok boyutlu diziler, temel; her şey buna dayanır.\\
+\rowcolor{acikGri} Pandas & Etiketli tablo verisi (DataFrame); okuma, temizleme, dönüştürme.\\
+Matplotlib & Temel çizim kütüphanesi; her tür grafik.\\
+\rowcolor{acikGri} Seaborn & Matplotlib üzerine istatistiksel, güzel grafikler.\\
+scikit-learn & Makine öğrenmesi; regresyon, sınıflandırma, kümeleme.\\
+\rowcolor{acikGri} SciPy & İleri bilimsel hesaplama; istatistik, optimizasyon.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Kurulum ve Ortam}
+
+\begin{lstlisting}[style=shstyle]
+# Sanal ortam olustur (izole, temiz kurulum)
+$ python -m venv datascience
+$ source datascience/bin/activate       # Linux/Mac
+# datascience\Scripts\activate          # Windows
+
+# Temel kutuphaneleri kur
+$ pip install numpy pandas matplotlib seaborn scikit-learn jupyter
+
+# Jupyter Notebook baslat (interaktif calisma icin ideal)
+$ jupyter notebook
+\end{lstlisting}
+
+\bilgi{Veri bilimi çalışmaları için \textbf{Jupyter Notebook} (veya JupyterLab)
+neredeyse standarttır: kodu hücre hücre çalıştırır, grafikleri satır içinde
+gösterir ve keşifsel analizi çok kolaylaştırır. Bu rehberdeki tüm örnekler bir
+Jupyter hücresinde veya bir \code{.py} dosyasında çalıştırılabilir.}
+
+% =====================================================================
+\gsec{NumPy: Sayısal Hesaplamanın Temeli}
+% =====================================================================
+
+NumPy (Numerical Python), tüm veri bilimi ekosisteminin altında yatan
+kütüphanedir. Kalbi \code{ndarray} (N-boyutlu dizi) nesnesidir: aynı tipteki
+verileri bellekte ardışık tutan, üzerinde \emph{vektörleştirilmiş} (döngüsüz)
+işlemler yapılabilen hızlı bir dizi.
+
+\gsub{Neden NumPy? Liste vs Dizi}
+
+Python listeleri esnektir ama yavaştır: her eleman ayrı bir nesnedir ve döngüler
+Python yorumlayıcısında çalışır. NumPy dizileri veriyi bitişik bellekte tutar
+ve işlemleri derlenmiş C koduyla yapar --- genelde 10--100 kat daha hızlı.
+
+\begin{lstlisting}
+import numpy as np
+
+# Python listesi ile: yavas, dongu gerekir
+lst = [1, 2, 3, 4]
+squares = [x**2 for x in lst]            # [1, 4, 9, 16]
+
+# NumPy ile: hizli, vektorlestirilmis (dongu YOK)
+arr = np.array([1, 2, 3, 4])
+squares = arr ** 2                        # array([1, 4, 9, 16])
+\end{lstlisting}
+
+\gsub{Dizi Oluşturma}
+
+\begin{lstlisting}
+import numpy as np
+
+a = np.array([1, 2, 3])                   # listeden
+b = np.zeros((2, 3))                      # 2x3 sifir matrisi
+c = np.ones((3,))                         # [1., 1., 1.]
+d = np.full((2, 2), 7)                    # 7 ile dolu 2x2
+e = np.eye(3)                             # 3x3 birim matris
+f = np.arange(0, 10, 2)                   # [0 2 4 6 8]
+g = np.linspace(0, 1, 5)                  # [0. 0.25 0.5 0.75 1.]
+h = np.random.rand(2, 3)                  # 2x3 rastgele [0,1)
+\end{lstlisting}
+
+\gsub{Dizi Özellikleri: shape, dtype, boyut}
+
+Bir dizinin \emph{şekli} (shape) boyutlarını, \emph{dtype}'ı ise sakladığı
+veri tipini belirtir. Bunları anlamak NumPy'da hataların çoğunu önler.
+
+\begin{lstlisting}
+a = np.array([[1, 2, 3],
+              [4, 5, 6]])
+a.shape        # (2, 3) -> 2 satir, 3 sutun
+a.ndim         # 2      -> boyut sayisi
+a.size         # 6      -> toplam eleman
+a.dtype        # dtype('int64')
+
+# dtype donusumu (bellek/hassasiyet kontrolu icin onemli)
+b = a.astype(np.float32)
+c = np.array([1, 2, 3], dtype=np.float64)
+\end{lstlisting}
+
+\gsub{Yeniden Şekillendirme (Reshape)}
+
+\begin{lstlisting}
+a = np.arange(12)                         # [0 1 2 ... 11]
+b = a.reshape(3, 4)                       # 3x4 matrise cevir
+c = a.reshape(2, 2, 3)                    # 3 boyutlu
+d = b.reshape(-1)                         # duzlestir -> 1B (12,)
+e = b.T                                   # transpoz (4x3)
+f = b.reshape(4, -1)                      # -1: boyutu otomatik hesapla (4x3)
+\end{lstlisting}
+
+\uyari{\code{reshape} verinin bir \emph{görünümünü} (view) döndürür, kopya
+değil; yani yeni diziyi değiştirmek çoğu zaman orijinali de değiştirir. Bağımsız
+bir kopya istiyorsan \code{a.copy()} kullan. Bu view/copy ayrımı, NumPy'da
+şaşırtıcı hataların en yaygın kaynağıdır.}
+
+% =====================================================================
+\gsec{NumPy: İndeksleme, Yayınlama ve İşlemler}
+% =====================================================================
+
+\gsub{İndeksleme ve Dilimleme}
+
+NumPy, Python listelerinden daha güçlü indeksleme sunar: çok boyutlu dilimleme,
+boole maskeleri ve süslü (fancy) indeksleme.
+
+\begin{lstlisting}
+a = np.array([[1, 2, 3, 4],
+              [5, 6, 7, 8],
+              [9, 10, 11, 12]])
+
+a[0, 2]        # 3      -> satir 0, sutun 2
+a[1]           # [5 6 7 8]  -> tum 1. satir
+a[:, 1]        # [2 6 10]   -> tum satirlarin 1. sutunu
+a[0:2, 1:3]    # [[2 3] [6 7]]  -> alt matris
+a[-1]          # [9 10 11 12]   -> son satir
+
+# Boole maskesi (kosula uyan elemanlar) -- cok guclu!
+a[a > 6]       # [7 8 9 10 11 12]
+a[a % 2 == 0]  # cift elemanlar
+
+# Susulu (fancy) indeksleme
+a[[0, 2]]      # 0. ve 2. satirlar
+\end{lstlisting}
+
+\gsub{Yayınlama (Broadcasting)}
+
+Yayınlama, NumPy'ın \emph{farklı şekilli} dizileri birlikte işlemesini sağlayan
+kuraldır. Küçük dizi, büyük diziye ``yayılarak'' uyumlu hale getirilir ---
+bellekte kopya oluşturmadan. Bu, veri biliminde standardizasyon gibi işlemlerin
+temelidir.
+
+\begin{lstlisting}
+a = np.array([[1, 2, 3],
+              [4, 5, 6]])                 # (2, 3)
+
+a + 10          # her elemana 10 ekle (skaler yayilir)
+a * 2           # her elemani 2 ile carp
+
+row = np.array([10, 20, 30])              # (3,)
+a + row         # her SATIRA ekle -> [[11 22 33] [14 25 36]]
+
+col = np.array([[100], [200]])            # (2, 1)
+a + col         # her SUTUNA ekle -> [[101 102 103] [204 205 206]]
+
+# Pratik: sutunlari standartlastir (z-skoru)
+mean = a.mean(axis=0)                     # her sutunun ortalamasi
+std = a.std(axis=0)
+z = (a - mean) / std                      # yayinlama ile
+\end{lstlisting}
+
+\notk[Yayınlama kuralı]{İki dizi \emph{sondan başa} boyut boyut karşılaştırılır.
+İki boyut uyumludur eğer: (1) eşitlerse, ya da (2) biri 1 ise. Örneğin (2,3)
+ile (3,) uyumludur çünkü (3,), (1,3) gibi ele alınır ve satır boyunca yayılır.}
+
+\gsub{Eksen (axis) Boyunca İşlemler}
+
+Toplama, ortalama gibi indirgeme (reduction) işlemleri bir \emph{eksen} boyunca
+yapılabilir. \code{axis=0} sütunlar boyunca (satırları çökertir), \code{axis=1}
+satırlar boyunca çalışır. Bu kavram Pandas'ta da aynen geçerlidir.
+
+\begin{lstlisting}
+a = np.array([[1, 2, 3],
+              [4, 5, 6]])
+
+a.sum()             # 21   -> tum elemanlar
+a.sum(axis=0)       # [5 7 9]   -> her SUTUN toplami
+a.sum(axis=1)       # [6 15]    -> her SATIR toplami
+a.mean(axis=0)      # [2.5 3.5 4.5]
+a.max(axis=1)       # [3 6]
+a.argmax()          # 5   -> en buyugun (duzlestirilmis) indeksi
+np.cumsum(a)        # kumulatif toplam
+\end{lstlisting}
+
+\gsub{Doğrusal Cebir}
+
+NumPy, makine öğrenmesinin altında yatan matris işlemlerini sağlar.
+
+\begin{lstlisting}
+A = np.array([[1, 2],
+              [3, 4]])
+B = np.array([[5, 6],
+              [7, 8]])
+
+A @ B                    # matris carpimi (dot product)
+A * B                    # ELEMAN BAZLI carpim (dikkat: farkli!)
+np.dot(A, B)             # A @ B ile ayni
+A.T                      # transpoz
+np.linalg.inv(A)         # ters matris
+np.linalg.det(A)         # determinant
+eigenvalues, eigenvectors = np.linalg.eig(A)  # ozdegerler/ozvektorler
+
+# Dogrusal denklem sistemi cozme: Ax = b
+b = np.array([1, 2])
+x = np.linalg.solve(A, b)
+\end{lstlisting}
+
+\gsub{Rastgelelik ve Tekrarlanabilirlik}
+
+\begin{lstlisting}
+rng = np.random.default_rng(seed=42)      # tekrarlanabilir (modern API)
+
+rng.random(3)                # [0,1) duzgun dagilim
+rng.integers(1, 7, size=10)  # 1-6 arasi 10 zar atisi
+rng.normal(0, 1, size=5)     # standart normal dagilim
+rng.choice([1, 2, 3], size=4)# ornekleme
+shuffled = rng.permutation(np.arange(10))# karistirma
+\end{lstlisting}
+
+\ipucu{\textbf{Her zaman bir seed (tohum) belirle} (\code{default\_rng(42)}
+veya \code{np.random.seed(42)}). Böylece analizlerin ve model sonuçların
+tekrarlanabilir olur --- kod her çalıştığında aynı ``rastgele'' değerleri
+üretir, bu da hata ayıklamayı ve sonuçları paylaşmayı kolaylaştırır.}
+
+% #####################################################################
+\gpart{2}{Pandas ile Veri İşleme}
+% #####################################################################
+
+% =====================================================================
+\gsec{Pandas Temelleri: Series ve DataFrame}
+% =====================================================================
+
+Pandas, etiketli ve tablo biçimli veriyle çalışmak için tasarlanmış
+kütüphanedir; adını ``panel data''dan alır. İki temel yapısı vardır:
+\code{Series} (etiketli tek boyutlu dizi) ve \code{DataFrame} (etiketli
+satır ve sütunlardan oluşan iki boyutlu tablo --- bir Excel sayfası gibi).
+Gerçek veri biliminin büyük kısmı Pandas'ta geçer.
+
+\gsub{Series: Etiketli Tek Boyutlu Veri}
+
+Series, bir NumPy dizisi ile onu tanımlayan bir \emph{indeksin} (etiketler)
+birleşimidir. Sözlük ve dizinin özelliklerini birleştirir.
+
+\begin{lstlisting}
+import pandas as pd
+
+s = pd.Series([10, 20, 30, 40], index=['a', 'b', 'c', 'd'])
+s['b']            # 20   -> etiketle erisim
+s[1]              # 20   -> konumla erisim
+s[s > 15]         # b,c,d -> boole filtreleme
+s * 2             # her elemani ikiye katla (vektorlestirilmis)
+s.mean()          # 25.0
+
+# Sozlukten Series
+population = pd.Series({'Ankara': 5.7, 'Izmir': 4.4, 'Istanbul': 15.8})
+\end{lstlisting}
+
+\gsub{DataFrame: Tablo Verisi}
+
+DataFrame, her biri bir \code{Series} olan sütunların birleşimidir. Veri
+biliminin ana çalışma nesnesidir.
+
+\begin{lstlisting}
+import pandas as pd
+
+df = pd.DataFrame({
+    'name':   ['Ali', 'Ayse', 'Can', 'Deniz'],
+    'age':    [25, 30, 35, 28],
+    'city':   ['Ankara', 'Izmir', 'Ankara', 'Istanbul'],
+    'salary': [5000, 7000, 6500, 8000]
+})
+
+df.head()         # ilk 5 satir
+df.tail(2)        # son 2 satir
+df.shape          # (4, 4)
+df.columns        # sutun adlari
+df.dtypes         # her sutunun tipi
+df.info()         # genel ozet (tip, bellek, eksik)
+df.describe()     # sayisal sutunlarin istatistigi
+\end{lstlisting}
+
+\gsub{İlk Bakış: describe ve info}
+
+Yeni bir veri setiyle karşılaştığında ilk yapılacak, onu ``tanımaktır''.
+Bu iki metot bir veri setinin röntgenini çeker.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Metot} & \color{anaMavi}\textbf{Ne gösterir?}\\
+\midrule
+df.info() & Satır sayısı, sütun tipleri, eksik olmayan değer sayısı, bellek.\\
+\rowcolor{acikGri} df.describe() & Sayısal sütunlar için sayı, ortalama, std, min, çeyrekler, max.\\
+df.nunique() & Her sütundaki benzersiz değer sayısı.\\
+\rowcolor{acikGri} df['s'].value\_counts() & Bir sütundaki her değerin kaç kez geçtiği.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Veri Okuma ve Yazma}
+% =====================================================================
+
+Pandas, çok çeşitli kaynaklardan veri okuyabilir. Gerçek projelerde en sık
+CSV ve Excel kullanılır, ama veritabanları ve API'ler de yaygındır.
+
+\begin{lstlisting}
+import pandas as pd
+
+# --- OKUMA ---
+df = pd.read_csv('veri.csv')                  # CSV
+df = pd.read_csv('veri.csv', sep=';',         # ozel ayirici
+                 encoding='utf-8', na_values=['NA', '?'])
+df = pd.read_excel('veri.xlsx', sheet_name='Sayfa1')
+df = pd.read_json('veri.json')
+df = pd.read_sql('SELECT * FROM table', connection)  # veritabani
+
+# --- YAZMA ---
+df.to_csv('cikti.csv', index=False)           # index=False: satir no yazma
+df.to_excel('cikti.xlsx', index=False)
+df.to_json('cikti.json', orient='records')
+\end{lstlisting}
+
+\bilgi{\code{read\_csv} onlarca parametre alır. En sık kullanılanlar:
+\code{sep} (ayırıcı), \code{header} (başlık satırı), \code{index\_col}
+(indeks olarak kullanılacak sütun), \code{usecols} (sadece belirli sütunlar),
+\code{parse\_dates} (tarih sütunlarını otomatik dönüştür), \code{nrows}
+(büyük dosyalarda ilk N satır). Büyük dosyaları \code{chunksize} ile parça
+parça da okuyabilirsin.}
+
+% =====================================================================
+\gsec{Veri Seçme ve Filtreleme}
+% =====================================================================
+
+DataFrame'den veri seçmenin birden çok yolu vardır. En önemli ayrım:
+\code{loc} (etiket tabanlı) ve \code{iloc} (konum/tam sayı tabanlı).
+
+\gsub{Sütun ve Satır Seçme}
+
+\begin{lstlisting}
+df['age']                  # tek sutun -> Series
+df[['name', 'age']]        # birden cok sutun -> DataFrame
+
+# loc: ETIKET tabanli (satir etiketi, sutun adi)
+df.loc[0]                  # 0 etiketli satir
+df.loc[0, 'name']          # tek hucre
+df.loc[0:2, ['name', 'age']]  # satir 0-2 (DAHIL), belirli sutunlar
+
+# iloc: KONUM tabanli (tam sayi indeksleri)
+df.iloc[0]                 # ilk satir
+df.iloc[0:2]               # ilk 2 satir (2 HARIC, Python dilimi gibi)
+df.iloc[-1]                # son satir
+df.iloc[0:2, 0:2]          # ilk 2 satir, ilk 2 sutun
+\end{lstlisting}
+
+\uyari{\code{loc} ile dilimlemede son sınır \textbf{dahildir}
+(\code{df.loc[0:2]} $\to$ 0,1,2), ama \code{iloc} ve normal Python
+dilimlemesinde son sınır \textbf{hariçtir} (\code{df.iloc[0:2]} $\to$ 0,1).
+Bu, yeni başlayanların en sık yaptığı hatalardan biridir.}
+
+\gsub{Boole Filtreleme (En Önemli Beceri)}
+
+Koşullara göre satır seçmek veri analizinin bel kemiğidir. Koşullar boole
+maskesi üretir; bu maske DataFrame'i filtreler.
+
+\begin{lstlisting}
+# Tek kosul
+df[df['age'] > 28]
+
+# Birden cok kosul: & (ve), | (veya), ~ (degil) -- PARANTEZ sart!
+df[(df['age'] > 25) & (df['city'] == 'Ankara')]
+df[(df['salary'] > 6000) | (df['age'] < 26)]
+
+# isin: bir listedeki degerler
+df[df['city'].isin(['Ankara', 'Izmir'])]
+
+# between: aralik
+df[df['age'].between(25, 32)]
+
+# String iceren
+df[df['name'].str.startswith('A')]
+df[df['name'].str.contains('e')]
+
+# query: SQL benzeri okunabilir sozdizimi
+df.query('age > 28 and city == "Ankara"')
+\end{lstlisting}
+
+\gsub{Yeni Sütun Oluşturma ve Dönüştürme}
+
+\begin{lstlisting}
+df['annual_salary'] = df['salary'] * 12       # vektorlestirilmis islem
+df['age_group'] = df['age'].apply(
+    lambda a: 'young' if a < 30 else 'adult')
+
+# np.where ile kosullu sutun
+import numpy as np
+df['level'] = np.where(df['salary'] > 6500, 'high', 'normal')
+
+# map ile deger esleme
+df['city_code'] = df['city'].map({'Ankara': 6, 'Izmir': 35, 'Istanbul': 34})
+
+# Sutun/satir silme
+df = df.drop(columns=['city_code'])
+df = df.drop(index=[0])
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Veri Temizleme}
+% =====================================================================
+
+Gerçek veri asla temiz gelmez: eksik değerler, tekrarlar, yanlış tipler ve
+tutarsızlıklar içerir. Zamanının çoğunu buna harcarsın. Temiz veri, iyi
+analizin ön koşuludur.
+
+\gsub{Eksik Veri (NaN) ile Başa Çıkma}
+
+\begin{lstlisting}
+# Eksikleri tespit et
+df.isnull().sum()          # her sutundaki eksik sayisi
+df.isnull().sum().sum()    # toplam eksik
+
+# Eksik satirlari/sutunlari SIL
+df.dropna()                # eksik iceren satirlari at
+df.dropna(axis=1)          # eksik iceren sutunlari at
+df.dropna(subset=['salary']) # sadece belirli sutunda eksik olanlari at
+df.dropna(thresh=3)        # en az 3 dolu deger olan satirlari tut
+
+# Eksikleri DOLDUR (imputation)
+df['salary'].fillna(0)                        # sabitle
+df['salary'].fillna(df['salary'].mean())      # ortalama ile (sik)
+df['salary'].fillna(df['salary'].median())    # medyan ile (aykiri degere dayanikli)
+df['city'].fillna(df['city'].mode()[0])   # en sik deger (kategorik)
+df.fillna(method='ffill')                 # onceki degerle (zaman serisi)
+\end{lstlisting}
+
+\notk[Silmek mi doldurmak mı?]{Eksik veri azsa (\%5'ten az) satırları silmek
+güvenlidir. Ama çoksa silmek veriyi ziyan eder --- doldurmak (imputation)
+gerekir. Sayısal sütunlarda \emph{medyan} (aykırı değerlere dayanıklı),
+kategoriklerde \emph{mod} sık kullanılır. Neden eksik olduklarını da
+düşün: rastgele mi, yoksa sistematik mi?}
+
+\gsub{Tekrarlar ve Tip Dönüşümleri}
+
+\begin{lstlisting}
+# Tekrarlar
+df.duplicated().sum()      # kac tekrar satir var
+df = df.drop_duplicates()  # tekrarlari sil
+df = df.drop_duplicates(subset=['name'])   # belirli sutuna gore
+
+# Tip donusumu
+df['age'] = df['age'].astype(int)
+df['date'] = pd.to_datetime(df['date'])
+df['salary'] = pd.to_numeric(df['salary'], errors='coerce')  # hatalari NaN yap
+
+# String temizleme
+df['name'] = df['name'].str.strip()        # bosluklari kirp
+df['city'] = df['city'].str.lower()        # kucuk harf
+df['name'] = df['name'].str.replace('.', '', regex=False)
+
+# Sutun yeniden adlandirma
+df = df.rename(columns={'name': 'full_name', 'age': 'age_years'})
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Gruplama ve Toplulaştırma (GroupBy)}
+% =====================================================================
+
+\code{groupby}, verinin belki de en güçlü aracıdır: veriyi bir veya daha çok
+sütuna göre gruplara böler, her gruba bir işlem (ortalama, toplam, sayım\dots)
+uygular ve sonuçları birleştirir. Buna \emph{böl-uygula-birleştir}
+(split-apply-combine) denir.
+
+\begin{lstlisting}
+# Sehre gore ortalama maas
+df.groupby('city')['salary'].mean()
+
+# Birden cok istatistik
+df.groupby('city')['salary'].agg(['mean', 'min', 'max', 'count'])
+
+# Birden cok sutuna gore gruplama
+df.groupby(['city', 'age_group'])['salary'].mean()
+
+# Her sutuna farkli fonksiyon
+df.groupby('city').agg({
+    'salary': 'mean',
+    'age':    'max',
+    'name':   'count'
+})
+
+# Ozel fonksiyon
+df.groupby('city')['salary'].agg(lambda x: x.max() - x.min())  # aralik
+\end{lstlisting}
+
+\gsub{Pivot Tablolar}
+
+Pivot tablo, veriyi iki boyutlu bir özet tabloya dönüştürür --- Excel'deki
+pivot tablonun aynısı. Bir sütunu satırlara, diğerini sütunlara yayar.
+
+\begin{lstlisting}
+pd.pivot_table(df,
+    values='salary',      # ozetlenecek deger
+    index='city',         # satirlar
+    columns='age_group',  # sutunlar
+    aggfunc='mean',       # toplulastirma fonksiyonu
+    fill_value=0)         # bos hucreleri doldur
+
+# crosstab: sayim icin pratik
+pd.crosstab(df['city'], df['age_group'])
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Veri Birleştirme}
+% =====================================================================
+
+Gerçek projelerde veri genelde birden çok tablodan gelir ve birleştirilmesi
+gerekir. Pandas bunun için \code{merge} (SQL join gibi), \code{concat}
+(uç uca ekleme) ve \code{join} sunar.
+
+\gsub{merge: Anahtar Üzerinden Birleştirme}
+
+\begin{lstlisting}
+employees = pd.DataFrame({
+    'id': [1, 2, 3], 'name': ['Ali', 'Ayse', 'Can'], 'dept_id': [10, 20, 10]})
+departments = pd.DataFrame({
+    'dept_id': [10, 20, 30], 'dept': ['Software', 'Sales', 'HR']})
+
+# Ortak sutun (dept_id) uzerinden birlestir
+pd.merge(employees, departments, on='dept_id', how='inner')
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{how} & \color{anaMavi}\textbf{Hangi satırlar tutulur?}\\
+\midrule
+inner & Sadece her iki tabloda da eşleşen anahtarlar (kesişim).\\
+\rowcolor{acikGri} left & Sol tablonun tümü + sağdan eşleşenler.\\
+right & Sağ tablonun tümü + soldan eşleşenler.\\
+\rowcolor{acikGri} outer & Her iki tablonun tümü (birleşim); eşleşmeyenler NaN.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{concat: Uç Uca Ekleme}
+
+\begin{lstlisting}
+# Satir bazli birlestirme (alt alta) -- ayni sutunlar
+pd.concat([df1, df2], axis=0, ignore_index=True)
+
+# Sutun bazli birlestirme (yan yana) -- ayni satirlar
+pd.concat([df1, df2], axis=1)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Zaman Serileri}
+% =====================================================================
+
+Zaman serisi verisi (tarih/saat damgalı ölçümler) veri biliminde çok yaygındır:
+borsa, hava, satış\dots Pandas bunun için güçlü araçlar sunar.
+
+\begin{lstlisting}
+# Tarih indeksi olustur
+df['date'] = pd.to_datetime(df['date'])
+df = df.set_index('date')
+
+# Tarih bilesenlerine erisim
+df.index.year
+df.index.month
+df.index.dayofweek         # 0=Pazartesi
+
+# Tarihe gore dilimleme
+df['2026']                 # 2026 yilinin tumu
+df['2026-01':'2026-03']    # ilk uc ay
+
+# Yeniden ornekleme (resample): gunluk -> aylik
+df['sales'].resample('M').sum()       # aylik toplam
+df['sales'].resample('W').mean()      # haftalik ortalama
+
+# Kayan pencere (hareketli ortalama) -- trend icin
+df['mean_7d'] = df['sales'].rolling(window=7).mean()
+
+# Kaydirma ve degisim
+df['previous'] = df['sales'].shift(1)        # bir onceki deger
+df['change'] = df['sales'].pct_change()      # yuzde degisim
+\end{lstlisting}
+
+\ipucu{Zaman serilerinde \code{resample} (zaman frekansını değiştirme) ve
+\code{rolling} (hareketli pencere) en çok kullanılan iki araçtır. Hareketli
+ortalama, gürültülü veride \emph{trendi} görmenin en basit yoludur; günlük
+dalgalanmaları yumuşatır.}
+
+% #####################################################################
+\gpart{3}{Veri Görselleştirme}
+% #####################################################################
+
+% =====================================================================
+\gsec{Matplotlib: Temel Çizim}
+% =====================================================================
+
+Matplotlib, Python'ın temel çizim kütüphanesidir; diğer görselleştirme
+kütüphaneleri (Seaborn, Pandas'ın çizimi) onun üzerine kuruludur. Güçlü ve
+esnektir ama biraz ayrıntılıdır. İyi bir görselleştirme, bir tablodan çok daha
+hızlı içgörü verir --- ``bir resim bin satıra bedeldir''.
+
+\gsub{Anatomi: Figure ve Axes}
+
+Matplotlib'de bir grafik iki katmandan oluşur: \code{Figure} (tüm tuval) ve
+\code{Axes} (üzerindeki tek bir grafik alanı --- eksenler, veri burada çizilir).
+Modern ve önerilen kullanım, bu ikisini açıkça oluşturan \emph{nesne yönelimli}
+arayüzdür.
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+fig, ax = plt.subplots(figsize=(8, 4))    # Figure + tek Axes
+ax.plot(x, y, label='sin(x)', color='navy', linewidth=2)
+ax.set_title('Sinus Egrisi')
+ax.set_xlabel('x')
+ax.set_ylabel('sin(x)')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.savefig('grafik.png', dpi=150, bbox_inches='tight')  # dosyaya kaydet
+plt.show()
+\end{lstlisting}
+
+\gsub{Temel Grafik Türleri}
+
+Doğru grafik türünü seçmek, verinin doğasına bağlıdır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Grafik} & \color{anaMavi}\textbf{Ne zaman kullanılır?}\\
+\midrule
+plot & Çizgi grafik; trend, zaman serisi.\\
+\rowcolor{acikGri} scatter & Dağılım; iki sayısal değişken arası ilişki.\\
+bar & Çubuk; kategoriler arası karşılaştırma.\\
+\rowcolor{acikGri} hist & Histogram; tek değişkenin dağılımı.\\
+boxplot & Kutu grafiği; dağılım + aykırı değerler.\\
+\rowcolor{acikGri} pie & Pasta; bütünün parçaları (dikkatli kullan).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+fig, ax = plt.subplots()
+
+ax.scatter(df['age'], df['salary'])            # dagilim
+ax.bar(df['name'], df['salary'])               # cubuk
+ax.hist(df['salary'], bins=20)                 # histogram
+ax.boxplot([group1, group2], labels=['A', 'B']) # kutu grafigi
+ax.pie(values, labels=labels, autopct='%1.1f%%')  # pasta
+\end{lstlisting}
+
+\gsub{Birden Çok Alt Grafik (Subplots)}
+
+Genelde birden çok grafiği yan yana göstermek isteriz. \code{plt.subplots}
+bir \emph{ızgara} oluşturur.
+
+\begin{lstlisting}
+fig, axes = plt.subplots(2, 2, figsize=(10, 8))   # 2x2 izgara
+
+axes[0, 0].plot(x, np.sin(x));  axes[0, 0].set_title('sin')
+axes[0, 1].plot(x, np.cos(x));  axes[0, 1].set_title('cos')
+axes[1, 0].hist(df['salary'])
+axes[1, 1].scatter(df['age'], df['salary'])
+
+fig.suptitle('Panel Grafikler', fontsize=14)
+fig.tight_layout()                             # cakismalari onle
+plt.show()
+\end{lstlisting}
+
+\gsub{Stil ve Özelleştirme}
+
+\begin{lstlisting}
+plt.style.use('seaborn-v0_8')                  # hazir stil temasi
+
+ax.plot(x, y,
+        color='#2E6DA4', linestyle='--', linewidth=2,
+        marker='o', markersize=4, alpha=0.8, label='veri')
+
+ax.set_xlim(0, 10)                             # eksen sinirlari
+ax.set_ylim(-1.5, 1.5)
+ax.set_xticks([0, 2, 4, 6, 8, 10])             # isaret konumlari
+ax.axhline(0, color='gray', linewidth=0.8)     # yatay referans cizgisi
+ax.annotate('tepe', xy=(1.57, 1), xytext=(3, 1.2),
+            arrowprops=dict(arrowstyle='->'))  # ok ile aciklama
+\end{lstlisting}
+
+\bilgi{\textbf{pyplot vs nesne-yönelimli:} \code{plt.plot()} gibi durum tabanlı
+(stateful) arayüz hızlı denemeler için pratiktir, ama karmaşık grafiklerde
+kafa karıştırır. Ciddi işte her zaman \code{fig, ax = plt.subplots()} ile
+başlayıp \code{ax} üzerinden çalış --- daha okunaklı ve kontrol edilebilirdir.}
+
+% =====================================================================
+\gsec{Pandas ile Hızlı Çizim}
+% =====================================================================
+
+Pandas, keşif sırasında hızlı grafikler için Matplotlib'i doğrudan sarar.
+Bir DataFrame veya Series üzerinde \code{.plot()} çağırman yeterlidir.
+
+\begin{lstlisting}
+df['salary'].plot(kind='hist', bins=20, title='Maas Dagilimi')
+df['salary'].plot(kind='box')
+df.plot(x='age', y='salary', kind='scatter')
+df.groupby('city')['salary'].mean().plot(kind='bar')
+df['sales'].plot(kind='line')                  # zaman serisi
+
+# kind secenekleri: 'line','bar','barh','hist','box','kde','area','scatter','pie'
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Seaborn: İstatistiksel Görselleştirme}
+% =====================================================================
+
+Seaborn, Matplotlib üzerine kurulu, istatistiksel grafikler için tasarlanmış
+bir kütüphanedir. Daha az kodla daha güzel ve bilgilendirici grafikler üretir;
+DataFrame'lerle doğrudan çalışır ve kategorik değişkenleri anlar.
+
+\gsub{Dağılım Grafikleri}
+
+\begin{lstlisting}
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.set_theme(style='whitegrid')               # sik varsayilan tema
+
+# Histogram + yogunluk egrisi
+sns.histplot(data=df, x='salary', kde=True, bins=20)
+
+# Yogunluk (KDE) grafigi
+sns.kdeplot(data=df, x='salary', hue='city', fill=True)
+
+# Kutu ve keman grafikleri (grup karsilastirma)
+sns.boxplot(data=df, x='city', y='salary')
+sns.violinplot(data=df, x='city', y='salary')  # kutu + yogunluk
+
+plt.show()
+\end{lstlisting}
+
+\gsub{İlişki Grafikleri}
+
+İki değişken arasındaki ilişkiyi görselleştirmek, korelasyon ve modelleme için
+kritiktir.
+
+\begin{lstlisting}
+# Dagilim + regresyon dogrusu
+sns.scatterplot(data=df, x='age', y='salary', hue='city', size='salary')
+sns.regplot(data=df, x='age', y='salary')      # dogrusal uyum + guven araligi
+
+# Pairplot: TUM sayisal sutun ciftleri (kesif icin harika)
+sns.pairplot(df, hue='city')
+
+# Isi haritasi (heatmap) -- korelasyon matrisi icin ideal
+correlation = df.corr(numeric_only=True)
+sns.heatmap(correlation, annot=True, cmap='coolwarm', center=0)
+\end{lstlisting}
+
+\gsub{Kategorik Grafikler}
+
+\begin{lstlisting}
+sns.barplot(data=df, x='city', y='salary')     # ortalama + guven araligi
+sns.countplot(data=df, x='city')               # kategori sayimi
+sns.catplot(data=df, x='city', y='salary',     # panel katmanli
+            kind='box', col='age_group')
+\end{lstlisting}
+
+\ipucu{Keşifsel analiz (EDA) için Seaborn'un \code{pairplot} ve \code{heatmap}
+fonksiyonları paha biçilmezdir: \code{pairplot} tüm değişken çiftlerinin
+ilişkisini tek bakışta gösterir; korelasyon \code{heatmap}'i hangi
+değişkenlerin birbiriyle ilişkili olduğunu (ve modelde çoklu bağlantı riskini)
+anında ortaya koyar. Yeni bir veri setinde ilk çalıştıracağın şeyler bunlar
+olmalı.}
+
+% #####################################################################
+\gpart{4}{İstatistik ve Olasılık}
+% #####################################################################
+
+% =====================================================================
+\gsec{Betimsel İstatistik}
+% =====================================================================
+
+İstatistik, veri biliminin teorik temelidir. Betimsel istatistik, bir veri
+setini birkaç sayıyla \emph{özetler}: merkezi eğilim (veri nerede toplanıyor?)
+ve yayılım (ne kadar dağınık?). Bu özetler, veriyi anlamanın ilk adımıdır.
+
+\gsub{Merkezi Eğilim: Ortalama, Medyan, Mod}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Ölçü} & \color{anaMavi}\textbf{Tanım} & \color{anaMavi}\textbf{Özellik}\\
+\midrule
+Ortalama (mean) & Tüm değerlerin toplamı / sayısı & Aykırı değerlerden \emph{etkilenir}\\
+\rowcolor{acikGri} Medyan (median) & Sıralı verinin ortadaki değeri & Aykırı değere \emph{dayanıklı}\\
+Mod (mode) & En sık geçen değer & Kategorik veride kullanışlı\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+import numpy as np
+data = np.array([10, 12, 12, 13, 15, 18, 100])   # 100 bir aykiri deger
+
+np.mean(data)      # 25.7  -> aykiri deger yukari cekti!
+np.median(data)    # 13.0  -> daha temsili
+from scipy import stats
+stats.mode(data, keepdims=False).mode   # 12
+
+# Pandas ile
+df['salary'].mean(); df['salary'].median(); df['salary'].mode()
+\end{lstlisting}
+
+\notk[Ortalama mı medyan mı?]{Veri \emph{simetrikse} ortalama ve medyan
+birbirine yakındır. Ama veri \emph{çarpıksa} (skewed --- örneğin gelir,
+ev fiyatları) veya aykırı değerler varsa, medyan daha temsilidir. ``Ortalama
+maaş'' bir CEO yüzünden yanıltıcı olabilir; ``medyan maaş'' gerçeği daha iyi
+yansıtır.}
+
+\gsub{Yayılım: Varyans, Standart Sapma, Çeyrekler}
+
+Yayılım, verinin ne kadar ``dağınık'' olduğunu ölçer. İki veri seti aynı
+ortalamaya sahip olup çok farklı yayılıma sahip olabilir.
+
+\begin{lstlisting}
+np.var(data)       # varyans: ortalamadan sapmalarin karesinin ortalamasi
+np.std(data)       # standart sapma: varyansin karekoku (ayni birimde)
+np.ptp(data)       # aralik (range): max - min
+
+# Ceyrekler ve IQR (ceyrekler arasi aralik)
+q1 = np.percentile(data, 25)      # 1. ceyrek
+q3 = np.percentile(data, 75)      # 3. ceyrek
+iqr = q3 - q1                     # orta %50'nin yayilimi
+
+# Aykiri deger tespiti (IQR yontemi)
+lower_bound = q1 - 1.5 * iqr
+upper_bound = q3 + 1.5 * iqr
+outliers = data[(data < lower_bound) | (data > upper_bound)]
+\end{lstlisting}
+
+\uyari{NumPy varsayılan olarak \emph{anakütle} (population) varyansını hesaplar
+(N'e böler). \emph{Örneklem} (sample) varyansı için (N-1'e bölme, yansız
+tahmin) \code{np.var(data, ddof=1)} kullan. Pandas ise varsayılan olarak
+örneklem varyansını (ddof=1) kullanır --- bu fark küçük örneklemlerde önemlidir.}
+
+% =====================================================================
+\gsec{Olasılık Dağılımları}
+% =====================================================================
+
+Olasılık dağılımı, bir rastgele değişkenin hangi değerleri hangi olasılıkla
+aldığını tarif eder. Veri bilimi modellerinin çoğu, verinin belirli bir
+dağılımdan geldiğini varsayar. En önemlisi \emph{normal dağılımdır}.
+
+\gsub{Normal (Gauss) Dağılımı}
+
+Normal dağılım (çan eğrisi), doğada ve veride en sık karşılaşılan dağılımdır:
+boy, ölçüm hataları, birçok doğal olgu buna yakındır. İki parametresi vardır:
+ortalama $\mu$ (merkez) ve standart sapma $\sigma$ (genişlik).
+
+\begin{lstlisting}
+import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+# Normal dagilimdan orneklem uret
+samples = np.random.normal(loc=170, scale=10, size=1000)  # mu=170, sigma=10
+
+# Olasilik yogunluk fonksiyonu (PDF)
+x = np.linspace(140, 200, 100)
+pdf = stats.norm.pdf(x, loc=170, scale=10)
+plt.plot(x, pdf)
+plt.hist(samples, bins=30, density=True, alpha=0.5)
+
+# Kumulatif olasilik: boyu 180'den kucuk olma olasiligi
+stats.norm.cdf(180, loc=170, scale=10)   # ~0.84
+\end{lstlisting}
+
+\bilgi{\textbf{68-95-99.7 kuralı:} Normal dağılımda verinin \%68'i
+ortalamadan $\pm 1\sigma$, \%95'i $\pm 2\sigma$, \%99.7'si $\pm 3\sigma$
+içindedir. Bu yüzden ``$3\sigma$ dışı'' bir gözlem çok nadirdir (\%0.3) ve
+genelde aykırı değer sayılır.}
+
+\gsub{Diğer Önemli Dağılımlar}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Dağılım} & \color{anaMavi}\textbf{Ne modeller?}\\
+\midrule
+Normal & Sürekli, simetrik olgular (boy, hata).\\
+\rowcolor{acikGri} Binom & N denemede başarı sayısı (yazı-tura).\\
+Poisson & Sabit aralıkta olay sayısı (saatte gelen çağrı).\\
+\rowcolor{acikGri} Üstel (exponential) & Olaylar arası bekleme süresi.\\
+Düzgün (uniform) & Tüm sonuçların eşit olasılıklı olduğu durum.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Merkezi Limit Teoremi}
+
+Merkezi Limit Teoremi (MLT), istatistiğin en güçlü sonucudur: \emph{hangi
+dağılımdan gelirse gelsin}, yeterince büyük örneklemlerin \textbf{ortalamaları}
+normal dağılıma yaklaşır. Bu, birçok istatistiksel testin neden çalıştığını
+açıklar.
+
+\begin{lstlisting}
+# Kaynak dagilim: tamamen carpik (ustel) -- normal DEGIL
+means = []
+for _ in range(1000):
+    sample = np.random.exponential(scale=2, size=50)  # 50'lik ornek
+    means.append(sample.mean())                       # ortalamasini al
+
+# means'in histogrami -> CAN EGRISINE benzer! (MLT)
+plt.hist(means, bins=30)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Korelasyon ve Hipotez Testleri}
+% =====================================================================
+
+\gsub{Korelasyon: İlişki Ölçümü}
+
+Korelasyon, iki değişkenin birlikte nasıl değiştiğini $-1$ ile $+1$ arasında
+ölçer. $+1$ mükemmel pozitif, $-1$ mükemmel negatif, $0$ ilişki yok demektir.
+
+\begin{lstlisting}
+# Pearson korelasyonu (dogrusal iliski)
+df['age'].corr(df['salary'])
+
+# Tum sayisal sutunlarin korelasyon matrisi
+df.corr(numeric_only=True)
+
+from scipy import stats
+r, p = stats.pearsonr(df['age'], df['salary'])   # katsayi + p-degeri
+rho, p = stats.spearmanr(df['age'], df['salary'])# siralamaya dayali (dogrusal olmayan)
+\end{lstlisting}
+
+\uyari{\textbf{Korelasyon nedensellik değildir!} İki değişken güçlü ilişkili
+olabilir ama biri diğerine \emph{neden} olmuyor olabilir --- ikisini birden
+etkileyen üçüncü bir faktör (confounder) olabilir. Klasik örnek: dondurma
+satışı ve boğulma vakaları ilişkilidir, ama sebep ikisini de artıran
+sıcak havadır.}
+
+\gsub{Hipotez Testleri}
+
+Hipotez testi, bir iddianın (örneğin ``iki grubun ortalaması farklı'')
+veriyle desteklenip desteklenmediğini istatistiksel olarak sorgular. Mantık:
+bir \emph{sıfır hipotezi} ($H_0$: fark yok) kurulur; veri bu hipotez altında
+çok olası değilse ($p$-değeri küçükse) $H_0$ reddedilir.
+
+\begin{lstlisting}
+from scipy import stats
+
+# t-testi: iki grubun ortalamasi farkli mi?
+group_a = df[df['city'] == 'Ankara']['salary']
+group_b = df[df['city'] == 'Izmir']['salary']
+t_stat, p = stats.ttest_ind(group_a, group_b)
+
+if p < 0.05:
+    print("Fark istatistiksel olarak anlamli (H0 reddedildi)")
+else:
+    print("Anlamli fark yok")
+
+# Ki-kare testi: iki kategorik degisken bagimsiz mi?
+table = pd.crosstab(df['city'], df['age_group'])
+chi2, p, dof, expected = stats.chi2_contingency(table)
+
+# ANOVA: ikiden fazla grubun ortalamasi farkli mi?
+f_stat, p = stats.f_oneway(group1, group2, group3)
+\end{lstlisting}
+
+\notk[p-değeri nedir?]{$p$-değeri, ``$H_0$ doğruysa, gözlemlediğimiz kadar
+(veya daha) uç bir sonucu görme olasılığıdır''. Küçük $p$ ($< 0.05$ yaygın
+eşik), sonucun şans eseri olma ihtimalinin düşük olduğunu, yani $H_0$'a
+karşı kanıt olduğunu gösterir. Ama $p < 0.05$ ``kesin doğru'' demek değildir;
+sadece bir kanıt eşiğidir ve dikkatli yorumlanmalıdır.}
+
+% #####################################################################
+\gpart{5}{Makine Öğrenmesi (scikit-learn)}
+% #####################################################################
+
+% =====================================================================
+\gsec{Makine Öğrenmesine Giriş}
+% =====================================================================
+
+Makine öğrenmesi (ML), açıkça programlamak yerine \emph{veriden örüntü
+öğrenen} algoritmalar bütünüdür. Bir model, geçmiş veriye ``bakarak'' bir
+görevde (tahmin, sınıflandırma) ustalaşır. scikit-learn, klasik ML için
+Python'ın standart kütüphanesidir ve tutarlı bir arayüz sunar.
+
+\gsub{ML Türleri}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tür} & \color{anaMavi}\textbf{Tanım} & \color{anaMavi}\textbf{Örnek}\\
+\midrule
+Denetimli (regresyon) & Etiketli veriden sürekli değer tahmini & Ev fiyatı\\
+\rowcolor{acikGri} Denetimli (sınıflandırma) & Etiketli veriden kategori tahmini & Spam mı değil mi\\
+Denetimsiz (kümeleme) & Etiketsiz veride grup bulma & Müşteri segmentleri\\
+\rowcolor{acikGri} Boyut indirgeme & Değişken sayısını azaltma & PCA ile sıkıştırma\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{scikit-learn'in Tutarlı Arayüzü}
+
+scikit-learn'ün gücü tutarlılığındadır: her model aynı üç metodu paylaşır.
+Bir kez öğrenince tüm modelleri kullanabilirsin.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Metot} & \color{anaMavi}\textbf{Ne yapar?}\\
+\midrule
+.fit(X, y) & Modeli eğitim verisiyle eğitir (öğrenir).\\
+\rowcolor{acikGri} .predict(X) & Yeni veri için tahmin üretir.\\
+.transform(X) & Veriyi dönüştürür (ölçekleme, kodlama vb.).\\
+\rowcolor{acikGri} .score(X, y) & Modelin başarısını ölçer.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Eğitim/Test Ayrımı: Altın Kural}
+
+Bir modeli, eğitildiği veriyle değerlendirmek yanıltıcıdır --- model o veriyi
+``ezberlemiş'' olabilir. Bu yüzden veriyi \textbf{eğitim} ve \textbf{test}
+olarak ayırırız: model eğitimde öğrenir, hiç görmediği test verisinde ölçülür.
+
+\begin{lstlisting}
+from sklearn.model_selection import train_test_split
+
+X = df[['age', 'experience', 'education']]   # ozellikler (girdi)
+y = df['salary']                             # hedef (cikti)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,        # %20 test, %80 egitim
+    random_state=42)      # tekrarlanabilirlik icin
+\end{lstlisting}
+
+\uyari{\textbf{Veri sızıntısından (data leakage) kaçın:} Ölçekleme,
+eksik doldurma gibi ön işlemleri \emph{sadece eğitim verisine} \code{fit} et,
+sonra hem eğitim hem teste \code{transform} uygula. Tüm veriye birden fit
+edersen, test bilgisi eğitime ``sızar'' ve başarını gerçekçi olmayan biçimde
+yüksek gösterir. Pipeline'lar (ileride) bunu otomatik önler.}
+
+% =====================================================================
+\gsec{Regresyon}
+% =====================================================================
+
+Regresyon, sürekli bir sayısal değeri tahmin eder (fiyat, sıcaklık, maaş).
+En temel modeli \emph{doğrusal regresyondur}: çıktının, girdilerin ağırlıklı
+toplamı olduğunu varsayar: $y = w_0 + w_1 x_1 + \dots + w_n x_n$.
+
+\gsub{Doğrusal Regresyon}
+
+\begin{lstlisting}
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+
+model = LinearRegression()
+model.fit(X_train, y_train)           # katsayilari ogren
+
+y_pred = model.predict(X_test)        # test verisinde tahmin et
+
+# Ogrenilen parametreler
+model.coef_          # her ozelligin agirligi (w1..wn)
+model.intercept_     # sabit terim (w0)
+
+# Degerlendirme
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))  # ort. hata (birimde)
+r2 = r2_score(y_test, y_pred)         # aciklanan varyans orani (0-1)
+print(f"RMSE: {rmse:.2f}, R^2: {r2:.3f}")
+\end{lstlisting}
+
+\gsub{Regresyon Metrikleri}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Metrik} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+MAE & Ortalama mutlak hata; yorumlaması kolay, aykırıya dayanıklı.\\
+\rowcolor{acikGri} MSE / RMSE & Kare hata; büyük hataları daha çok cezalandırır.\\
+$R^2$ & Modelin açıkladığı varyans oranı; 1'e yakın = iyi, 0 = ortalama kadar.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Aşırı Öğrenme ve Düzenlileştirme (Regularization)}
+
+Model eğitim verisini \emph{ezberlerse} (aşırı öğrenme --- overfitting), yeni
+veride kötü çalışır. Ridge ve Lasso, katsayıları küçük tutarak
+(düzenlileştirme) bunu önler. Lasso ayrıca bazı katsayıları sıfırlayıp
+otomatik özellik seçimi yapar.
+
+\begin{lstlisting}
+from sklearn.linear_model import Ridge, Lasso
+
+ridge = Ridge(alpha=1.0)    # L2 duzenlilestirme (katsayilari kucultur)
+lasso = Lasso(alpha=0.1)    # L1 (bazi katsayilari SIFIRLAR)
+ridge.fit(X_train, y_train)
+
+# Dogrusal olmayan iliskiler icin agac tabanli:
+from sklearn.ensemble import RandomForestRegressor
+rf = RandomForestRegressor(n_estimators=100, random_state=42)
+rf.fit(X_train, y_train)
+rf.feature_importances_     # hangi ozellik ne kadar onemli
+\end{lstlisting}
+
+\bilgi{\textbf{Aşırı vs eksik öğrenme:} Eğitimde iyi, testte kötü = aşırı
+öğrenme (model çok karmaşık). Hem eğitimde hem testte kötü = eksik öğrenme
+(model çok basit). İkisinin dengesi ``bias-variance ödünleşimi''dir. Eğitim
+ve test skorlarını \emph{birlikte} izlemek, hangisinde olduğunu gösterir.}
+
+% =====================================================================
+\gsec{Sınıflandırma}
+% =====================================================================
+
+Sınıflandırma, bir örneğin hangi \emph{kategoriye} ait olduğunu tahmin eder:
+spam/değil, hasta/sağlıklı, hangi rakam. Çıktı süreklinin aksine ayrık
+sınıflardır.
+
+\gsub{Lojistik Regresyon ve Diğer Modeller}
+
+Adına rağmen lojistik regresyon bir \emph{sınıflandırma} algoritmasıdır:
+bir örneğin bir sınıfa ait olma \emph{olasılığını} tahmin eder.
+
+\begin{lstlisting}
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)              # sinif tahmini
+probabilities = model.predict_proba(X_test) # her sinifin olasiligi
+
+# Diger siniflandiricilar -- ayni arayuz!
+tree = DecisionTreeClassifier(max_depth=5)
+forest = RandomForestClassifier(n_estimators=100)
+knn = KNeighborsClassifier(n_neighbors=5)
+\end{lstlisting}
+
+\gsub{Sınıflandırma Metrikleri ve Karmaşıklık Matrisi}
+
+Doğruluk (accuracy) tek başına yanıltıcı olabilir --- özellikle
+\emph{dengesiz} veride (örneğin \%99 sağlıklı). Bu yüzden precision, recall
+ve F1 kullanılır.
+
+\begin{lstlisting}
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                             f1_score, confusion_matrix, classification_report)
+
+accuracy_score(y_test, y_pred)     # dogru tahmin orani
+precision_score(y_test, y_pred)    # pozitif dedigimden kaci gercekten pozitif
+recall_score(y_test, y_pred)       # gercek pozitiflerin kacini yakaladim
+f1_score(y_test, y_pred)           # precision ve recall'un harmonik ortalamasi
+
+print(confusion_matrix(y_test, y_pred))    # TP, FP, TN, FN tablosu
+print(classification_report(y_test, y_pred))  # hepsi bir arada
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Metrik} & \color{anaMavi}\textbf{Ne zaman önemli?}\\
+\midrule
+Precision (kesinlik) & Yanlış alarm pahalıysa (spam olmayanı spam demek).\\
+\rowcolor{acikGri} Recall (duyarlılık) & Kaçırmak pahalıysa (hasta olanı sağlıklı demek).\\
+F1 & Precision ve recall dengesi gerektiğinde.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\notk[Precision mı recall mı?]{Bu, hatanın maliyetine bağlıdır. Kanser
+teşhisinde \emph{recall} kritiktir: bir hastayı kaçırmak, yanlış alarmdan
+çok daha kötüdür. Spam filtresinde \emph{precision} önemlidir: önemli bir
+maili spam'e atmak kötüdür. Hangisini optimize edeceğine problem karar verir.}
+
+% =====================================================================
+\gsec{Denetimsiz Öğrenme: Kümeleme ve PCA}
+% =====================================================================
+
+Denetimsiz öğrenmede \emph{etiket yoktur}; amaç veride gizli yapı bulmaktır.
+En yaygın iki görev: kümeleme (benzer örnekleri gruplama) ve boyut indirgeme.
+
+\gsub{K-Means Kümeleme}
+
+K-Means, veriyi $k$ kümeye ayırır: her örneği en yakın küme merkezine atar,
+merkezleri günceller, tekrarlar. Müşteri segmentasyonu, görüntü sıkıştırma
+kullanır.
+
+\begin{lstlisting}
+from sklearn.cluster import KMeans
+
+model = KMeans(n_clusters=3, random_state=42, n_init=10)
+clusters = model.fit_predict(X)    # her ornegin kume etiketi (0,1,2)
+model.cluster_centers_             # kume merkezleri
+
+# Kac kume? Dirsek (elbow) yontemi
+inertia = []
+for k in range(1, 10):
+    km = KMeans(n_clusters=k, n_init=10, random_state=42).fit(X)
+    inertia.append(km.inertia_)    # kume ici toplam uzaklik
+# inertia grafiginde 'dirsek' noktasi ideal k'yi verir
+\end{lstlisting}
+
+\gsub{PCA: Boyut İndirgeme}
+
+Temel Bileşen Analizi (PCA), çok sayıda değişkeni, bilginin çoğunu koruyarak
+az sayıda ``bileşene'' indirger. Görselleştirme (yüksek boyutu 2B'ye indirme)
+ve gürültü azaltma için kullanılır.
+
+\begin{lstlisting}
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+# PCA olcege duyarli -> ONCE standartlastir
+X_scaled = StandardScaler().fit_transform(X)
+
+pca = PCA(n_components=2)           # 2 bilesene indir
+X_pca = pca.fit_transform(X_scaled)
+pca.explained_variance_ratio_      # her bilesenin acikladigi varyans
+
+# 2B'ye indirip gorsellestir
+plt.scatter(X_pca[:, 0], X_pca[:, 1], c=clusters)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Model Değerlendirme ve Pipeline'lar}
+% =====================================================================
+
+\gsub{Çapraz Doğrulama (Cross-Validation)}
+
+Tek bir eğitim/test ayrımı şansa bağlı olabilir. Çapraz doğrulama, veriyi $k$
+parçaya böler; her seferinde birini test, gerisini eğitim yapıp $k$ kez ölçer
+ve ortalar. Daha güvenilir bir başarı tahmini verir.
+
+\begin{lstlisting}
+from sklearn.model_selection import cross_val_score
+
+scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')  # 5-katli
+print(f"Ortalama: {scores.mean():.3f} (+/- {scores.std():.3f})")
+\end{lstlisting}
+
+\gsub{Hiperparametre Ayarı: GridSearch}
+
+Modellerin, veriden öğrenilmeyen ama elle ayarlanan \emph{hiperparametreleri}
+vardır (ağaç derinliği, komşu sayısı\dots). GridSearch, bir parametre ızgarasını
+sistematik deneyip en iyisini çapraz doğrulamayla bulur.
+
+\begin{lstlisting}
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'max_depth':    [5, 10, None]
+}
+search = GridSearchCV(RandomForestClassifier(random_state=42),
+                      param_grid, cv=5, scoring='f1')
+search.fit(X_train, y_train)
+
+search.best_params_    # en iyi parametre kombinasyonu
+search.best_score_     # en iyi capraz dogrulama skoru
+best_model = search.best_estimator_
+\end{lstlisting}
+
+\gsub{Pipeline: Ön İşleme + Model Tek Zincirde}
+
+Pipeline, ön işleme adımlarını ve modeli tek bir nesnede birleştirir. Bu, hem
+kodu temizler hem de veri sızıntısını otomatik önler (ön işleme her katlamada
+sadece eğitime fit edilir).
+
+\begin{lstlisting}
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+
+pipeline = Pipeline([
+    ('impute', SimpleImputer(strategy='median')),   # eksikleri doldur
+    ('scale',  StandardScaler()),                    # standartlastir
+    ('model',  LogisticRegression(max_iter=1000))    # tahmin et
+])
+
+pipeline.fit(X_train, y_train)    # tum zincir egitilir
+pipeline.predict(X_test)          # tum zincir uygulanir
+# GridSearchCV ile de dogrudan kullanilabilir
+\end{lstlisting}
+
+\ipucu{Gerçek projelerde \textbf{her zaman Pipeline kullan}. Ön işleme
+adımlarını modelle birleştirmek; veri sızıntısını önler, kodu tekrardan kurtarır
+ve modeli tek parça olarak kaydedip (\code{joblib.dump}) üretime almayı
+kolaylaştırır. ``Manuel'' ön işleme, hataya en açık kısımdır.}
+
+% =====================================================================
+\gsec{Kapanış: Uçtan Uca Bir Proje}
+% =====================================================================
+
+Öğrendiğimiz her şeyi birleştiren tipik bir veri bilimi projesinin iskeleti
+şöyledir. Gerçek beceri, bu adımları veriye göre uyarlamaktır.
+
+\begin{lstlisting}
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+
+# 1. VERIYI YUKLE
+df = pd.read_csv('veri.csv')
+
+# 2. KESIF & TEMIZLE
+df = df.drop_duplicates()
+df['age'] = df['age'].fillna(df['age'].median())
+print(df.describe())
+
+# 3. OZELLIK & HEDEF AYIR
+X = df.drop(columns=['target'])
+y = df['target']
+
+# 4. EGITIM/TEST AYIR
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)
+
+# 5. PIPELINE KUR & EGIT
+pipeline = Pipeline([
+    ('scale', StandardScaler()),
+    ('model', RandomForestClassifier(n_estimators=100, random_state=42))
+])
+pipeline.fit(X_train, y_train)
+
+# 6. DEGERLENDIR
+scores = cross_val_score(pipeline, X_train, y_train, cv=5)
+print(f"CV dogruluk: {scores.mean():.3f}")
+print(classification_report(y_test, pipeline.predict(X_test)))
+
+# 7. KAYDET
+import joblib
+joblib.dump(pipeline, 'model.pkl')
+\end{lstlisting}
+
+\gsub{Özet: Doğru Aracı Seçmek}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Görev} & \color{anaMavi}\textbf{Araç / Yöntem}\\
+\midrule
+Sayısal hesaplama, diziler & NumPy\\
+\rowcolor{acikGri} Tablo verisi, temizleme & Pandas\\
+Hızlı grafik & Pandas \code{.plot()}, Matplotlib\\
+\rowcolor{acikGri} İstatistiksel grafik & Seaborn\\
+Sürekli değer tahmini & Regresyon (Linear, RandomForest)\\
+\rowcolor{acikGri} Kategori tahmini & Sınıflandırma (Logistic, RF, SVM)\\
+Grup bulma (etiketsiz) & K-Means, boyut indirgeme (PCA)\\
+\rowcolor{acikGri} Güvenilir değerlendirme & Çapraz doğrulama, Pipeline\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Veri biliminde başarının anahtarı fancy modeller değil, \emph{temiz veri
+ve doğru değerlendirmedir}. Zamanının çoğu adım 2--3'te (temizleme, keşif)
+geçecek --- ve bu normaldir. Basit bir modelle başla, temel bir başarı çizgisi
+(baseline) kur, sonra iyileştir. Bol gerçek veri setiyle pratik yapmak, bu
+sezgiyi geliştiren tek yoldur.}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.6pt}}\\[6pt]
+{\color{ortaGri}\small Rehberin sonu --- İyi analizler!}
+\end{center}
+
+\end{document}

@@ -248,7 +248,7 @@ ve alt nesneler koyarsınız.
 \toprule
 \rowcolor{acikMavi}\color{anaMavi}\textbf{Öğe} & \color{anaMavi}\textbf{Açıklama} \\
 \midrule
-id & Nesneye benzersiz kimlik; başka nesnelerden erişmek için. Örn: \kod{id: kutu} \\
+id & Nesneye benzersiz kimlik; başka nesnelerden erişmek için. Örn: \kod{id: box} \\
 \rowcolor{acikGri} property & Özellik: nesnenin verisi. \kod{width}, \kod{color}, \kod{text}... \\
 parent & Bir nesnenin görsel ebeveyni; \kod{anchors} ve boyutlandırmada kullanılır. \\
 \rowcolor{acikGri} \{ \} & Nesne kapsamı; içine alt nesneler ve özellikler yazılır. \\
@@ -269,7 +269,7 @@ değişince özellik \textbf{otomatik güncellenir}.
 
 \begin{lstlisting}
 Rectangle {
-    id: kutu
+    id: box
     width: 200
     // height artik width'e bagli; width degisince height da degisir
     height: width / 2
@@ -370,22 +370,22 @@ Görsel öğeler kendiliğinden tıklanabilir değildir; üzerlerine görünmez 
 
 \begin{lstlisting}
 Rectangle {
-    id: dugme
+    id: button
     width: 120; height: 40
-    color: fare.pressed ? "darkblue" : "steelblue"   // Basiliyken koyulasir
+    color: mouse.pressed ? "darkblue" : "steelblue"   // Basiliyken koyulasir
     radius: 6
 
     Text { anchors.centerIn: parent; text: "Tikla"; color: "white" }
 
     MouseArea {
-        id: fare
+        id: mouse
         anchors.fill: parent          // Tum dikdortgeni kapla
         hoverEnabled: true            // Fare uzerine gelince de algila
         onClicked: console.log("Tiklandi!")
         onDoubleClicked: console.log("Cift tiklandi")
         onPressed: console.log("Basildi")
-        onEntered: dugme.scale = 1.1  // Fare geldi
-        onExited:  dugme.scale = 1.0  // Fare cikti
+        onEntered: button.scale = 1.1  // Fare geldi
+        onExited:  button.scale = 1.0  // Fare cikti
     }
 }
 \end{lstlisting}
@@ -418,7 +418,7 @@ Bir öğenin kenarlarını başka bir öğenin kenarlarına "yapıştırırsın�
 
 \begin{lstlisting}
 Rectangle {
-    id: kapsayici
+    id: container
     width: 300; height: 200; color: "#eee"
 
     Rectangle {
@@ -639,11 +639,11 @@ import QtQuick.Controls
 
 Row {
     spacing: 8
-    property alias label: etiket.text     // Ic Text'in text'ini disa ac
-    property alias value: girdi.text       // Ic TextField'in text'ini ac
+    property alias label: labelText.text   // Ic Text'in text'ini disa ac
+    property alias value: input.text       // Ic TextField'in text'ini ac
 
-    Text { id: etiket; text: "Ad:" }
-    TextField { id: girdi; placeholderText: "..." }
+    Text { id: labelText; text: "Ad:" }
+    TextField { id: input; placeholderText: "..." }
 }
 \end{lstlisting}
 
@@ -703,7 +703,7 @@ Küçük, sadece o dosyada kullanılacak bileşenler için ayrı dosya açmadan
 \begin{lstlisting}
 Item {
     // Dosya ici bilesen tanimi (Qt 6)
-    component Rozet: Rectangle {
+    component Badge: Rectangle {
         width: 60; height: 24; radius: 12; color: "purple"
         property alias text: t.text
         Text { id: t; anchors.centerIn: parent; color: "white" }
@@ -711,8 +711,8 @@ Item {
 
     Row {
         spacing: 6
-        Rozet { text: "Yeni" }
-        Rozet { text: "Pro"; color: "orange" }
+        Badge { text: "Yeni" }
+        Badge { text: "Pro"; color: "orange" }
     }
 }
 \end{lstlisting}
@@ -729,13 +729,13 @@ tanımlayabilirsiniz.
 
 \begin{lstlisting}
 Item {
-    id: kutu
+    id: box
 
     // Parametreli sinyal tanimi (Qt 6 tarzi)
     signal itemSelected(int index, string name)
 
-    function sec(i, ad) {
-        kutu.itemSelected(i, ad)      // Sinyali yay
+    function select(i, name) {
+        box.itemSelected(i, name)     // Sinyali yay
     }
 
     // Ayni Item icinde handler:
@@ -751,12 +751,12 @@ Bir öğenin sinyaline, tanımından \emph{başka} bir yerde bağlanmak için:
 
 \begin{lstlisting}
 Timer {
-    id: sayac
+    id: timer
     interval: 1000; running: true; repeat: true
 }
 
 Connections {
-    target: sayac
+    target: timer
     function onTriggered() {           // Timer'in "triggered" sinyali
         console.log("Bir saniye gecti")
     }
@@ -797,11 +797,11 @@ Rectangle {
     // Baslangicta state yok (varsayilan); tanimli durumlar:
     states: [
         State {
-            name: "genisletilmis"
+            name: "expanded"
             PropertyChanges { target: panel; height: 200; color: "seagreen" }
         },
         State {
-            name: "gizli"
+            name: "hidden"
             PropertyChanges { target: panel; height: 0; opacity: 0 }
         }
     ]
@@ -809,8 +809,8 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         // Tikla -> durumu degistir (bosluk = varsayilana don)
-        onClicked: panel.state = (panel.state === "genisletilmis")
-                                 ? "" : "genisletilmis"
+        onClicked: panel.state = (panel.state === "expanded")
+                                 ? "" : "expanded"
     }
 }
 \end{lstlisting}
@@ -821,11 +821,11 @@ State değişimi ani olur; \kls{Transition} eklerseniz animasyonlu olur:
 
 \begin{lstlisting}
 Rectangle {
-    id: kutu
+    id: box
     width: 100; height: 100; color: "coral"
     states: State {
-        name: "buyuk"
-        PropertyChanges { target: kutu; width: 200; height: 200 }
+        name: "large"
+        PropertyChanges { target: box; width: 200; height: 200 }
     }
     transitions: Transition {
         // Tum sayisal ozellikleri 300ms'de yumusakca degistir
@@ -836,7 +836,7 @@ Rectangle {
         }
     }
     MouseArea { anchors.fill: parent
-                onClicked: kutu.state = kutu.state === "buyuk" ? "" : "buyuk" }
+                onClicked: box.state = box.state === "large" ? "" : "large" }
 }
 \end{lstlisting}
 
@@ -853,7 +853,7 @@ Bir özellik \emph{her ne zaman} değişirse değişsin animasyonlu olsun istiyo
 
 \begin{lstlisting}
 Rectangle {
-    id: top
+    id: ball
     width: 60; height: 60; radius: 30; color: "tomato"
     x: 0
 
@@ -864,7 +864,7 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: top.x = top.x === 0 ? 200 : 0   // x'i degistir, animasyon otomatik
+        onClicked: ball.x = ball.x === 0 ? 200 : 0   // x'i degistir, animasyon otomatik
     }
 }
 \end{lstlisting}
@@ -873,21 +873,21 @@ Rectangle {
 
 \begin{lstlisting}
 Rectangle {
-    id: kare
+    id: square
     width: 80; height: 80; color: "mediumpurple"
 
     // Tiklaninca calisacak animasyon zinciri
     SequentialAnimation {
         id: anim
-        NumberAnimation { target: kare; property: "rotation"
+        NumberAnimation { target: square; property: "rotation"
                           to: 360; duration: 500 }
         ParallelAnimation {                        // Ayni anda:
-            NumberAnimation { target: kare; property: "scale"
+            NumberAnimation { target: square; property: "scale"
                               to: 1.5; duration: 300 }
-            ColorAnimation  { target: kare; property: "color"
+            ColorAnimation  { target: square; property: "color"
                               to: "gold"; duration: 300 }
         }
-        NumberAnimation { target: kare; property: "scale"
+        NumberAnimation { target: square; property: "scale"
                           to: 1.0; duration: 200 }
     }
     MouseArea { anchors.fill: parent; onClicked: anim.start() }
@@ -952,15 +952,15 @@ ListView {
     clip: true                       // Tasan icerigi kirp
 
     model: ListModel {
-        ListElement { ad: "Ali";  yas: 25 }
-        ListElement { ad: "Ayse"; yas: 30 }
-        ListElement { ad: "Veli"; yas: 28 }
+        ListElement { name: "Ali";  age: 25 }
+        ListElement { name: "Ayse"; age: 30 }
+        ListElement { name: "Veli"; age: 28 }
     }
 
     delegate: Rectangle {
         // Model rolleri delegate icinde dogrudan erisilir
-        required property string ad
-        required property int yas
+        required property string name
+        required property int age
         width: ListView.view.width
         height: 50
         color: "#f0f4f8"
@@ -970,8 +970,8 @@ ListView {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left; anchors.leftMargin: 12
             spacing: 12
-            Text { text: ad; font.bold: true }
-            Text { text: yas + " yas"; color: "gray" }
+            Text { text: name; font.bold: true }
+            Text { text: age + " yas"; color: "gray" }
         }
     }
 }
@@ -987,13 +987,13 @@ roller sihirli biçimde kapsamdaydı ama isim çakışması ve karışıklık ya
 \subsection{ListModel'i Dinamik Değiştirme}
 
 \begin{lstlisting}
-ListModel { id: liste }
+ListModel { id: list }
 
 // Ekle / sil / guncelle
-function ekle(ad) { liste.append({ ad: ad, yas: 0 }) }
-function sil(i)   { liste.remove(i) }
-function temizle(){ liste.clear() }
-function guncelle(i, yeniAd) { liste.setProperty(i, "ad", yeniAd) }
+function add(name) { list.append({ name: name, age: 0 }) }
+function remove(i) { list.remove(i) }
+function clear()   { list.clear() }
+function update(i, newName) { list.setProperty(i, "name", newName) }
 \end{lstlisting}
 
 \subsection{GridView — Izgara Görünüm}
@@ -1038,18 +1038,18 @@ koşullu içerikte ve belleği verimli kullanmada idealdir.
 \begin{lstlisting}
 Item {
     Loader {
-        id: yukleyici
+        id: loader
         anchors.fill: parent
         // Kaynagi degistirerek icerigi degistir
-        source: durum === "ayarlar" ? "SettingsPage.qml" : "HomePage.qml"
+        source: currentPage === "settings" ? "SettingsPage.qml" : "HomePage.qml"
     }
 
     // veya satir ici bilesen yukle:
     Loader {
-        sourceComponent: acikMi ? detayBileseni : null
+        sourceComponent: isOpen ? detailComponent : null
     }
     Component {
-        id: detayBileseni
+        id: detailComponent
         Rectangle { color: "lightyellow"; width: 100; height: 100 }
     }
 }
@@ -1079,7 +1079,7 @@ ColumnLayout {
 
     Button {
         text: "Tikla"
-        onClicked: durumEtiketi.text = "Butona basildi"
+        onClicked: statusLabel.text = "Butona basildi"
     }
 
     TextField {
@@ -1102,7 +1102,7 @@ ColumnLayout {
         onCurrentTextChanged: console.log("Secim:", currentText)
     }
 
-    Label { id: durumEtiketi; text: "Hazir" }
+    Label { id: statusLabel; text: "Hazir" }
 }
 \end{lstlisting}
 

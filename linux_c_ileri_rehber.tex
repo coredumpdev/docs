@@ -259,22 +259,22 @@ görürsün.}
 #include <stdio.h>
 #include <stdlib.h>
 
-int global_ilk = 5;      // Data segmenti
-int global_sifir;        // BSS segmenti
+int global_init = 5;     // Data segmenti
+int global_zero;         // BSS segmenti
 
 int main(void) {
-    int yerel = 1;                     // Stack
-    static int statik = 2;             // Data
-    int *dinamik = malloc(sizeof(int)); // Heap
+    int local = 1;                      // Stack
+    static int static_var = 2;          // Data
+    int *dynamic = malloc(sizeof(int));  // Heap
 
     printf("Text (main)   : %p\n", (void*)main);
-    printf("Data (global) : %p\n", (void*)&global_ilk);
-    printf("BSS  (sifir)  : %p\n", (void*)&global_sifir);
-    printf("Heap (malloc) : %p\n", (void*)dinamik);
-    printf("Stack (yerel) : %p\n", (void*)&yerel);
-    printf("static        : %p\n", (void*)&statik);
+    printf("Data (global) : %p\n", (void*)&global_init);
+    printf("BSS  (sifir)  : %p\n", (void*)&global_zero);
+    printf("Heap (malloc) : %p\n", (void*)dynamic);
+    printf("Stack (yerel) : %p\n", (void*)&local);
+    printf("static        : %p\n", (void*)&static_var);
 
-    free(dinamik);
+    free(dynamic);
     return 0;
 }
 \end{lstlisting}
@@ -310,13 +310,13 @@ arasında değerini korur.}
 \begin{lstlisting}
 #include <stdio.h>
 
-int sayac(void) {
+int counter(void) {
     static int n = 0;   // yalnızca ilk çağrıda ilklenir
     return ++n;
 }
 
 int main(void) {
-    printf("%d %d %d\n", sayac(), sayac(), sayac()); // 1 2 3 (bkz. not)
+    printf("%d %d %d\n", counter(), counter(), counter()); // 1 2 3 (bkz. not)
     return 0;
 }
 \end{lstlisting}
@@ -338,10 +338,10 @@ ifadeleri tek bir \code{printf}'e sıralı biçimde koymaktan kaçın.}
 
 \begin{lstlisting}
 const double PI = 3.14159;         // değiştirilemez
-volatile sig_atomic_t bayrak = 0;  // sinyal handler'ı değiştirebilir
+volatile sig_atomic_t flag = 0;    // sinyal handler'ı değiştirebilir
 
 // restrict: src ve dst çakışmaz sözü -> daha hızlı kod
-void kopyala(int *restrict dst, const int *restrict src, size_t n) {
+void copy(int *restrict dst, const int *restrict src, size_t n) {
     for (size_t i = 0; i < n; i++) dst[i] = src[i];
 }
 \end{lstlisting}
@@ -460,21 +460,21 @@ ama \emph{özdeş değildir}.
 
 \begin{lstlisting}
 #include <stdio.h>
-void fonksiyon(int dizi[]) {          // aslinda int *dizi
-    // BURADA sizeof(dizi) == sizeof(int*) == 8, dizi boyutu DEGIL!
-    printf("fonksiyon icinde: %zu\n", sizeof(dizi)); // 8
+void func(int arr[]) {                // aslinda int *arr
+    // BURADA sizeof(arr) == sizeof(int*) == 8, dizi boyutu DEGIL!
+    printf("fonksiyon icinde: %zu\n", sizeof(arr)); // 8
 }
 int main(void) {
     int a[5];
     printf("main icinde: %zu\n", sizeof(a));  // 20
-    fonksiyon(a);
+    func(a);
     return 0;
 }
 \end{lstlisting}
 
 \uyari{Bir dizi fonksiyona geçince boyut bilgisi kaybolur (işaretçiye çözülür).
 Bu yüzden dizi boyutunu \emph{ayrı bir parametre} olarak geçmelisin:
-\code{void f(int *dizi, size\_t n)}.}
+\code{void f(int *arr, size\_t n)}.}
 
 \gsub{İşaretçiden İşaretçiye (Double Pointer)}
 
@@ -488,14 +488,14 @@ bir fonksiyonun çağıranın işaretçisini değiştirmesi ve işaretçi dizile
 
 // Bir fonksiyonun cagiranin isaretcisini degistirmesi icin
 // isaretcinin ADRESI (int**) gerekir.
-void tahsis_et(int **pp, int deger) {
+void allocate(int **pp, int value) {
     *pp = malloc(sizeof(int));  // cagiranin isaretcisine yaz
-    **pp = deger;               // o bellege deger yaz
+    **pp = value;               // o bellege deger yaz
 }
 
 int main(void) {
     int *p = NULL;
-    tahsis_et(&p, 99);          // p'nin ADRESINI gecir
+    allocate(&p, 99);           // p'nin ADRESINI gecir
     printf("%d\n", *p);         // 99
     free(p);
     return 0;
@@ -507,10 +507,10 @@ stringleri verimli tutar.}
 \begin{lstlisting}
 #include <stdio.h>
 int main(void) {
-    const char *gunler[] = {"Pzt", "Sal", "Car", "Per", "Cum"};
-    size_t n = sizeof(gunler) / sizeof(gunler[0]);
+    const char *days[] = {"Pzt", "Sal", "Car", "Per", "Cum"};
+    size_t n = sizeof(days) / sizeof(days[0]);
     for (size_t i = 0; i < n; i++)
-        printf("%zu -> %s\n", i, gunler[i]);
+        printf("%zu -> %s\n", i, days[i]);
     return 0;
 }
 \end{lstlisting}
@@ -523,18 +523,18 @@ döndürür.
 
 \begin{lstlisting}
 #include <stdio.h>
-void yazdir(void *veri, char tip) {
-    switch (tip) {
-        case 'i': printf("%d\n",  *(int*)veri);    break;
-        case 'd': printf("%g\n",  *(double*)veri); break;
-        case 'c': printf("%c\n",  *(char*)veri);   break;
+void print_value(void *data, char type) {
+    switch (type) {
+        case 'i': printf("%d\n",  *(int*)data);    break;
+        case 'd': printf("%g\n",  *(double*)data); break;
+        case 'c': printf("%c\n",  *(char*)data);   break;
     }
 }
 int main(void) {
     int i = 5; double d = 3.14; char c = 'A';
-    yazdir(&i, 'i');
-    yazdir(&d, 'd');
-    yazdir(&c, 'c');
+    print_value(&i, 'i');
+    print_value(&d, 'd');
+    print_value(&c, 'c');
     return 0;
 }
 \end{lstlisting}
@@ -606,19 +606,19 @@ yoludur. \code{p + 1}, \emph{tüm bir satır} kadar (N eleman) ilerler.
 \begin{lstlisting}
 #include <stdio.h>
 int main(void) {
-    int matris[3][4] = {
+    int matrix[3][4] = {
         { 1,  2,  3,  4},
         { 5,  6,  7,  8},
         { 9, 10, 11, 12},
     };
 
-    // 'satir', 4 int'lik bir diziyi gosterir. p++ -> sonraki SATIR.
-    int (*satir)[4] = matris;          // matris -> &matris[0]
+    // 'row', 4 int'lik bir diziyi gosterir. p++ -> sonraki SATIR.
+    int (*row)[4] = matrix;            // matrix -> &matrix[0]
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 4; j++)
-            printf("%3d ", (*satir)[j]);  // (*satir) = matris[i]
+            printf("%3d ", (*row)[j]);    // (*row) = matrix[i]
         printf("\n");
-        satir++;                       // 4 int (16 bayt) ileri: sonraki satir
+        row++;                         // 4 int (16 bayt) ileri: sonraki satir
     }
     return 0;
 }
@@ -637,16 +637,16 @@ boyut korunmalıdır.
 \begin{lstlisting}
 #include <stdio.h>
 // 2B diziyi dogru gecirme: satir sayisi ayri, sutun tipte gomulu
-void yazdir(int satir, int sutun, int m[][sutun]) {  // VLA parametresi (C99)
-    for (int i = 0; i < satir; i++) {
-        for (int j = 0; j < sutun; j++)
+void print_matrix(int rows, int cols, int m[][cols]) {  // VLA parametresi (C99)
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++)
             printf("%d ", m[i][j]);      // m[i][j] = *(*(m+i)+j)
         printf("\n");
     }
 }
 int main(void) {
     int a[2][3] = {{1,2,3},{4,5,6}};
-    yazdir(2, 3, a);                     // int(*)[3] olarak gecer
+    print_matrix(2, 3, a);               // int(*)[3] olarak gecer
     return 0;
 }
 \end{lstlisting}
@@ -665,7 +665,7 @@ hatalara yol açar.
 #include <stdint.h>
 #include <string.h>
 
-float ornek(void) {
+float example(void) {
     float f = 1.0f;
 
     // YANLIS: strict aliasing ihlali -> tanimsiz davranis
@@ -701,8 +701,8 @@ int main(void) {
     printf("double hizasi: %zu\n", alignof(double));   // genelde 8
 
     // 64 baytlik hizali degisken (ornegin cache satiri)
-    alignas(64) char tampon[128];
-    printf("tampon adresi %% 64 = %ld\n", (long)((uintptr_t)tampon % 64)); // 0
+    alignas(64) char buffer[128];
+    printf("tampon adresi %% 64 = %ld\n", (long)((uintptr_t)buffer % 64)); // 0
 
     // Hizali dinamik ayirma (boyut, hizalamanin kati olmali)
     void *p = aligned_alloc(64, 256);  // 64-hizali, 256 bayt
@@ -725,16 +725,16 @@ gömmek (pointer tagging) ileri bir tekniktir.
 #include <stdio.h>
 #include <stdint.h>
 int main(void) {
-    int veri = 42;
-    int *p = &veri;
+    int data = 42;
+    int *p = &data;
 
     // 4-hizali isaretcinin alt 2 biti daima 0'dir -> etiket icin kullan
-    uintptr_t etiketli = (uintptr_t)p | 1u;    // alt bite bayrak koy
+    uintptr_t tagged = (uintptr_t)p | 1u;      // alt bite bayrak koy
 
-    int  bayrak = etiketli & 1u;               // bayragi oku
-    int *temiz  = (int *)(etiketli & ~(uintptr_t)3u); // isaretciyi geri al
+    int  flag  = tagged & 1u;                  // bayragi oku
+    int *clean = (int *)(tagged & ~(uintptr_t)3u); // isaretciyi geri al
 
-    printf("bayrak=%d, deger=%d\n", bayrak, *temiz);  // bayrak=1, deger=42
+    printf("bayrak=%d, deger=%d\n", flag, *clean);  // bayrak=1, deger=42
     return 0;
 }
 \end{lstlisting}
@@ -757,21 +757,21 @@ kullanmayı sağlar.
 #define container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
 
-struct liste_dugum { struct liste_dugum *sonraki; };  // genel liste dugumu
+struct list_node { struct list_node *next; };  // genel liste dugumu
 
-struct gorev {              // gercek veri: liste dugumunu ICINE gomer
+struct task {               // gercek veri: liste dugumunu ICINE gomer
     int id;
-    struct liste_dugum dugum;
+    struct list_node node;
 };
 
 int main(void) {
-    struct gorev g = { .id = 7 };
-    struct liste_dugum *n = &g.dugum;        // yalnizca dugumu tutuyoruz
+    struct task g = { .id = 7 };
+    struct list_node *n = &g.node;           // yalnizca dugumu tutuyoruz
 
     // Dugumden geri kapsayan goreve ulas:
-    struct gorev *geri = container_of(n, struct gorev, dugum);
-    printf("id = %d\n", geri->id);           // 7
-    printf("offset(dugum) = %zu\n", offsetof(struct gorev, dugum));
+    struct task *owner = container_of(n, struct task, node);
+    printf("id = %d\n", owner->id);          // 7
+    printf("offset(dugum) = %zu\n", offsetof(struct task, node));
     return 0;
 }
 \end{lstlisting}
@@ -788,25 +788,25 @@ sunmak, C'de kapsülleme (encapsulation) sağlar. Kullanıcı içeriği göremez
 yalnızca API fonksiyonlarını çağırır.
 
 \begin{lstlisting}
-// ====== yigin.h (kullaniciya acik) ======
-typedef struct Yigin Yigin;      // OPAK: tanim gizli, sadece isim
-Yigin *yigin_olustur(void);
-void   yigin_it(Yigin *, int);
-int    yigin_cek(Yigin *, int *);
-void   yigin_yok_et(Yigin *);
+// ====== stack.h (kullaniciya acik) ======
+typedef struct Stack Stack;      // OPAK: tanim gizli, sadece isim
+Stack *stack_create(void);
+void   stack_push(Stack *, int);
+int    stack_pop(Stack *, int *);
+void   stack_destroy(Stack *);
 
-// ====== yigin.c (uygulama, gizli) ======
-#include "yigin.h"
+// ====== stack.c (uygulama, gizli) ======
+#include "stack.h"
 #include <stdlib.h>
-struct Yigin {                   // tam tanim yalnizca BURADA gorunur
-    int   *veri;
-    size_t adet, kapasite;
+struct Stack {                   // tam tanim yalnizca BURADA gorunur
+    int   *data;
+    size_t count, capacity;
 };
-Yigin *yigin_olustur(void) {
-    Yigin *y = calloc(1, sizeof *y);   // kullanici sizeof(Yigin) bilemez
-    return y;
+Stack *stack_create(void) {
+    Stack *s = calloc(1, sizeof *s);   // kullanici sizeof(Stack) bilemez
+    return s;
 }
-// ... yigin_it / yigin_cek / yigin_yok_et ...
+// ... stack_push / stack_pop / stack_destroy ...
 \end{lstlisting}
 
 \ipucu{Opak işaretçi, ikili uyumluluğu (ABI) korur: yapının iç düzenini
@@ -822,23 +822,23 @@ Gerçek callback'ler genellikle bir \code{void *userdata} parametresiyle
 #include <stdio.h>
 
 // Callback: her eleman + kullanici verisi alir
-typedef void (*Islem)(int eleman, void *userdata);
+typedef void (*Action)(int element, void *userdata);
 
-void her_biri(const int *dizi, size_t n, Islem fn, void *userdata) {
+void for_each(const int *arr, size_t n, Action fn, void *userdata) {
     for (size_t i = 0; i < n; i++)
-        fn(dizi[i], userdata);
+        fn(arr[i], userdata);
 }
 
 // userdata'yi bir toplam biriktirici olarak kullan
-void biriktir(int e, void *userdata) {
+void accumulate(int e, void *userdata) {
     *(long *)userdata += e;
 }
 
 int main(void) {
     int a[] = {1, 2, 3, 4, 5};
-    long toplam = 0;
-    her_biri(a, 5, biriktir, &toplam);   // baglam: &toplam
-    printf("toplam = %ld\n", toplam);    // 15
+    long sum = 0;
+    for_each(a, 5, accumulate, &sum);    // baglam: &sum
+    printf("toplam = %ld\n", sum);       // 15
     return 0;
 }
 \end{lstlisting}
@@ -847,18 +847,18 @@ int main(void) {
 
 \begin{lstlisting}
 #include <stdio.h>
-typedef int (*Islem)(int, int);
-int topla(int a, int b) { return a + b; }
-int carp (int a, int b) { return a * b; }
+typedef int (*BinOp)(int, int);
+int add(int a, int b)      { return a + b; }
+int multiply(int a, int b) { return a * b; }
 
 // typedef ile temiz: bir Islem dondurur
-Islem secim(char op) { return (op == '+') ? topla : carp; }
+BinOp choose(char op) { return (op == '+') ? add : multiply; }
 
 // typedef'siz ham sozdizimi (ayni sey):
-// int (*secim(char op))(int, int) { ... }
+// int (*choose(char op))(int, int) { ... }
 
 int main(void) {
-    Islem f = secim('*');
+    BinOp f = choose('*');
     printf("%d\n", f(6, 7));   // 42
     return 0;
 }
@@ -874,11 +874,11 @@ davranış tanımsızdır --- \code{memcpy} bunu varsayar, \code{memmove} varsay
 #include <stddef.h>
 // restrict YOK: derleyici a[i] her dongude b'nin degistirmis olabilecegini
 // varsayar ve tekrar okur -> yavas.
-void olcekle_yavas(int *a, const int *b, size_t n, int k) {
+void scale_slow(int *a, const int *b, size_t n, int k) {
     for (size_t i = 0; i < n; i++) a[i] = b[i] * k;
 }
 // restrict VAR: a ve b cakismaz sozu -> vektorlestirme mumkun.
-void olcekle_hizli(int *restrict a, const int *restrict b, size_t n, int k) {
+void scale_fast(int *restrict a, const int *restrict b, size_t n, int k) {
     for (size_t i = 0; i < n; i++) a[i] = b[i] * k;
 }
 \end{lstlisting}
@@ -889,8 +889,8 @@ void olcekle_hizli(int *restrict a, const int *restrict b, size_t n, int k) {
 // Sezgiye aykiri: char** -> const char** donusumu GECERSIZDIR.
 // Cunku izin verilseydi const'lugu delmek mumkun olurdu.
 void f(const char **p);
-char *dizi[1];
-// f(dizi);          // UYARI/HATA: char** -> const char** guvenli degil
+char *arr[1];
+// f(arr);           // UYARI/HATA: char** -> const char** guvenli degil
 
 // Dogru imza: hem eleman hem isaretci const olmali
 void g(const char *const *p);   // bu char** kabul eder
@@ -928,27 +928,27 @@ realloc(p,n) & p'yi n bayta büyütür/küçültür; içeriği korur, taşıyabi
 
 int main(void) {
     size_t n = 5;
-    int *dizi = malloc(n * sizeof(int));   // ayir
-    if (dizi == NULL) {                     // HER ZAMAN kontrol et
+    int *arr = malloc(n * sizeof(int));    // ayir
+    if (arr == NULL) {                      // HER ZAMAN kontrol et
         perror("malloc");
         return 1;
     }
-    for (size_t i = 0; i < n; i++) dizi[i] = (int)(i * i);
+    for (size_t i = 0; i < n; i++) arr[i] = (int)(i * i);
 
     // Buyut: 5 -> 10 eleman
-    int *yeni = realloc(dizi, 10 * sizeof(int));
-    if (yeni == NULL) {                     // realloc basarisizsa
-        free(dizi);                         // eski blok hala gecerli
+    int *grown = realloc(arr, 10 * sizeof(int));
+    if (grown == NULL) {                    // realloc basarisizsa
+        free(arr);                          // eski blok hala gecerli
         return 1;
     }
-    dizi = yeni;                            // dogru kullanim
-    for (size_t i = 5; i < 10; i++) dizi[i] = (int)(i * i);
+    arr = grown;                            // dogru kullanim
+    for (size_t i = 5; i < 10; i++) arr[i] = (int)(i * i);
 
-    for (size_t i = 0; i < 10; i++) printf("%d ", dizi[i]);
+    for (size_t i = 0; i < 10; i++) printf("%d ", arr[i]);
     printf("\n");
 
-    free(dizi);                             // geri ver
-    dizi = NULL;                            // dangling'i onle
+    free(arr);                              // geri ver
+    arr = NULL;                             // dangling'i onle
     return 0;
 }
 \end{lstlisting}
@@ -981,11 +981,11 @@ Uninitialized read & \code{malloc}'tan gelen çöp değerin okunması.\\
 belliyse, işaretçi dizisi + her satır için ayrı blok kullanılır.}
 \begin{lstlisting}
 #include <stdlib.h>
-int **matris_olustur(size_t satir, size_t sutun) {
-    int **m = malloc(satir * sizeof(int *));   // satir isaretcisi
+int **matrix_create(size_t rows, size_t cols) {
+    int **m = malloc(rows * sizeof(int *));    // satir isaretcisi
     if (!m) return NULL;
-    for (size_t i = 0; i < satir; i++) {
-        m[i] = malloc(sutun * sizeof(int));    // her satirin verisi
+    for (size_t i = 0; i < rows; i++) {
+        m[i] = malloc(cols * sizeof(int));     // her satirin verisi
         if (!m[i]) {                            // hata: onceki satirlari temizle
             for (size_t j = 0; j < i; j++) free(m[j]);
             free(m);
@@ -994,9 +994,9 @@ int **matris_olustur(size_t satir, size_t sutun) {
     }
     return m;
 }
-void matris_yok_et(int **m, size_t satir) {
-    for (size_t i = 0; i < satir; i++) free(m[i]); // once satirlar
-    free(m);                                        // sonra isaretci dizisi
+void matrix_destroy(int **m, size_t rows) {
+    for (size_t i = 0; i < rows; i++) free(m[i]); // once satirlar
+    free(m);                                       // sonra isaretci dizisi
 }
 \end{lstlisting}
 
@@ -1013,24 +1013,24 @@ kullanımda hizalama (alignment) ve dolgu (padding) kritiktir.
 #include <stdio.h>
 #include <string.h>
 
-struct Nokta { int x, y; };          // etiketli yapi
+struct Point { int x, y; };          // etiketli yapi
 
 typedef struct {                      // isimsiz + typedef
-    char ad[32];
-    int  yas;
-    double maas;
-} Calisan;
+    char name[32];
+    int  age;
+    double salary;
+} Employee;
 
 int main(void) {
-    struct Nokta n = {3, 4};
+    struct Point n = {3, 4};
     printf("%d,%d\n", n.x, n.y);      // nokta erisimi
 
-    Calisan c;
-    strcpy(c.ad, "Ada");
-    c.yas = 30; c.maas = 5000.0;
+    Employee c;
+    strcpy(c.name, "Ada");
+    c.age = 30; c.salary = 5000.0;
 
-    Calisan *pc = &c;
-    printf("%s %d\n", pc->ad, pc->yas); // isaretci uzerinden -> operatoru
+    Employee *pc = &c;
+    printf("%s %d\n", pc->name, pc->age); // isaretci uzerinden -> operatoru
     return 0;
 }
 \end{lstlisting}
@@ -1047,20 +1047,20 @@ olabilir --- aradaki boşluğa dolgu (padding) denir.
 
 \begin{lstlisting}
 #include <stdio.h>
-struct Kotu {       // kotu siralama -> cok dolgu
+struct Bad {        // kotu siralama -> cok dolgu
     char  a;        // 1 bayt + 3 dolgu
     int   b;        // 4 bayt
     char  c;        // 1 bayt + 3 dolgu
 };                  // toplam: 12 bayt
 
-struct Iyi {        // iyi siralama (buyukten kucuge) -> az dolgu
+struct Good {       // iyi siralama (buyukten kucuge) -> az dolgu
     int   b;        // 4 bayt
     char  a;        // 1 bayt
     char  c;        // 1 bayt + 2 dolgu
 };                  // toplam: 8 bayt
 
 int main(void) {
-    printf("Kotu: %zu, Iyi: %zu\n", sizeof(struct Kotu), sizeof(struct Iyi));
+    printf("Kotu: %zu, Iyi: %zu\n", sizeof(struct Bad), sizeof(struct Good));
     return 0;       // Kotu: 12, Iyi: 8
 }
 \end{lstlisting}
@@ -1076,14 +1076,14 @@ Bir yapı, kendi tipinden bir \emph{işaretçi} içerebilir. Bağlı liste, ağa
 gibi veri yapılarının temelidir.
 
 \begin{lstlisting}
-struct Dugum {
-    int veri;
-    struct Dugum *sonraki;   // kendine referans (isaretci olmali!)
+struct Node {
+    int data;
+    struct Node *next;       // kendine referans (isaretci olmali!)
 };
 \end{lstlisting}
 
-\uyari{Yapı kendi tipini \emph{değer olarak} içeremez (\code{struct Dugum
-sonraki;}) --- bu sonsuz boyut demektir. Yalnızca işaretçi (\code{*}) geçerlidir.}
+\uyari{Yapı kendi tipini \emph{değer olarak} içeremez (\code{struct Node
+next;}) --- bu sonsuz boyut demektir. Yalnızca işaretçi (\code{*}) geçerlidir.}
 
 \gsub{Esnek Dizi Üyesi (Flexible Array Member, C99)}
 
@@ -1093,16 +1093,16 @@ tutmayı sağlar.
 \begin{lstlisting}
 #include <stdlib.h>
 #include <string.h>
-struct Metin {
-    size_t uzunluk;
-    char   veri[];        // esnek dizi uyesi (boyutsuz, en sonda)
+struct Text {
+    size_t length;
+    char   data[];        // esnek dizi uyesi (boyutsuz, en sonda)
 };
-struct Metin *metin_olustur(const char *s) {
+struct Text *text_create(const char *s) {
     size_t n = strlen(s);
-    struct Metin *m = malloc(sizeof(struct Metin) + n + 1); // yapi + veri
+    struct Text *m = malloc(sizeof(struct Text) + n + 1); // yapi + veri
     if (!m) return NULL;
-    m->uzunluk = n;
-    strcpy(m->veri, s);
+    m->length = n;
+    strcpy(m->data, s);
     return m;             // tek free ile hepsi temizlenir
 }
 \end{lstlisting}
@@ -1118,18 +1118,18 @@ en büyük üyesi kadardır. Aynı anda yalnızca \emph{bir} üye anlamlıdır.
 
 \begin{lstlisting}
 #include <stdio.h>
-union Deger {
+union Value {
     int    i;
     float  f;
-    char   baytlar[4];
+    char   bytes[4];
 };
 int main(void) {
-    union Deger d;
+    union Value d;
     d.i = 1;                 // simdi 'i' anlamli
     printf("i = %d\n", d.i); // 1
     d.f = 3.14f;             // ayni bellege yazdi; 'i' artik gecersiz
     printf("f = %g\n", d.f); // 3.14
-    printf("boyut = %zu\n", sizeof(union Deger)); // 4 (en buyuk uye)
+    printf("boyut = %zu\n", sizeof(union Value)); // 4 (en buyuk uye)
     return 0;
 }
 \end{lstlisting}
@@ -1162,28 +1162,28 @@ tip-güvenli değişken (variant) oluşturmanın standart yoludur.
 
 \begin{lstlisting}
 #include <stdio.h>
-typedef enum { TIP_INT, TIP_FLOAT, TIP_METIN } Tip;
+typedef enum { TYPE_INT, TYPE_FLOAT, TYPE_TEXT } Type;
 
 typedef struct {
-    Tip tip;                    // hangi uye gecerli?
+    Type type;                  // hangi uye gecerli?
     union {
         int         i;
         float       f;
         const char *s;
     } u;
-} Deger;
+} Value;
 
-void yazdir(Deger d) {
-    switch (d.tip) {
-        case TIP_INT:   printf("int: %d\n",   d.u.i); break;
-        case TIP_FLOAT: printf("float: %g\n", d.u.f); break;
-        case TIP_METIN: printf("metin: %s\n", d.u.s); break;
+void print_value(Value d) {
+    switch (d.type) {
+        case TYPE_INT:   printf("int: %d\n",   d.u.i); break;
+        case TYPE_FLOAT: printf("float: %g\n", d.u.f); break;
+        case TYPE_TEXT:  printf("metin: %s\n", d.u.s); break;
     }
 }
 int main(void) {
-    Deger a = { .tip = TIP_INT,   .u.i = 42 };
-    Deger b = { .tip = TIP_METIN, .u.s = "merhaba" };
-    yazdir(a); yazdir(b);
+    Value a = { .type = TYPE_INT,  .u.i = 42 };
+    Value b = { .type = TYPE_TEXT, .u.s = "merhaba" };
+    print_value(a); print_value(b);
     return 0;
 }
 \end{lstlisting}
@@ -1192,14 +1192,14 @@ int main(void) {
 
 \begin{lstlisting}
 #include <stdio.h>
-enum Renk { KIRMIZI, YESIL = 5, MAVI };  // 0, 5, 6
+enum Color { RED, GREEN = 5, BLUE };  // 0, 5, 6
 
-enum Gun { PZT = 1, SAL, CAR, PER, CUM }; // 1,2,3,4,5
+enum Day { MON = 1, TUE, WED, THU, FRI }; // 1,2,3,4,5
 
 int main(void) {
-    enum Renk r = MAVI;
+    enum Color r = BLUE;
     printf("%d\n", r);        // 6
-    printf("%d\n", CUM);      // 5
+    printf("%d\n", FRI);      // 5
     return 0;
 }
 \end{lstlisting}
@@ -1211,18 +1211,18 @@ kullanmayı sağlar --- donanım register'ları ve protokol başlıkları için 
 
 \begin{lstlisting}
 #include <stdio.h>
-struct Bayraklar {
-    unsigned aktif   : 1;   // 1 bit
-    unsigned gizli   : 1;   // 1 bit
-    unsigned oncelik : 3;   // 3 bit (0-7)
-    unsigned         : 3;   // 3 bit isimsiz dolgu
-};                          // toplam 1 bayta sigar
+struct Flags {
+    unsigned active   : 1;   // 1 bit
+    unsigned hidden   : 1;   // 1 bit
+    unsigned priority : 3;   // 3 bit (0-7)
+    unsigned          : 3;   // 3 bit isimsiz dolgu
+};                           // toplam 1 bayta sigar
 int main(void) {
-    struct Bayraklar b = {0};
-    b.aktif = 1;
-    b.oncelik = 5;
+    struct Flags b = {0};
+    b.active = 1;
+    b.priority = 5;
     printf("aktif=%u oncelik=%u boyut=%zu\n",
-           b.aktif, b.oncelik, sizeof(b));  // aktif=1 oncelik=5 boyut=4
+           b.active, b.priority, sizeof(b));  // aktif=1 oncelik=5 boyut=4
     return 0;
 }
 \end{lstlisting}
@@ -1234,19 +1234,19 @@ saklayabilirsin --- taşınabilir ve hızlıdır.
 
 \begin{lstlisting}
 #include <stdio.h>
-#define BAYRAK_OKU    (1u << 0)   // 0001
-#define BAYRAK_YAZ    (1u << 1)   // 0010
-#define BAYRAK_CALIS  (1u << 2)   // 0100
+#define FLAG_READ   (1u << 0)   // 0001
+#define FLAG_WRITE  (1u << 1)   // 0010
+#define FLAG_EXEC   (1u << 2)   // 0100
 
 int main(void) {
-    unsigned izin = 0;
-    izin |=  BAYRAK_OKU | BAYRAK_YAZ;  // bit ekle (set)
-    izin &= ~BAYRAK_YAZ;               // bit temizle (clear)
-    izin ^=  BAYRAK_CALIS;             // bit degistir (toggle)
+    unsigned perm = 0;
+    perm |=  FLAG_READ | FLAG_WRITE;   // bit ekle (set)
+    perm &= ~FLAG_WRITE;               // bit temizle (clear)
+    perm ^=  FLAG_EXEC;                // bit degistir (toggle)
 
-    if (izin & BAYRAK_OKU)             // bit test et
+    if (perm & FLAG_READ)              // bit test et
         printf("okuma izni var\n");
-    printf("izin = %u\n", izin);       // 5
+    printf("izin = %u\n", perm);       // 5
     return 0;
 }
 \end{lstlisting}
@@ -1284,17 +1284,17 @@ int (*fp)(int);
 
 \begin{lstlisting}
 #include <stdio.h>
-int kare(int x)   { return x * x; }
-int kup (int x)   { return x * x * x; }
+int square(int x) { return x * x; }
+int cube(int x)   { return x * x * x; }
 
 int main(void) {
-    int (*islem)(int);        // fonksiyon isaretcisi
+    int (*op)(int);           // fonksiyon isaretcisi
 
-    islem = kare;             // & opsiyonel: islem = &kare;
-    printf("%d\n", islem(5)); // 25  (*islem)(5) ile ayni
+    op = square;              // & opsiyonel: op = &square;
+    printf("%d\n", op(5));    // 25  (*op)(5) ile ayni
 
-    islem = kup;
-    printf("%d\n", islem(3)); // 27
+    op = cube;
+    printf("%d\n", op(3));    // 27
     return 0;
 }
 \end{lstlisting}
@@ -1309,23 +1309,23 @@ böylece herhangi bir tipi, herhangi bir ölçüte göre sıralar.
 #include <stdlib.h>
 
 // qsort'un istedigi imza: iki void* alir, int dondurur
-int kucukten(const void *a, const void *b) {
+int ascending(const void *a, const void *b) {
     int x = *(const int *)a, y = *(const int *)b;
     return (x > y) - (x < y);   // tasmadan guvenli karsilastirma
 }
-int buyukten(const void *a, const void *b) {
-    return kucukten(b, a);      // sirayi ters cevir
+int descending(const void *a, const void *b) {
+    return ascending(b, a);     // sirayi ters cevir
 }
 
 int main(void) {
     int a[] = {5, 2, 8, 1, 9, 3};
     size_t n = sizeof(a) / sizeof(a[0]);
 
-    qsort(a, n, sizeof(int), kucukten);
+    qsort(a, n, sizeof(int), ascending);
     for (size_t i = 0; i < n; i++) printf("%d ", a[i]); // 1 2 3 5 8 9
     printf("\n");
 
-    qsort(a, n, sizeof(int), buyukten);
+    qsort(a, n, sizeof(int), descending);
     for (size_t i = 0; i < n; i++) printf("%d ", a[i]); // 9 8 5 3 2 1
     printf("\n");
     return 0;
@@ -1339,20 +1339,20 @@ oluşan bir tablo ile O(1) yönlendirme yapılır.
 
 \begin{lstlisting}
 #include <stdio.h>
-double topla(double a, double b)  { return a + b; }
-double cikar(double a, double b)  { return a - b; }
-double carp (double a, double b)  { return a * b; }
-double bol  (double a, double b)  { return b ? a / b : 0; }
+double add(double a, double b)      { return a + b; }
+double subtract(double a, double b) { return a - b; }
+double multiply(double a, double b) { return a * b; }
+double divide(double a, double b)   { return b ? a / b : 0; }
 
 int main(void) {
     // Islem karakterini fonksiyona esleyen tablo
-    struct { char op; double (*fn)(double, double); } tablo[] = {
-        {'+', topla}, {'-', cikar}, {'*', carp}, {'/', bol},
+    struct { char op; double (*fn)(double, double); } table[] = {
+        {'+', add}, {'-', subtract}, {'*', multiply}, {'/', divide},
     };
     char op = '*'; double a = 6, b = 7;
-    for (size_t i = 0; i < sizeof(tablo)/sizeof(tablo[0]); i++)
-        if (tablo[i].op == op) {
-            printf("%g\n", tablo[i].fn(a, b));  // 42
+    for (size_t i = 0; i < sizeof(table)/sizeof(table[0]); i++)
+        if (table[i].op == op) {
+            printf("%g\n", table[i].fn(a, b));  // 42
             break;
         }
     return 0;
@@ -1366,16 +1366,16 @@ temizler.
 
 \begin{lstlisting}
 #include <stdio.h>
-typedef int (*Islem)(int, int);   // artik 'Islem' bir tip
+typedef int (*BinOp)(int, int);   // artik 'BinOp' bir tip
 
-int topla(int a, int b) { return a + b; }
+int add(int a, int b) { return a + b; }
 
-void uygula(Islem f, int x, int y) {   // parametre olarak temiz
+void apply(BinOp f, int x, int y) {    // parametre olarak temiz
     printf("%d\n", f(x, y));
 }
 int main(void) {
-    Islem op = topla;               // okunakli bildirim
-    uygula(op, 3, 4);               // 7
+    BinOp op = add;                 // okunakli bildirim
+    apply(op, 3, 4);                // 7
     return 0;
 }
 \end{lstlisting}
@@ -1396,18 +1396,18 @@ sistemleri hep callback alır.}
 #include <stdarg.h>
 
 // Ilk parametre sayiyi verir; sonra o kadar int okunur.
-int topla(int adet, ...) {
+int sum(int count, ...) {
     va_list ap;
-    va_start(ap, adet);          // 'adet'ten SONRAKI argumanlar
-    int toplam = 0;
-    for (int i = 0; i < adet; i++)
-        toplam += va_arg(ap, int); // sirayla oku (tip belirt)
+    va_start(ap, count);         // 'count'tan SONRAKI argumanlar
+    int total = 0;
+    for (int i = 0; i < count; i++)
+        total += va_arg(ap, int); // sirayla oku (tip belirt)
     va_end(ap);                    // temizle
-    return toplam;
+    return total;
 }
 int main(void) {
-    printf("%d\n", topla(3, 10, 20, 30));      // 60
-    printf("%d\n", topla(5, 1, 2, 3, 4, 5));   // 15
+    printf("%d\n", sum(3, 10, 20, 30));      // 60
+    printf("%d\n", sum(5, 1, 2, 3, 4, 5));   // 15
     return 0;
 }
 \end{lstlisting}
@@ -1427,20 +1427,20 @@ olarak \code{NULL} da kullanılabilir.}
 
 \begin{lstlisting}
 #define PI 3.14159                     // nesne benzeri
-#define KARE(x) ((x) * (x))            // fonksiyon benzeri
+#define SQUARE(x) ((x) * (x))          // fonksiyon benzeri
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 \end{lstlisting}
 
 \uyari{Makro argümanlarını ve tüm ifadeyi \emph{parantezle}. \code{\#define
-KARE(x) x*x} yazarsan \code{KARE(1+2)} $\to$ \code{1+2*1+2 = 5} olur (9 değil).
+SQUARE(x) x*x} yazarsan \code{SQUARE(1+2)} $\to$ \code{1+2*1+2 = 5} olur (9 değil).
 Ayrıca \code{MAX(i++, j++)} argümanı iki kez değerlendirir --- yan etkili
 argüman verme.}
 
 \gsub{Koşullu Derleme ve Include Guard}
 
 \begin{lstlisting}
-#ifndef BASLIK_H          // include guard: cift dahil etmeyi onler
-#define BASLIK_H
+#ifndef HEADER_H          // include guard: cift dahil etmeyi onler
+#define HEADER_H
 /* ... bildirimler ... */
 #endif
 
@@ -1462,12 +1462,12 @@ argüman verme.}
 \begin{lstlisting}
 #include <stdio.h>
 #define STR(x)   #x            // argumani stringe cevirir
-#define BIRLES(a, b) a##b      // iki token'i birlestirir
+#define CONCAT(a, b) a##b      // iki token'i birlestirir
 
 int main(void) {
     printf("%s\n", STR(merhaba dunya)); // "merhaba dunya"
     int xy = 5;
-    printf("%d\n", BIRLES(x, y));       // xy -> 5
+    printf("%d\n", CONCAT(x, y));       // xy -> 5
     return 0;
 }
 \end{lstlisting}
@@ -1490,12 +1490,12 @@ int main(void) {
 \ornek[Hata ayıklama makrosu]{Dosya, satır ve fonksiyon bilgisiyle log.}
 \begin{lstlisting}
 #include <stdio.h>
-#define HATA(fmt, ...) \
+#define LOG_ERR(fmt, ...) \
     fprintf(stderr, "%s:%d (%s): " fmt "\n", \
             __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
 int main(void) {
-    HATA("kod = %d", 42);   // main.c:8 (main): kod = 42
+    LOG_ERR("kod = %d", 42);   // main.c:8 (main): kod = 42
     return 0;
 }
 \end{lstlisting}
@@ -1507,25 +1507,25 @@ X-macro deseni tek bir yerden yönetir.
 
 \begin{lstlisting}
 #include <stdio.h>
-#define RENKLER  \
-    X(KIRMIZI)   \
-    X(YESIL)     \
-    X(MAVI)
+#define COLORS   \
+    X(RED)       \
+    X(GREEN)     \
+    X(BLUE)
 
 typedef enum {
-    #define X(ad) ad,
-    RENKLER
+    #define X(name) name,
+    COLORS
     #undef X
-} Renk;
+} Color;
 
-static const char *renk_adi[] = {
-    #define X(ad) #ad,
-    RENKLER
+static const char *color_name[] = {
+    #define X(name) #name,
+    COLORS
     #undef X
 };
 int main(void) {
-    Renk r = YESIL;
-    printf("%d -> %s\n", r, renk_adi[r]);  // 1 -> YESIL
+    Color r = GREEN;
+    printf("%d -> %s\n", r, color_name[r]);  // 1 -> GREEN
     return 0;
 }
 \end{lstlisting}
@@ -1543,19 +1543,19 @@ C'nin şablonları yoktur, ama \code{void *}, makrolar ve C11'in \code{\_Generic
 #include <stdio.h>
 #include <string.h>
 // Herhangi bir tipteki elemani genel takas (swap):
-void takas(void *a, void *b, size_t boyut) {
-    unsigned char tmp[boyut];          // VLA (C99)
-    memcpy(tmp, a,   boyut);
-    memcpy(a,   b,   boyut);
-    memcpy(b,   tmp, boyut);
+void swap(void *a, void *b, size_t size) {
+    unsigned char tmp[size];           // VLA (C99)
+    memcpy(tmp, a,   size);
+    memcpy(a,   b,   size);
+    memcpy(b,   tmp, size);
 }
 int main(void) {
     int x = 1, y = 2;
-    takas(&x, &y, sizeof(int));
+    swap(&x, &y, sizeof(int));
     printf("%d %d\n", x, y);           // 2 1
 
     double p = 1.5, q = 3.5;
-    takas(&p, &q, sizeof(double));
+    swap(&p, &q, sizeof(double));
     printf("%g %g\n", p, q);           // 3.5 1.5
     return 0;
 }
@@ -1566,7 +1566,7 @@ int main(void) {
 \begin{lstlisting}
 #include <stdio.h>
 // Argumanin tipine gore farkli isim uretir
-#define TIP_ADI(x) _Generic((x), \
+#define TYPE_NAME(x) _Generic((x), \
     int:    "int",   \
     double: "double",\
     char:   "char",  \
@@ -1574,9 +1574,9 @@ int main(void) {
     default: "bilinmeyen")
 
 int main(void) {
-    printf("%s\n", TIP_ADI(42));      // int
-    printf("%s\n", TIP_ADI(3.14));    // double
-    printf("%s\n", TIP_ADI("selam")); // string
+    printf("%s\n", TYPE_NAME(42));      // int
+    printf("%s\n", TYPE_NAME(3.14));    // double
+    printf("%s\n", TYPE_NAME("selam")); // string
     return 0;
 }
 \end{lstlisting}
@@ -1597,47 +1597,47 @@ tam olarak bunu kullanır.}
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Dugum {
-    int veri;
-    struct Dugum *sonraki;
-} Dugum;
+typedef struct Node {
+    int data;
+    struct Node *next;
+} Node;
 
 // Basa ekle: O(1). Liste bası cift-isaretci ile guncellenir.
-void basa_ekle(Dugum **bas, int veri) {
-    Dugum *yeni = malloc(sizeof(Dugum));
-    if (!yeni) return;
-    yeni->veri = veri;
-    yeni->sonraki = *bas;    // yeni dugum eski basi gosterir
-    *bas = yeni;             // bas artik yeni dugum
+void push_front(Node **head, int data) {
+    Node *new_node = malloc(sizeof(Node));
+    if (!new_node) return;
+    new_node->data = data;
+    new_node->next = *head;  // yeni dugum eski basi gosterir
+    *head = new_node;        // bas artik yeni dugum
 }
 
-void yazdir(const Dugum *bas) {
-    for (const Dugum *p = bas; p; p = p->sonraki)
-        printf("%d -> ", p->veri);
+void print_list(const Node *head) {
+    for (const Node *p = head; p; p = p->next)
+        printf("%d -> ", p->data);
     printf("NULL\n");
 }
 
 // Tum listeyi serbest birak (bellek sizintisini onle)
-void yok_et(Dugum *bas) {
-    while (bas) {
-        Dugum *sonraki = bas->sonraki; // ONCE sonrakini sakla
-        free(bas);                     // sonra bu dugumu birak
-        bas = sonraki;
+void destroy(Node *head) {
+    while (head) {
+        Node *next = head->next;       // ONCE sonrakini sakla
+        free(head);                    // sonra bu dugumu birak
+        head = next;
     }
 }
 
 int main(void) {
-    Dugum *liste = NULL;
-    basa_ekle(&liste, 3);
-    basa_ekle(&liste, 2);
-    basa_ekle(&liste, 1);
-    yazdir(liste);           // 1 -> 2 -> 3 -> NULL
-    yok_et(liste);
+    Node *list = NULL;
+    push_front(&list, 3);
+    push_front(&list, 2);
+    push_front(&list, 1);
+    print_list(list);        // 1 -> 2 -> 3 -> NULL
+    destroy(list);
     return 0;
 }
 \end{lstlisting}
 
-\uyari{Düğümü \code{free} etmeden \emph{önce} \code{sonraki}'yi sakla. Ters
+\uyari{Düğümü \code{free} etmeden \emph{önce} \code{next}'i sakla. Ters
 sıra yaparsan (önce free) asılı işaretçiye erişip çökeresin.}
 
 \gsub{Dinamik Yığın (Stack) --- realloc ile Büyüyen Dizi}
@@ -1647,34 +1647,34 @@ sıra yaparsan (önce free) asılı işaretçiye erişip çökeresin.}
 #include <stdlib.h>
 
 typedef struct {
-    int   *veri;
-    size_t adet;      // dolu eleman
-    size_t kapasite;  // ayrilmis eleman
-} Yigin;
+    int   *data;
+    size_t count;     // dolu eleman
+    size_t capacity;  // ayrilmis eleman
+} Stack;
 
-int yigin_it(Yigin *y, int deger) {
-    if (y->adet == y->kapasite) {                 // dolduysa buyut
-        size_t yeni_kap = y->kapasite ? y->kapasite * 2 : 4;
-        int *yeni = realloc(y->veri, yeni_kap * sizeof(int));
-        if (!yeni) return -1;                     // hata: eski gecerli
-        y->veri = yeni;
-        y->kapasite = yeni_kap;
+int stack_push(Stack *s, int value) {
+    if (s->count == s->capacity) {                // dolduysa buyut
+        size_t new_cap = s->capacity ? s->capacity * 2 : 4;
+        int *grown = realloc(s->data, new_cap * sizeof(int));
+        if (!grown) return -1;                    // hata: eski gecerli
+        s->data = grown;
+        s->capacity = new_cap;
     }
-    y->veri[y->adet++] = deger;
+    s->data[s->count++] = value;
     return 0;
 }
-int yigin_cek(Yigin *y, int *out) {
-    if (y->adet == 0) return -1;                  // bos
-    *out = y->veri[--y->adet];
+int stack_pop(Stack *s, int *out) {
+    if (s->count == 0) return -1;                 // bos
+    *out = s->data[--s->count];
     return 0;
 }
 int main(void) {
-    Yigin y = {0};
-    for (int i = 1; i <= 6; i++) yigin_it(&y, i * 10);
+    Stack s = {0};
+    for (int i = 1; i <= 6; i++) stack_push(&s, i * 10);
     int v;
-    while (yigin_cek(&y, &v) == 0) printf("%d ", v); // 60 50 40 30 20 10
+    while (stack_pop(&s, &v) == 0) printf("%d ", v); // 60 50 40 30 20 10
     printf("\n");
-    free(y.veri);
+    free(s.data);
     return 0;
 }
 \end{lstlisting}
@@ -1802,30 +1802,30 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Kullanim: %s kaynak hedef\n", argv[0]);
         return 1;
     }
-    int kaynak = open(argv[1], O_RDONLY);
-    if (kaynak == -1) { perror("open kaynak"); return 1; }
+    int src = open(argv[1], O_RDONLY);
+    if (src == -1) { perror("open kaynak"); return 1; }
 
     // 0644 = kullanici oku/yaz, grup+digerleri oku
-    int hedef = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (hedef == -1) { perror("open hedef"); close(kaynak); return 1; }
+    int dst = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (dst == -1) { perror("open hedef"); close(src); return 1; }
 
-    char tampon[4096];
-    ssize_t okunan;
-    while ((okunan = read(kaynak, tampon, sizeof(tampon))) > 0) {
-        ssize_t yazilan = 0;
-        while (yazilan < okunan) {                 // kismi yazmayi ele al
-            ssize_t r = write(hedef, tampon + yazilan, okunan - yazilan);
+    char buffer[4096];
+    ssize_t n_read;
+    while ((n_read = read(src, buffer, sizeof(buffer))) > 0) {
+        ssize_t n_written = 0;
+        while (n_written < n_read) {                // kismi yazmayi ele al
+            ssize_t r = write(dst, buffer + n_written, n_read - n_written);
             if (r == -1) {
                 if (errno == EINTR) continue;      // sinyal kesti; tekrar dene
-                perror("write"); close(kaynak); close(hedef); return 1;
+                perror("write"); close(src); close(dst); return 1;
             }
-            yazilan += r;
+            n_written += r;
         }
     }
-    if (okunan == -1) perror("read");
+    if (n_read == -1) perror("read");
 
-    close(kaynak);
-    close(hedef);
+    close(src);
+    close(dst);
     return 0;
 }
 \end{lstlisting}
@@ -1854,8 +1854,8 @@ int main(void) {
     lseek(fd, 1000, SEEK_END);       // sondan 1000 bayt ileri
     write(fd, "SON", 3);
 
-    off_t boyut = lseek(fd, 0, SEEK_END); // dosya boyutu
-    printf("boyut = %ld\n", (long)boyut);
+    off_t size = lseek(fd, 0, SEEK_END); // dosya boyutu
+    printf("boyut = %ld\n", (long)size);
 
     close(fd);
     return 0;
@@ -1919,13 +1919,13 @@ iş parçacıklarının aynı dosyayı yarışmadan kullanmasını sağlar.
 int main(void) {
     int fd = open("veri.bin", O_RDWR | O_CREAT, 0644);
 
-    char kayit[16] = "KAYIT-0000000000";
-    pwrite(fd, kayit, 16, 0);        // 0. konuma yaz (offset degismez)
-    pwrite(fd, kayit, 16, 1600);     // 100. kaydin yerine yaz
+    char record[16] = "KAYIT-0000000000";
+    pwrite(fd, record, 16, 0);       // 0. konuma yaz (offset degismez)
+    pwrite(fd, record, 16, 1600);    // 100. kaydin yerine yaz
 
-    char tampon[16];
-    pread(fd, tampon, 16, 1600);     // dosya konumundan BAGIMSIZ oku
-    printf("%.16s\n", tampon);
+    char buffer[16];
+    pread(fd, buffer, 16, 1600);     // dosya konumundan BAGIMSIZ oku
+    printf("%.16s\n", buffer);
 
     close(fd);
     return 0;
@@ -1946,17 +1946,17 @@ Başlık + gövdeyi ayrı tamponlardan tek atomik yazmayla göndermek için idea
 #include <unistd.h>
 #include <string.h>
 int main(void) {
-    const char *baslik = "[BASLIK] ";
-    const char *govde   = "mesaj govdesi\n";
+    const char *header = "[BASLIK] ";
+    const char *body   = "mesaj govdesi\n";
 
-    struct iovec parcalar[2];
-    parcalar[0].iov_base = (void *)baslik;
-    parcalar[0].iov_len  = strlen(baslik);
-    parcalar[1].iov_base = (void *)govde;
-    parcalar[1].iov_len  = strlen(govde);
+    struct iovec parts[2];
+    parts[0].iov_base = (void *)header;
+    parts[0].iov_len  = strlen(header);
+    parts[1].iov_base = (void *)body;
+    parts[1].iov_len  = strlen(body);
 
     // Iki tampon TEK writev cagrisiyla, sirayla, atomik yazilir
-    writev(STDOUT_FILENO, parcalar, 2);   // [BASLIK] mesaj govdesi
+    writev(STDOUT_FILENO, parts, 2);      // [BASLIK] mesaj govdesi
     return 0;
 }
 \end{lstlisting}
@@ -1973,12 +1973,12 @@ int main(void) {
     int fd = open("dosya.txt", O_RDONLY);
 
     // Mevcut bayraklari al, O_NONBLOCK ekle, geri yaz
-    int bayraklar = fcntl(fd, F_GETFL);
-    fcntl(fd, F_SETFL, bayraklar | O_NONBLOCK);  // artik bloklamaz
+    int flags = fcntl(fd, F_GETFL);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);      // artik bloklamaz
 
     // exec sonrasi otomatik kapansin (betimleyici sizintisini onler)
-    int fbayrak = fcntl(fd, F_GETFD);
-    fcntl(fd, F_SETFD, fbayrak | FD_CLOEXEC);
+    int fd_flags = fcntl(fd, F_GETFD);
+    fcntl(fd, F_SETFD, fd_flags | FD_CLOEXEC);
 
     close(fd);
     return 0;
@@ -2002,20 +2002,20 @@ Birden çok süreç aynı dosyaya yazarken tutarlılık için öneri kilitleri
 int main(void) {
     int fd = open("kayit.db", O_RDWR | O_CREAT, 0644);
 
-    struct flock kilit = {0};
-    kilit.l_type   = F_WRLCK;    // yazma kilidi (F_RDLCK: okuma, F_UNLCK: ac)
-    kilit.l_whence = SEEK_SET;
-    kilit.l_start  = 0;          // ofsetten...
-    kilit.l_len    = 0;          // ...sona kadar (0 = tum dosya)
+    struct flock lock = {0};
+    lock.l_type   = F_WRLCK;    // yazma kilidi (F_RDLCK: okuma, F_UNLCK: ac)
+    lock.l_whence = SEEK_SET;
+    lock.l_start  = 0;          // ofsetten...
+    lock.l_len    = 0;          // ...sona kadar (0 = tum dosya)
 
-    if (fcntl(fd, F_SETLKW, &kilit) == -1) { // F_SETLKW: kilit bosalana kadar bekle
+    if (fcntl(fd, F_SETLKW, &lock) == -1) { // F_SETLKW: kilit bosalana kadar bekle
         perror("kilit"); return 1;
     }
     // --- kritik bolge: dosyaya guvenle yaz ---
     pwrite(fd, "guncel", 6, 0);
 
-    kilit.l_type = F_UNLCK;
-    fcntl(fd, F_SETLK, &kilit);  // kilidi birak
+    lock.l_type = F_UNLCK;
+    fcntl(fd, F_SETLK, &lock);  // kilidi birak
     close(fd);
     return 0;
 }
@@ -2050,14 +2050,14 @@ int main(void) {
 #include <unistd.h>
 #include <stdio.h>
 int main(void) {
-    char sablon[] = "/tmp/uygXXXXXX";   // son 6 karakter X olmali
-    int fd = mkstemp(sablon);           // benzersiz ad uretir + acar (guvenli)
+    char template[] = "/tmp/uygXXXXXX";  // son 6 karakter X olmali
+    int fd = mkstemp(template);          // benzersiz ad uretir + acar (guvenli)
     if (fd == -1) { perror("mkstemp"); return 1; }
-    printf("Gecici dosya: %s\n", sablon);
+    printf("Gecici dosya: %s\n", template);
 
     write(fd, "gecici veri", 11);
     // Genellikle isim hemen silinir; fd acik kaldigi surece dosya yasar
-    unlink(sablon);                     // program bitince tamamen yok olur
+    unlink(template);                    // program bitince tamamen yok olur
     close(fd);
     return 0;
 }
@@ -2078,15 +2078,15 @@ diğerine kopyalar --- dosya sunucularında (statik içerik) çok hızlıdır.
 #include <fcntl.h>
 #include <unistd.h>
 int main(int argc, char *argv[]) {
-    int giris = open(argv[1], O_RDONLY);
-    int cikis = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    struct stat st; fstat(giris, &st);
+    int in_fd = open(argv[1], O_RDONLY);
+    int out_fd = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    struct stat st; fstat(in_fd, &st);
 
-    off_t ofset = 0;
+    off_t offset = 0;
     // Tum dosyayi cekirdek icinde kopyala (read/write dongusu YOK)
-    sendfile(cikis, giris, &ofset, st.st_size);
+    sendfile(out_fd, in_fd, &offset, st.st_size);
 
-    close(giris); close(cikis);
+    close(in_fd); close(out_fd);
     return 0;
 }
 \end{lstlisting}
@@ -2163,13 +2163,13 @@ bağlantının kendisini incelemek için \code{lstat}, açık bir fd için ise
 #include <dirent.h>
 #include <stdio.h>
 int main(int argc, char *argv[]) {
-    const char *yol = (argc > 1) ? argv[1] : ".";
-    DIR *d = opendir(yol);
+    const char *path = (argc > 1) ? argv[1] : ".";
+    DIR *d = opendir(path);
     if (!d) { perror("opendir"); return 1; }
 
-    struct dirent *girdi;
-    while ((girdi = readdir(d)) != NULL)     // her cagri bir girdi
-        printf("%s\n", girdi->d_name);        // . ve .. dahil
+    struct dirent *entry;
+    while ((entry = readdir(d)) != NULL)     // her cagri bir girdi
+        printf("%s\n", entry->d_name);        // . ve .. dahil
 
     closedir(d);
     return 0;
@@ -2258,15 +2258,15 @@ callback çağırır --- \code{find} komutunun temelidir.
 #include <stdio.h>
 
 // Her dosya/dizin icin cagrilir
-int ziyaret(const char *yol, const struct stat *st, int tip, struct FTW *f) {
-    (void)f;
-    printf("%*s%s (%ld bayt)\n", f->level * 2, "", yol, (long)st->st_size);
+int visit(const char *path, const struct stat *st, int type, struct FTW *f) {
+    (void)type;
+    printf("%*s%s (%ld bayt)\n", f->level * 2, "", path, (long)st->st_size);
     return 0;   // 0: devam et, sifir disi: durdur
 }
 int main(int argc, char *argv[]) {
-    const char *kok = (argc > 1) ? argv[1] : ".";
+    const char *root = (argc > 1) ? argv[1] : ".";
     // 20: ayni anda acik fd siniri; FTW_PHYS: sembolik baglantilari izleme
-    nftw(kok, ziyaret, 20, FTW_PHYS);
+    nftw(root, visit, 20, FTW_PHYS);
     return 0;
 }
 \end{lstlisting}
@@ -2291,18 +2291,18 @@ uyandır" der --- böylece tek iş parçacığı binlerce bağlantıyı yönetir
 #include <unistd.h>
 #include <stdio.h>
 int main(void) {
-    fd_set okunacak;
-    struct timeval zaman_asimi = { .tv_sec = 5, .tv_usec = 0 };
+    fd_set readfds;
+    struct timeval timeout = { .tv_sec = 5, .tv_usec = 0 };
 
-    FD_ZERO(&okunacak);              // kumeyi temizle
-    FD_SET(STDIN_FILENO, &okunacak); // stdin'i izle
+    FD_ZERO(&readfds);               // kumeyi temizle
+    FD_SET(STDIN_FILENO, &readfds);  // stdin'i izle
 
     // 1. arg: en buyuk fd + 1. Doner: hazir fd sayisi (0 = zaman asimi)
-    int hazir = select(STDIN_FILENO + 1, &okunacak, NULL, NULL, &zaman_asimi);
+    int ready = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
 
-    if (hazir == -1)      perror("select");
-    else if (hazir == 0)  printf("5 saniye icinde giris yok.\n");
-    else if (FD_ISSET(STDIN_FILENO, &okunacak)) {
+    if (ready == -1)      perror("select");
+    else if (ready == 0)  printf("5 saniye icinde giris yok.\n");
+    else if (FD_ISSET(STDIN_FILENO, &readfds)) {
         char buf[128];
         ssize_t n = read(STDIN_FILENO, buf, sizeof buf - 1);
         if (n > 0) { buf[n] = '\0'; printf("Girdi: %s", buf); }
@@ -2326,12 +2326,12 @@ int main(void) {
     fds[0].fd     = STDIN_FILENO;
     fds[0].events = POLLIN;          // okumaya hazir olmasini izle
 
-    int hazir = poll(fds, 1, 5000);  // 5000 ms zaman asimi
-    if (hazir > 0 && (fds[0].revents & POLLIN)) {
+    int ready = poll(fds, 1, 5000);  // 5000 ms zaman asimi
+    if (ready > 0 && (fds[0].revents & POLLIN)) {
         char buf[128];
         ssize_t n = read(STDIN_FILENO, buf, sizeof buf - 1);
         if (n > 0) { buf[n] = '\0'; printf("Girdi: %s", buf); }
-    } else if (hazir == 0) {
+    } else if (ready == 0) {
         printf("Zaman asimi.\n");
     }
     return 0;
@@ -2351,18 +2351,18 @@ sunucularının (nginx, redis) temelidir.
 int main(void) {
     int ep = epoll_create1(0);           // epoll ornegi olustur
 
-    struct epoll_event olay = {0};
-    olay.events  = EPOLLIN;              // okuma olaylarini izle
-    olay.data.fd = STDIN_FILENO;
-    epoll_ctl(ep, EPOLL_CTL_ADD, STDIN_FILENO, &olay);  // fd ekle
+    struct epoll_event event = {0};
+    event.events  = EPOLLIN;             // okuma olaylarini izle
+    event.data.fd = STDIN_FILENO;
+    epoll_ctl(ep, EPOLL_CTL_ADD, STDIN_FILENO, &event);  // fd ekle
 
-    struct epoll_event olaylar[10];
+    struct epoll_event events[10];
     printf("Giris bekleniyor...\n");
 
     // -1: sonsuza kadar bekle. Doner: hazir olay sayisi
-    int n = epoll_wait(ep, olaylar, 10, -1);
+    int n = epoll_wait(ep, events, 10, -1);
     for (int i = 0; i < n; i++) {
-        if (olaylar[i].data.fd == STDIN_FILENO) {
+        if (events[i].data.fd == STDIN_FILENO) {
             char buf[128];
             ssize_t r = read(STDIN_FILENO, buf, sizeof buf - 1);
             if (r > 0) { buf[r] = '\0'; printf("Girdi: %s", buf); }
@@ -2475,10 +2475,10 @@ int main(void) {
         perror("execvp");                    // buraya gelinirse hata var
         _exit(127);                          // exec basarisiz
     } else if (pid > 0) {
-        int durum;
-        waitpid(pid, &durum, 0);             // cocugu bekle
-        if (WIFEXITED(durum))
-            printf("Cocuk %d cikti, kod=%d\n", pid, WEXITSTATUS(durum));
+        int status;
+        waitpid(pid, &status, 0);            // cocugu bekle
+        if (WIFEXITED(status))
+            printf("Cocuk %d cikti, kod=%d\n", pid, WEXITSTATUS(status));
     }
     return 0;
 }
@@ -2579,12 +2579,12 @@ int main(void) {
 #include <stdio.h>
 #include <unistd.h>
 
-void temizle1(void) { printf("temizlik 1\n"); }
-void temizle2(void) { printf("temizlik 2\n"); }
+void cleanup1(void) { printf("temizlik 1\n"); }
+void cleanup2(void) { printf("temizlik 2\n"); }
 
 int main(void) {
-    atexit(temizle1);       // exit() ya da main return'de calisir
-    atexit(temizle2);       // TERS sirada: once temizle2, sonra temizle1
+    atexit(cleanup1);       // exit() ya da main return'de calisir
+    atexit(cleanup2);       // TERS sirada: once cleanup2, sonra cleanup1
 
     printf("is bitti\n");
     return 0;               // exit(0) cagrilir -> kancalar tetiklenir
@@ -2625,7 +2625,7 @@ Bir daemon, terminalden kopmuş, arka planda çalışan bir servistir. Klasik
 #include <fcntl.h>
 #include <sys/stat.h>
 
-void daemon_ol(void) {
+void daemonize(void) {
     // 1) Ilk fork: ebeveyn cikar, cocuk devam eder (kabuk komut istemine doner)
     if (fork() > 0) exit(0);
 
@@ -2690,10 +2690,10 @@ Basittir ama kabuk enjeksiyonuna (shell injection) açıktır.
 #include <stdio.h>
 #include <sys/wait.h>
 int main(void) {
-    int durum = system("ls -l /tmp | wc -l");   // kabuk ozelliklerini kullanir
+    int status = system("ls -l /tmp | wc -l");  // kabuk ozelliklerini kullanir
 
-    if (durum == -1) perror("system");
-    else printf("Cikis kodu: %d\n", WEXITSTATUS(durum));
+    if (status == -1) perror("system");
+    else printf("Cikis kodu: %d\n", WEXITSTATUS(status));
 
     return 0;
 }
@@ -2713,15 +2713,15 @@ akışı olarak verir --- komutun sonucunu satır satır okumak için pratiktir.
 #include <stdio.h>
 int main(void) {
     // "r": komutun STDOUT'unu oku. ("w": komutun STDIN'ine yaz)
-    FILE *boru = popen("ls -1 /etc | head -5", "r");
-    if (!boru) { perror("popen"); return 1; }
+    FILE *pipe_fp = popen("ls -1 /etc | head -5", "r");
+    if (!pipe_fp) { perror("popen"); return 1; }
 
-    char satir[256];
-    while (fgets(satir, sizeof satir, boru))   // ciktiyi satir satir oku
-        printf("--> %s", satir);
+    char line[256];
+    while (fgets(line, sizeof line, pipe_fp))   // ciktiyi satir satir oku
+        printf("--> %s", line);
 
-    int durum = pclose(boru);                  // kapat + cikis kodunu al
-    printf("Komut cikis kodu: %d\n", WEXITSTATUS(durum));
+    int status = pclose(pipe_fp);               // kapat + cikis kodunu al
+    printf("Komut cikis kodu: %d\n", WEXITSTATUS(status));
     return 0;
 }
 \end{lstlisting}
@@ -2738,32 +2738,32 @@ Bu, bir komutu çalıştırıp çıktısını tampona toplamanın "endüstriyel"
 #include <string.h>
 
 int main(void) {
-    int boru[2];
-    if (pipe(boru) == -1) { perror("pipe"); return 1; }
+    int pipe_fd[2];
+    if (pipe(pipe_fd) == -1) { perror("pipe"); return 1; }
 
     pid_t pid = fork();
     if (pid == 0) {                       // COCUK: komutu calistir
-        close(boru[0]);                   // okuma ucu gereksiz
-        dup2(boru[1], STDOUT_FILENO);     // stdout -> borunun yazma ucu
-        close(boru[1]);
+        close(pipe_fd[0]);                // okuma ucu gereksiz
+        dup2(pipe_fd[1], STDOUT_FILENO);  // stdout -> borunun yazma ucu
+        close(pipe_fd[1]);
         char *av[] = {"date", "+%Y-%m-%d %H:%M:%S", NULL};
         execvp("date", av);               // kabuk YOK: guvenli
         _exit(127);                       // exec basarisizsa
     }
 
     // EBEVEYN: cocugun ciktisini oku
-    close(boru[1]);                       // yazma ucu gereksiz
-    char cikti[512];
-    ssize_t toplam = 0, n;
-    while ((n = read(boru[0], cikti + toplam, sizeof cikti - 1 - toplam)) > 0)
-        toplam += n;
-    cikti[toplam] = '\0';
-    close(boru[0]);
+    close(pipe_fd[1]);                    // yazma ucu gereksiz
+    char output[512];
+    ssize_t total = 0, n;
+    while ((n = read(pipe_fd[0], output + total, sizeof output - 1 - total)) > 0)
+        total += n;
+    output[total] = '\0';
+    close(pipe_fd[0]);
 
-    int durum;
-    waitpid(pid, &durum, 0);              // zombi birakma
-    printf("Yakalanan cikti: %s", cikti);
-    printf("Cikis kodu: %d\n", WEXITSTATUS(durum));
+    int status;
+    waitpid(pid, &status, 0);             // zombi birakma
+    printf("Yakalanan cikti: %s", output);
+    printf("Cikis kodu: %d\n", WEXITSTATUS(status));
     return 0;
 }
 \end{lstlisting}
@@ -2786,18 +2786,18 @@ fork/exec ile çalıştır, bekle --- döngü.
 #include <sys/wait.h>
 
 int main(void) {
-    char satir[1024];
+    char line[1024];
     while (1) {
         printf("minish$ ");
         fflush(stdout);
-        if (!fgets(satir, sizeof satir, stdin)) break;  // Ctrl+D -> cik
-        satir[strcspn(satir, "\n")] = '\0';             // sondaki \n'i at
-        if (satir[0] == '\0') continue;
-        if (strcmp(satir, "exit") == 0) break;          // dahili komut
+        if (!fgets(line, sizeof line, stdin)) break;    // Ctrl+D -> cik
+        line[strcspn(line, "\n")] = '\0';               // sondaki \n'i at
+        if (line[0] == '\0') continue;
+        if (strcmp(line, "exit") == 0) break;           // dahili komut
 
         // Bosluklara gore argumanlara ayir
         char *argv[64]; int argc = 0;
-        char *tok = strtok(satir, " ");
+        char *tok = strtok(line, " ");
         while (tok && argc < 63) { argv[argc++] = tok; tok = strtok(NULL, " "); }
         argv[argc] = NULL;
 
@@ -2807,8 +2807,8 @@ int main(void) {
             perror(argv[0]);               // komut bulunamadi
             _exit(127);
         } else if (pid > 0) {              // EBEVEYN
-            int durum;
-            waitpid(pid, &durum, 0);       // komutun bitmesini bekle
+            int status;
+            waitpid(pid, &status, 0);      // komutun bitmesini bekle
         }
     }
     printf("\nHosca kal.\n");
@@ -2857,13 +2857,13 @@ SIGSTOP / SIGCONT & 19/18 & Durdur / devam ettir.\\
 #include <signal.h>
 #include <unistd.h>
 
-volatile sig_atomic_t calisiyor = 1;   // handler ile paylasilan bayrak
+volatile sig_atomic_t running = 1;     // handler ile paylasilan bayrak
 
-void handler(int sinyal) {
+void handler(int sig) {
     // Handler icinde yalnizca async-signal-safe islemler yapilmali.
     // Bir bayrak set etmek guvenlidir; printf DEGILDIR.
-    calisiyor = 0;
-    (void)sinyal;
+    running = 0;
+    (void)sig;
 }
 
 int main(void) {
@@ -2874,7 +2874,7 @@ int main(void) {
     sigaction(SIGINT, &sa, NULL);      // Ctrl+C'yi yakala
 
     printf("Calisiyor... Ctrl+C ile durdur.\n");
-    while (calisiyor) {
+    while (running) {
         pause();                       // bir sinyal gelene kadar uyu
     }
     printf("\nDuzgun sekilde cikildi.\n");
@@ -2894,11 +2894,11 @@ Handler ile ana kod arasında paylaşılan değişken mutlaka
 #include <unistd.h>
 #include <stdio.h>
 
-void zaman_asimi(int s) { (void)s; write(2, "Zaman doldu!\n", 13); }
+void on_timeout(int s) { (void)s; write(2, "Zaman doldu!\n", 13); }
 
 int main(void) {
     struct sigaction sa = {0};
-    sa.sa_handler = zaman_asimi;
+    sa.sa_handler = on_timeout;
     sigaction(SIGALRM, &sa, NULL);
 
     alarm(3);            // 3 saniye sonra SIGALRM gonder
@@ -2917,13 +2917,13 @@ int main(void) {
 #include <signal.h>
 #include <sys/wait.h>
 
-void cocuk_bitti(int s) {
+void on_child_exit(int s) {
     (void)s;
     // Biriken tum bitmis cocuklari topla (WNOHANG: bloklanma)
     while (waitpid(-1, NULL, WNOHANG) > 0)
         ;
 }
-// main icinde: sigaction ile SIGCHLD -> cocuk_bitti kurulur.
+// main icinde: sigaction ile SIGCHLD -> on_child_exit kurulur.
 // Boylece cocuklar otomatik toplanir, zombi kalmaz.
 \end{lstlisting}
 
@@ -2947,14 +2947,14 @@ int main(void) {
     pid_t pid = fork();
     if (pid == 0) {                     // COCUK: yazar
         close(fd[0]);                   // okuma ucunu kapat
-        const char *mesaj = "Merhaba ebeveyn!";
-        write(fd[1], mesaj, strlen(mesaj));
+        const char *message = "Merhaba ebeveyn!";
+        write(fd[1], message, strlen(message));
         close(fd[1]);
     } else {                            // EBEVEYN: okur
         close(fd[1]);                   // yazma ucunu kapat
-        char tampon[128];
-        ssize_t n = read(fd[0], tampon, sizeof(tampon) - 1);
-        if (n > 0) { tampon[n] = '\0'; printf("Alindi: %s\n", tampon); }
+        char buffer[128];
+        ssize_t n = read(fd[0], buffer, sizeof(buffer) - 1);
+        if (n > 0) { buffer[n] = '\0'; printf("Alindi: %s\n", buffer); }
         close(fd[0]);
         wait(NULL);
     }
@@ -3030,22 +3030,22 @@ boru kurulur --- biri her yön için.
 #include <string.h>
 
 int main(void) {
-    int eb_co[2], co_eb[2];       // ebeveyn->cocuk, cocuk->ebeveyn
-    pipe(eb_co); pipe(co_eb);
+    int p2c[2], c2p[2];           // ebeveyn->cocuk, cocuk->ebeveyn
+    pipe(p2c); pipe(c2p);
 
     if (fork() == 0) {                       // COCUK
-        close(eb_co[1]); close(co_eb[0]);    // kullanilmayan uclari kapat
+        close(p2c[1]); close(c2p[0]);        // kullanilmayan uclari kapat
         char buf[64];
-        ssize_t n = read(eb_co[0], buf, sizeof buf - 1);
+        ssize_t n = read(p2c[0], buf, sizeof buf - 1);
         buf[n] = '\0';
         printf("Cocuk aldi: %s\n", buf);
-        write(co_eb[1], "selam ebeveyn", 13);  // cevap yaz
+        write(c2p[1], "selam ebeveyn", 13);  // cevap yaz
         _exit(0);
     } else {                                 // EBEVEYN
-        close(eb_co[0]); close(co_eb[1]);
-        write(eb_co[1], "selam cocuk", 11);  // once yaz
+        close(p2c[0]); close(c2p[1]);
+        write(p2c[1], "selam cocuk", 11);    // once yaz
         char buf[64];
-        ssize_t n = read(co_eb[0], buf, sizeof buf - 1);
+        ssize_t n = read(c2p[0], buf, sizeof buf - 1);
         buf[n] = '\0';
         printf("Ebeveyn aldi: %s\n", buf);
         wait(NULL);
@@ -3071,37 +3071,37 @@ Kabuğun \code{a | b | c} zincirini kurmak için N-1 boru gerekir; her komut
 
 // Ornek: cat /etc/passwd | grep root | wc -l
 int main(void) {
-    char *komutlar[][4] = {
+    char *commands[][4] = {
         {"cat", "/etc/passwd", NULL},
         {"grep", "root", NULL},
         {"wc", "-l", NULL},
     };
-    int adet = 3;
-    int onceki_okuma = -1;                 // ilk komutun girisi normal stdin
+    int count = 3;
+    int prev_read = -1;                    // ilk komutun girisi normal stdin
 
-    for (int i = 0; i < adet; i++) {
-        int boru[2];
-        int son = (i == adet - 1);
-        if (!son) pipe(boru);              // son komut disinda boru ac
+    for (int i = 0; i < count; i++) {
+        int pipe_fd[2];
+        int last = (i == count - 1);
+        if (!last) pipe(pipe_fd);          // son komut disinda boru ac
 
         if (fork() == 0) {                 // COCUK
-            if (onceki_okuma != -1) {      // ortadaki/son: onceki borudan oku
-                dup2(onceki_okuma, STDIN_FILENO);
-                close(onceki_okuma);
+            if (prev_read != -1) {         // ortadaki/son: onceki borudan oku
+                dup2(prev_read, STDIN_FILENO);
+                close(prev_read);
             }
-            if (!son) {                    // son degilse: bir sonraki boruya yaz
-                close(boru[0]);
-                dup2(boru[1], STDOUT_FILENO);
-                close(boru[1]);
+            if (!last) {                   // son degilse: bir sonraki boruya yaz
+                close(pipe_fd[0]);
+                dup2(pipe_fd[1], STDOUT_FILENO);
+                close(pipe_fd[1]);
             }
-            execvp(komutlar[i][0], komutlar[i]);
+            execvp(commands[i][0], commands[i]);
             _exit(127);
         }
         // EBEVEYN: kullanilmayan uclari kapat, sonraki iterasyona hazirla
-        if (onceki_okuma != -1) close(onceki_okuma);
-        if (!son) { close(boru[1]); onceki_okuma = boru[0]; }
+        if (prev_read != -1) close(prev_read);
+        if (!last) { close(pipe_fd[1]); prev_read = pipe_fd[0]; }
     }
-    for (int i = 0; i < adet; i++) wait(NULL);  // tum cocuklari bekle
+    for (int i = 0; i < count; i++) wait(NULL);  // tum cocuklari bekle
     return 0;
 }
 \end{lstlisting}
@@ -3119,14 +3119,14 @@ davranış programı \emph{öldürmektir}. Ağ ve boru kodunda bu sinyal yöneti
 int main(void) {
     signal(SIGPIPE, SIG_IGN);    // sinyali yok say -> write EPIPE dondursun
 
-    int boru[2];
-    pipe(boru);
-    close(boru[0]);              // okuma ucunu kapat
+    int pipe_fd[2];
+    pipe(pipe_fd);
+    close(pipe_fd[0]);          // okuma ucunu kapat
 
-    ssize_t r = write(boru[1], "veri", 4);   // kimse okumuyor
+    ssize_t r = write(pipe_fd[1], "veri", 4);   // kimse okumuyor
     if (r == -1 && errno == EPIPE)
         printf("Yazma basarisiz: karsi uc kapali (EPIPE)\n");
-    close(boru[1]);
+    close(pipe_fd[1]);
     return 0;
 }
 \end{lstlisting}
@@ -3162,30 +3162,30 @@ En hızlı IPC'dir: iki süreç aynı fiziksel belleği görür; kopyalama yoktu
 #include <stdio.h>
 #include <string.h>
 
-#define AD "/paylasim"
-#define BOYUT 4096
+#define NAME "/paylasim"
+#define SIZE 4096
 
 int main(void) {
     // Paylasimli bellek nesnesi olustur/ac
-    int fd = shm_open(AD, O_CREAT | O_RDWR, 0666);
-    ftruncate(fd, BOYUT);                       // boyutlandir
+    int fd = shm_open(NAME, O_CREAT | O_RDWR, 0666);
+    ftruncate(fd, SIZE);                        // boyutlandir
 
     // Belegi surecin adres alanina esle
-    char *bellek = mmap(NULL, BOYUT, PROT_READ | PROT_WRITE,
-                        MAP_SHARED, fd, 0);
-    if (bellek == MAP_FAILED) { perror("mmap"); return 1; }
+    char *mem = mmap(NULL, SIZE, PROT_READ | PROT_WRITE,
+                     MAP_SHARED, fd, 0);
+    if (mem == MAP_FAILED) { perror("mmap"); return 1; }
 
     if (fork() == 0) {                          // COCUK: yazar
-        strcpy(bellek, "Paylasimli bellekten selam");
+        strcpy(mem, "Paylasimli bellekten selam");
         _exit(0);
     } else {                                    // EBEVEYN: okur
         wait(NULL);
-        printf("Okundu: %s\n", bellek);
+        printf("Okundu: %s\n", mem);
     }
 
-    munmap(bellek, BOYUT);
+    munmap(mem, SIZE);
     close(fd);
-    shm_unlink(AD);                             // isimlendirilmis nesneyi sil
+    shm_unlink(NAME);                           // isimlendirilmis nesneyi sil
     return 0;
 }
 // Derleme: gcc bu.c -o bu -lrt
@@ -3249,9 +3249,9 @@ int main(void) {
     mq_send(mq, "birinci", 7, 1);      // (kuyruk, veri, uzunluk, oncelik)
     mq_send(mq, "onemli", 6, 9);       // yuksek oncelik once alinir
 
-    char buf[256]; unsigned oncelik;
-    ssize_t n = mq_receive(mq, buf, sizeof buf, &oncelik);
-    printf("Alindi (%u): %.*s\n", oncelik, (int)n, buf); // onemli
+    char buf[256]; unsigned priority;
+    ssize_t n = mq_receive(mq, buf, sizeof buf, &priority);
+    printf("Alindi (%u): %.*s\n", priority, (int)n, buf); // onemli
 
     mq_close(mq);
     mq_unlink("/kuyruk");
@@ -3287,21 +3287,21 @@ paylaşır --- bu hem güçlü hem tehlikelidir.
 #include <pthread.h>
 #include <stdio.h>
 
-void *isci(void *arg) {
+void *worker(void *arg) {
     int id = *(int *)arg;
     printf("Isci %d calisiyor\n", id);
     return NULL;              // pthread_exit(NULL) ile ayni
 }
 
 int main(void) {
-    pthread_t iplikler[3];
-    int idler[3] = {0, 1, 2};
+    pthread_t threads[3];
+    int ids[3] = {0, 1, 2};
 
     for (int i = 0; i < 3; i++)
-        pthread_create(&iplikler[i], NULL, isci, &idler[i]);
+        pthread_create(&threads[i], NULL, worker, &ids[i]);
 
     for (int i = 0; i < 3; i++)
-        pthread_join(iplikler[i], NULL);   // her ipligin bitmesini bekle
+        pthread_join(threads[i], NULL);    // her ipligin bitmesini bekle
 
     printf("Tum iplikler bitti\n");
     return 0;
@@ -3316,20 +3316,20 @@ Paylaşılan bir değişkene senkronizasyonsuz erişim, öngörülemez sonuç ve
 \begin{lstlisting}
 #include <pthread.h>
 #include <stdio.h>
-long sayac = 0;                     // paylasilan; KORUNMASIZ
+long counter = 0;                   // paylasilan; KORUNMASIZ
 
-void *artir(void *arg) {
+void *increment(void *arg) {
     (void)arg;
     for (int i = 0; i < 1000000; i++)
-        sayac++;                    // sayac++ atomik DEGIL: oku-artir-yaz
+        counter++;                  // counter++ atomik DEGIL: oku-artir-yaz
     return NULL;
 }
 int main(void) {
     pthread_t a, b;
-    pthread_create(&a, NULL, artir, NULL);
-    pthread_create(&b, NULL, artir, NULL);
+    pthread_create(&a, NULL, increment, NULL);
+    pthread_create(&b, NULL, increment, NULL);
     pthread_join(a, NULL); pthread_join(b, NULL);
-    printf("sayac = %ld (beklenen 2000000)\n", sayac); // genelde daha az!
+    printf("sayac = %ld (beklenen 2000000)\n", counter); // genelde daha az!
     return 0;
 }
 \end{lstlisting}
@@ -3339,25 +3339,25 @@ int main(void) {
 \begin{lstlisting}
 #include <pthread.h>
 #include <stdio.h>
-long sayac = 0;
-pthread_mutex_t kilit = PTHREAD_MUTEX_INITIALIZER;
+long counter = 0;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-void *artir(void *arg) {
+void *increment(void *arg) {
     (void)arg;
     for (int i = 0; i < 1000000; i++) {
-        pthread_mutex_lock(&kilit);      // kritik bolgeyi kilitle
-        sayac++;
-        pthread_mutex_unlock(&kilit);    // birak
+        pthread_mutex_lock(&lock);       // kritik bolgeyi kilitle
+        counter++;
+        pthread_mutex_unlock(&lock);     // birak
     }
     return NULL;
 }
 int main(void) {
     pthread_t a, b;
-    pthread_create(&a, NULL, artir, NULL);
-    pthread_create(&b, NULL, artir, NULL);
+    pthread_create(&a, NULL, increment, NULL);
+    pthread_create(&b, NULL, increment, NULL);
     pthread_join(a, NULL); pthread_join(b, NULL);
-    printf("sayac = %ld\n", sayac);      // her zaman 2000000
-    pthread_mutex_destroy(&kilit);
+    printf("sayac = %ld\n", counter);    // her zaman 2000000
+    pthread_mutex_destroy(&lock);
     return 0;
 }
 \end{lstlisting}
@@ -3377,29 +3377,29 @@ için \code{pthread\_cond\_t} kullanılır.
 
 pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  c = PTHREAD_COND_INITIALIZER;
-int hazir = 0;
+int ready = 0;
 
-void *tuketici(void *arg) {
+void *consumer(void *arg) {
     (void)arg;
     pthread_mutex_lock(&m);
-    while (!hazir)                       // DAIMA dongude bekle (spurious wakeup)
+    while (!ready)                       // DAIMA dongude bekle (spurious wakeup)
         pthread_cond_wait(&c, &m);       // kilidi birakip uyur, uyaninca kilitler
     printf("Tuketici: veri hazir!\n");
     pthread_mutex_unlock(&m);
     return NULL;
 }
-void *uretici(void *arg) {
+void *producer(void *arg) {
     (void)arg;
     pthread_mutex_lock(&m);
-    hazir = 1;
+    ready = 1;
     pthread_cond_signal(&c);             // bekleyeni uyandir
     pthread_mutex_unlock(&m);
     return NULL;
 }
 int main(void) {
     pthread_t t, u;
-    pthread_create(&t, NULL, tuketici, NULL);
-    pthread_create(&u, NULL, uretici, NULL);
+    pthread_create(&t, NULL, consumer, NULL);
+    pthread_create(&u, NULL, producer, NULL);
     pthread_join(t, NULL); pthread_join(u, NULL);
     return 0;
 }
@@ -3435,7 +3435,7 @@ işlem gibi görünse de derleyici bunu üç ayrı makine adımına çevirir ---
 iç içe çalıştırırsa güncellemelerden biri kaybolur.
 
 \begin{lstlisting}
-// sayac = 41 iken iki iplik ayni anda sayac++ yaparsa:
+// counter = 41 iken iki iplik ayni anda counter++ yaparsa:
 // Iplik A: oku(41)          Iplik B: oku(41)
 // Iplik A: artir -> 42      Iplik B: artir -> 42
 // Iplik A: yaz(42)          Iplik B: yaz(42)   // iki artis, sonuc 42!
@@ -3462,20 +3462,20 @@ Yarış durumu örneğini tek kelime değiştirerek düzeltelim:
 #include <stdatomic.h>
 #include <stdio.h>
 
-_Atomic long sayac = 0;             // artik ++ atomik: yaris yok
+_Atomic long counter = 0;           // artik ++ atomik: yaris yok
 
-void *artir(void *arg) {
+void *increment(void *arg) {
     (void)arg;
     for (int i = 0; i < 1000000; i++)
-        sayac++;                    // lock xadd -> bolunemez oku-artir-yaz
+        counter++;                  // lock xadd -> bolunemez oku-artir-yaz
     return NULL;
 }
 int main(void) {
     pthread_t a, b;
-    pthread_create(&a, NULL, artir, NULL);
-    pthread_create(&b, NULL, artir, NULL);
+    pthread_create(&a, NULL, increment, NULL);
+    pthread_create(&b, NULL, increment, NULL);
     pthread_join(a, NULL); pthread_join(b, NULL);
-    printf("sayac = %ld (beklenen 2000000)\n", sayac); // HER ZAMAN 2000000
+    printf("sayac = %ld (beklenen 2000000)\n", counter); // HER ZAMAN 2000000
     return 0;
 }
 // Derleme: gcc bu.c -o bu -lpthread   (C11 gerekli, gcc varsayilan destekler)
@@ -3499,7 +3499,7 @@ atomic_int x = 0;
 atomic_store(&x, 10);                    // x = 10
 int e = atomic_load(&x);                 // e = 10 (guvenli okuma)
 
-int eski = atomic_fetch_add(&x, 5);      // x -> 15, eski = 10
+int old = atomic_fetch_add(&x, 5);       // x -> 15, eski = 10
 atomic_fetch_sub(&x, 3);                 // x -> 12
 atomic_fetch_or(&x, 0x1);                // bit maskeleme de atomik
 atomic_fetch_and(&x, ~0x2);
@@ -3527,13 +3527,13 @@ Klasik desen bir CAS döngüsüdür --- başarana kadar tekrar dene:
 #include <stdatomic.h>
 
 // Atomik olarak toplama uygula (ornek amacli; gercekte fetch_add kullanin)
-void atomik_ekle(atomic_int *hedef, int deger) {
-    int beklenen = atomic_load(hedef);
-    int yeni;
+void atomic_add(atomic_int *target, int value) {
+    int expected = atomic_load(target);
+    int desired;
     do {
-        yeni = beklenen + deger;
+        desired = expected + value;
         // hedef hala 'beklenen' ise 'yeni'yi yaz; degilse beklenen guncellenir
-    } while (!atomic_compare_exchange_weak(hedef, &beklenen, yeni));
+    } while (!atomic_compare_exchange_weak(target, &expected, desired));
 }
 \end{lstlisting}
 
@@ -3552,25 +3552,25 @@ CAS ile günceller --- araya biri girdiyse döngü tekrar dener:
 #include <stdatomic.h>
 #include <stdlib.h>
 
-typedef struct Dugum { int veri; struct Dugum *next; } Dugum;
-_Atomic(Dugum *) tepe = NULL;            // atomik isaretci
+typedef struct Node { int data; struct Node *next; } Node;
+_Atomic(Node *) top = NULL;              // atomik isaretci
 
 void push(int v) {
-    Dugum *yeni = malloc(sizeof(Dugum));
-    yeni->veri = v;
-    yeni->next = atomic_load(&tepe);
+    Node *new_node = malloc(sizeof(Node));
+    new_node->data = v;
+    new_node->next = atomic_load(&top);
     // tepe hala yeni->next ise yeni'yi tepe yap; degilse yeni->next tazelenir
-    while (!atomic_compare_exchange_weak(&tepe, &yeni->next, yeni))
+    while (!atomic_compare_exchange_weak(&top, &new_node->next, new_node))
         ;                                // bos govde: beklemeden yeniden dene
 }
 
 int pop(int *out) {                      // 1: basarili, 0: bos
-    Dugum *eski = atomic_load(&tepe);
-    while (eski && !atomic_compare_exchange_weak(&tepe, &eski, eski->next))
+    Node *old = atomic_load(&top);
+    while (old && !atomic_compare_exchange_weak(&top, &old, old->next))
         ;                                // eski, guncel tepeyle tazelenir
-    if (!eski) return 0;
-    *out = eski->veri;
-    free(eski);                          // NOT: ABA problemine dikkat (asagi)
+    if (!old) return 0;
+    *out = old->data;
+    free(old);                           // NOT: ABA problemine dikkat (asagi)
     return 1;
 }
 \end{lstlisting}
@@ -3611,11 +3611,11 @@ hızlıdır:
 \begin{lstlisting}
 #include <stdatomic.h>
 
-atomic_long islem_sayisi = 0;
+atomic_long op_count = 0;
 
-void olay(void) {
+void on_event(void) {
     // Sadece toplam onemli; hangi sirada arttigi onemsiz -> relaxed
-    atomic_fetch_add_explicit(&islem_sayisi, 1, memory_order_relaxed);
+    atomic_fetch_add_explicit(&op_count, 1, memory_order_relaxed);
 }
 \end{lstlisting}
 
@@ -3626,19 +3626,19 @@ okuduğunda \emph{verinin de hazır olduğunu} görmesi \textbf{garantidir}:
 \begin{lstlisting}
 #include <stdatomic.h>
 
-int      veri = 0;                       // sıradan degisken
-atomic_bool hazir = false;
+int      data = 0;                       // sıradan degisken
+atomic_bool ready = false;
 
-void uretici(void) {
-    veri = 42;                                          // (1) once veriyi yaz
-    atomic_store_explicit(&hazir, true,
+void producer(void) {
+    data = 42;                                          // (1) once veriyi yaz
+    atomic_store_explicit(&ready, true,
                           memory_order_release);        // (2) sonra bayragi set et
 }
-void tuketici(void) {
-    while (!atomic_load_explicit(&hazir, memory_order_acquire))
+void consumer(void) {
+    while (!atomic_load_explicit(&ready, memory_order_acquire))
         ;                                               // bayragi bekle
     // release/acquire eslesmesi: (1) burada KESIN gorunur
-    printf("veri = %d\n", veri);                        // daima 42
+    printf("veri = %d\n", data);                        // daima 42
 }
 \end{lstlisting}
 
@@ -3656,15 +3656,15 @@ döndürür; bununla basit bir spinlock (dönen kilit) yazılır:
 \begin{lstlisting}
 #include <stdatomic.h>
 
-atomic_flag kilit = ATOMIC_FLAG_INIT;
+atomic_flag lock = ATOMIC_FLAG_INIT;
 
-void kilitle(void) {
+void spin_lock(void) {
     // set edip eski deger true ise baskasi tutuyor demektir -> don ve bekle
-    while (atomic_flag_test_and_set_explicit(&kilit, memory_order_acquire))
+    while (atomic_flag_test_and_set_explicit(&lock, memory_order_acquire))
         ;                                // "busy-wait" (mesgul bekleme)
 }
-void ac(void) {
-    atomic_flag_clear_explicit(&kilit, memory_order_release);
+void spin_unlock(void) {
+    atomic_flag_clear_explicit(&lock, memory_order_release);
 }
 \end{lstlisting}
 
@@ -3680,15 +3680,15 @@ eski \code{\_\_sync\_*} yerleşik fonksiyonlarını sunardı. Linux çekirdeği 
 birçok eski kod tabanı bunları kullanır:
 
 \begin{lstlisting}
-long sayac = 0;                          // _Atomic gerekmez
+long counter = 0;                        // _Atomic gerekmez
 
-__atomic_fetch_add(&sayac, 1, __ATOMIC_SEQ_CST);   // C11 fetch_add karsiligi
-long v = __atomic_load_n(&sayac, __ATOMIC_ACQUIRE);
-__atomic_store_n(&sayac, 0, __ATOMIC_RELEASE);
+__atomic_fetch_add(&counter, 1, __ATOMIC_SEQ_CST);   // C11 fetch_add karsiligi
+long v = __atomic_load_n(&counter, __ATOMIC_ACQUIRE);
+__atomic_store_n(&counter, 0, __ATOMIC_RELEASE);
 
 // Eski __sync ailesi (her zaman tam bariyer):
-__sync_fetch_and_add(&sayac, 1);
-__sync_bool_compare_and_swap(&sayac, 0, 100);      // CAS
+__sync_fetch_and_add(&counter, 1);
+__sync_bool_compare_and_swap(&counter, 0, 100);      // CAS
 \end{lstlisting}
 
 \ipucu{Yeni kod yazıyorsanız taşınabilir C11 \code{<stdatomic.h>}'i tercih
@@ -3766,11 +3766,11 @@ int main(void) {
     setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt);
 
     // 2) Adrese bagla (bind)
-    struct sockaddr_in adr = {0};
-    adr.sin_family = AF_INET;
-    adr.sin_addr.s_addr = INADDR_ANY;      // tum arayuzler
-    adr.sin_port = htons(8080);            // port (ag bayt sirasi!)
-    if (bind(s, (struct sockaddr *)&adr, sizeof adr) == -1) {
+    struct sockaddr_in addr = {0};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;     // tum arayuzler
+    addr.sin_port = htons(8080);           // port (ag bayt sirasi!)
+    if (bind(s, (struct sockaddr *)&addr, sizeof addr) == -1) {
         perror("bind"); return 1;
     }
 
@@ -3779,20 +3779,20 @@ int main(void) {
     printf("8080 portu dinleniyor...\n");
 
     // 4) Baglanti kabul et (accept) -> yeni bir fd doner
-    struct sockaddr_in istemci;
-    socklen_t len = sizeof istemci;
-    int c = accept(s, (struct sockaddr *)&istemci, &len);
+    struct sockaddr_in client;
+    socklen_t len = sizeof client;
+    int c = accept(s, (struct sockaddr *)&client, &len);
 
     char ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &istemci.sin_addr, ip, sizeof ip);
-    printf("Baglanti: %s:%d\n", ip, ntohs(istemci.sin_port));
+    inet_ntop(AF_INET, &client.sin_addr, ip, sizeof ip);
+    printf("Baglanti: %s:%d\n", ip, ntohs(client.sin_port));
 
     // 5) Veri al/gonder
-    char tampon[1024];
-    ssize_t n = recv(c, tampon, sizeof tampon - 1, 0);
-    if (n > 0) { tampon[n] = '\0'; printf("Istemci: %s\n", tampon); }
-    const char *cevap = "Merhaba istemci!\n";
-    send(c, cevap, strlen(cevap), 0);
+    char buffer[1024];
+    ssize_t n = recv(c, buffer, sizeof buffer - 1, 0);
+    if (n > 0) { buffer[n] = '\0'; printf("Istemci: %s\n", buffer); }
+    const char *response = "Merhaba istemci!\n";
+    send(c, response, strlen(response), 0);
 
     close(c);
     close(s);
@@ -3813,21 +3813,21 @@ int main(void) {
 int main(void) {
     int s = socket(AF_INET, SOCK_STREAM, 0);
 
-    struct sockaddr_in sunucu = {0};
-    sunucu.sin_family = AF_INET;
-    sunucu.sin_port = htons(8080);
-    inet_pton(AF_INET, "127.0.0.1", &sunucu.sin_addr);  // metin -> ikili IP
+    struct sockaddr_in server = {0};
+    server.sin_family = AF_INET;
+    server.sin_port = htons(8080);
+    inet_pton(AF_INET, "127.0.0.1", &server.sin_addr);  // metin -> ikili IP
 
-    if (connect(s, (struct sockaddr *)&sunucu, sizeof sunucu) == -1) {
+    if (connect(s, (struct sockaddr *)&server, sizeof server) == -1) {
         perror("connect"); return 1;
     }
 
-    const char *mesaj = "Sunucuya selam";
-    send(s, mesaj, strlen(mesaj), 0);
+    const char *message = "Sunucuya selam";
+    send(s, message, strlen(message), 0);
 
-    char tampon[1024];
-    ssize_t n = recv(s, tampon, sizeof tampon - 1, 0);
-    if (n > 0) { tampon[n] = '\0'; printf("Sunucu: %s", tampon); }
+    char buffer[1024];
+    ssize_t n = recv(s, buffer, sizeof buffer - 1, 0);
+    if (n > 0) { buffer[n] = '\0'; printf("Sunucu: %s", buffer); }
 
     close(s);
     return 0;
@@ -3855,11 +3855,11 @@ bozulur.}
 // --- UDP Sunucu (ozet) ---
 int s = socket(AF_INET, SOCK_DGRAM, 0);   // SOCK_DGRAM = UDP
 // bind(...) ayni sekilde
-struct sockaddr_in istemci; socklen_t len = sizeof istemci;
+struct sockaddr_in client; socklen_t len = sizeof client;
 char buf[1024];
 ssize_t n = recvfrom(s, buf, sizeof buf, 0,
-                     (struct sockaddr *)&istemci, &len);  // kimden geldi?
-sendto(s, "cevap", 5, 0, (struct sockaddr *)&istemci, len); // ona geri gonder
+                     (struct sockaddr *)&client, &len);  // kimden geldi?
+sendto(s, "cevap", 5, 0, (struct sockaddr *)&client, len); // ona geri gonder
 // UDP'de listen/accept/connect YOK; her datagram bagimsizdir.
 \end{lstlisting}
 
@@ -3888,17 +3888,17 @@ int main(int argc, char *argv[]) {
     fstat(fd, &st);                          // dosya boyutunu al
 
     // Dosyayi salt-okunur olarak bellege esle
-    char *harita = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    if (harita == MAP_FAILED) { perror("mmap"); close(fd); return 1; }
+    char *mapped = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (mapped == MAP_FAILED) { perror("mmap"); close(fd); return 1; }
     close(fd);                               // esleme sonrasi fd gereksiz
 
     // Artik dosya bir char dizisi gibi: satirlari say
-    long satir = 0;
+    long lines = 0;
     for (off_t i = 0; i < st.st_size; i++)
-        if (harita[i] == '\n') satir++;
-    printf("Satir sayisi: %ld\n", satir);
+        if (mapped[i] == '\n') lines++;
+    printf("Satir sayisi: %ld\n", lines);
 
-    munmap(harita, st.st_size);              // eslemeyi kaldir
+    munmap(mapped, st.st_size);              // eslemeyi kaldir
     return 0;
 }
 \end{lstlisting}
@@ -3918,23 +3918,23 @@ belleğe yazmak dosyayı değiştirir.}
 #include <unistd.h>
 
 int main(void) {
-    time_t simdi = time(NULL);               // 1970'ten beri saniye
-    printf("Unix zaman: %ld\n", (long)simdi);
-    printf("Yerel saat: %s", ctime(&simdi)); // insan-okur bicim
+    time_t now = time(NULL);                 // 1970'ten beri saniye
+    printf("Unix zaman: %ld\n", (long)now);
+    printf("Yerel saat: %s", ctime(&now));   // insan-okur bicim
 
-    struct tm *t = localtime(&simdi);        // parcalara ayir
+    struct tm *t = localtime(&now);          // parcalara ayir
     printf("Yil: %d, Ay: %d, Gun: %d\n",
            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
 
     // Yuksek cozunurluklu sure olcumu (monotonik saat)
-    struct timespec bas, son;
-    clock_gettime(CLOCK_MONOTONIC, &bas);
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     usleep(150000);                          // 150 ms uyu (mikrosaniye)
-    clock_gettime(CLOCK_MONOTONIC, &son);
+    clock_gettime(CLOCK_MONOTONIC, &end);
 
-    double gecen = (son.tv_sec - bas.tv_sec)
-                 + (son.tv_nsec - bas.tv_nsec) / 1e9;
-    printf("Gecen sure: %.3f sn\n", gecen);
+    double elapsed = (end.tv_sec - start.tv_sec)
+                   + (end.tv_nsec - start.tv_nsec) / 1e9;
+    printf("Gecen sure: %.3f sn\n", elapsed);
     return 0;
 }
 \end{lstlisting}
@@ -4078,15 +4078,15 @@ suçlu satırı ve değişkeni incele.}
 \begin{lstlisting}[style=shstyle]
 (gdb) run
 Program received signal SIGSEGV, Segmentation fault.
-0x0000... in listeye_ekle (bas=0x0, veri=5) at liste.c:14
-14          bas->sonraki = yeni;
+0x0000... in list_add (head=0x0, data=5) at list.c:14
+14          head->next = new_node;
 (gdb) bt                      # cagri yigini
-#0  listeye_ekle (bas=0x0, ...) at liste.c:14
-#1  0x... in main () at liste.c:30
-(gdb) print bas               # suclu: bas NULL!
-$1 = (Dugum *) 0x0
+#0  list_add (head=0x0, ...) at list.c:14
+#1  0x... in main () at list.c:30
+(gdb) print head              # suclu: bas NULL!
+$1 = (Node *) 0x0
 (gdb) frame 1                 # cagirana cik
-(gdb) print liste             # neden NULL gecilmis?
+(gdb) print list              # neden NULL gecilmis?
 \end{lstlisting}
 
 \gsub{TUI: Metin Kullanıcı Arayüzü ve Layout'lar}
@@ -4208,7 +4208,7 @@ $ gdb ./program
 (gdb) run                                # cokene kadar calistir
 (gdb) backtrace                          # cagri yigini: nerede coktu?
 (gdb) frame 1                            # bir ust cerceveye gec
-(gdb) print degisken                     # bir degiskenin degerini gor
+(gdb) print variable                     # bir degiskenin degerini gor
 (gdb) break dosya.c:42                   # 42. satira kesme noktasi
 (gdb) continue                           # devam et
 \end{lstlisting}

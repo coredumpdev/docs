@@ -1,0 +1,1587 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{1B3A5B}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={Linux Aygıt Sürücüsü Geliştirme Rehberi},
+  pdfauthor={Sürücü Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}Linux Aygıt Sürücüsü Geliştirme}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C - çekirdek) ====================
+\lstdefinestyle{cstyle}{
+  language=C,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=8,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+  morekeywords={size_t,ssize_t,loff_t,dev_t,umode_t,u8,u16,u32,u64,
+    s8,s16,s32,s64,uint8_t,uint32_t,__user,__iomem,__init,__exit,
+    module_init,module_exit,MODULE_LICENSE,MODULE_AUTHOR,MODULE_DESCRIPTION,
+    EXPORT_SYMBOL,bool,true,false,NULL,gfp_t,irqreturn_t,spinlock_t,
+    struct,cdev,file_operations,inode,file,device,class,platform_device,
+    platform_driver,mutex,atomic_t,wait_queue_head_t,work_struct,
+    container_of,likely,unlikely}
+}
+\lstset{style=cstyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries Linux Aygıt Sürücüsü}\\[10pt]
+{\color{vurguMavi}\LARGE Geliştirme Rehberi}\\[8pt]
+{\color{ortaGri}\large Çekirdek Modüllerinden Aygıt Modeline Uygulamalı Başvuru}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge, Linux çekirdek modülü ve aygıt sürücüsü geliştirmeyi
+\textbf{çalışan kod örnekleriyle} baştan sona anlatır. İlk ``merhaba dünya''
+modülünden karakter aygıtlarına, kesme işleyicilerinden aygıt modeline
+ve platform sürücülerine kadar sürücü geliştirmenin temellerini kapsar.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kısım 1 --- Çekirdek Modülü Temelleri:} kullanıcı alanı vs çekirdek
+\textbullet\ ilk modül \textbullet\ Makefile \& derleme \textbullet\ modül
+parametreleri \textbullet\ printk \& günlükleme.\vspace{3pt}
+
+\textbf{Kısım 2 --- Karakter Aygıtları:} aygıt dosyaları \& major/minor
+\textbullet\ \code{cdev} \& \code{file\_operations} \textbullet\ open/read/write
+\textbullet\ \code{copy\_to/from\_user} \textbullet\ \code{ioctl}
+\textbullet\ udev \& otomatik aygıt düğümü.\vspace{3pt}
+
+\textbf{Kısım 3 --- Çekirdek Altyapısı:} bellek ayırma \textbullet\ eşzamanlılık
+(spinlock, mutex, atomik) \textbullet\ kesmeler \& alt yarı \textbullet\ zaman
+\& zamanlayıcılar.\vspace{3pt}
+
+\textbf{Kısım 4 --- Aygıt Modeli:} sysfs \& kobject \textbullet\ platform
+sürücüleri \textbullet\ device tree \textbullet\ kaynak yönetimi.\vspace{3pt}
+
+\textbf{Kısım 5 --- İleri Konular:} bekleme kuyrukları \& bloklamalı G/Ç
+\textbullet\ \code{poll} \textbullet\ proc arayüzleri \textbullet\ hata ayıklama.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 12 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Linux Çekirdek 5.x/6.x \textbullet\ C \textbullet\ Kodlar İngilizce, açıklamalar Türkçe}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Çekirdek Modülü Temelleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{Giriş: Sürücüler ve Çekirdek Alanı}
+% =====================================================================
+
+Aygıt sürücüsü (device driver), işletim sisteminin donanımla konuşmasını
+sağlayan yazılım katmanıdır. Uygulamalar donanımı doğrudan bilmez; sürücüler
+soyutlama sağlar --- bir uygulama \code{read()} çağırdığında, ister bir
+diskten ister bir ağ kartından okusun aynı arayüzü kullanır. Linux'ta
+sürücülerin çoğu \emph{çekirdek modülü} olarak yazılır.
+
+\gsub{Kullanıcı Alanı vs Çekirdek Alanı}
+
+Linux belleği iki ayrı bölgeye ayırır. Sürücü yazarken sürekli bu ayrımın
+farkında olmalısın, çünkü çekirdekte yapılan bir hata tüm sistemi çökertebilir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{} & \color{anaMavi}\textbf{Kullanıcı Alanı} & \color{anaMavi}\textbf{Çekirdek Alanı}\\
+\midrule
+Çalışan kod & Uygulamalar & Çekirdek, modüller, sürücüler\\
+\rowcolor{acikGri} Ayrıcalık & Kısıtlı (ring 3) & Tam yetki (ring 0)\\
+Hata sonucu & Süreç çöker & Sistem çöker (kernel panic)\\
+\rowcolor{acikGri} Bellek erişimi & Kendi sanal alanı & Tüm fiziksel bellek\\
+Kütüphaneler & libc, tüm kullanıcı kütüph. & Yalnızca çekirdek API'si\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\uyari{Çekirdek alanında \textbf{standart C kütüphanesi yoktur}: \code{printf},
+\code{malloc}, \code{stdio.h} kullanamazsın. Bunların yerine çekirdek API'si
+gelir: \code{printk}, \code{kmalloc}, \code{<linux/*.h>} başlıkları. Ayrıca
+kayan nokta (float) işlemleri de kural olarak kullanılmaz. Çekirdek kısıtlı ve
+kendine özgü bir ortamdır.}
+
+\gsub{Statik Derleme vs Yüklenebilir Modül}
+
+Bir sürücü çekirdeğe iki şekilde dahil edilebilir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Yöntem} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Statik (built-in) & Çekirdeğin içine derlenir; her zaman yüklüdür. Yeniden derleme gerekir.\\
+\rowcolor{acikGri} Modül (\code{.ko}) & Çalışırken \code{insmod} ile yüklenir, \code{rmmod} ile kaldırılır. Geliştirme için idealdir.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Geliştirme sırasında neredeyse her zaman \emph{yüklenebilir çekirdek modülü}
+(Loadable Kernel Module --- LKM) kullanırız; çünkü çekirdeği yeniden
+başlatmadan modülü yükleyip kaldırabiliriz.
+
+\gsub{Geliştirme Ortamının Hazırlanması}
+
+Modül derlemek için çalışan çekirdeğinizle eşleşen başlık dosyaları gerekir.
+
+\begin{lstlisting}[style=shstyle]
+# Derleme araçları ve çekirdek başlıkları (Debian/Ubuntu)
+$ sudo apt install build-essential linux-headers-$(uname -r)
+
+# Fedora/RHEL
+$ sudo dnf install kernel-devel kernel-headers gcc make
+
+# Çalışan çekirdek sürümünü gör
+$ uname -r                      # ör. 6.8.0-40-generic
+
+# Başlıkların yeri (Makefile bunu kullanır)
+$ ls /lib/modules/$(uname -r)/build
+\end{lstlisting}
+
+\bilgi{Sürücü geliştirmeyi \textbf{sanal makinede} (QEMU/VirtualBox) yapmak
+şiddetle önerilir: çekirdek kodundaki bir hata sistemi çökertebilir veya veri
+kaybına yol açabilir. Sanal makinede çökme olsa bile ana sisteminiz güvende
+kalır ve anlık görüntülerden (snapshot) hızlıca geri dönebilirsiniz.}
+
+% =====================================================================
+\gsec{İlk Çekirdek Modülü}
+% =====================================================================
+
+Geleneksel ``merhaba dünya'' ile başlayalım. Bir çekirdek modülünün iki temel
+fonksiyonu vardır: yüklendiğinde çalışan bir \emph{giriş} (init) fonksiyonu ve
+kaldırıldığında çalışan bir \emph{çıkış} (exit) fonksiyonu.
+
+\gsub{Modülün Kaynak Kodu}
+
+\begin{lstlisting}
+#include <linux/module.h>    /* tüm modüller için gerekli */
+#include <linux/kernel.h>    /* printk, KERN_INFO */
+#include <linux/init.h>      /* __init, __exit makroları */
+
+/* Modül yüklendiğinde çağrılır. __init: bu kod yalnızca bir kez
+   çalışır, sonra belleği serbest bırakılabilir. */
+static int __init hello_init(void)
+{
+    printk(KERN_INFO "Merhaba: modül yüklendi\n");
+    return 0;                /* 0 = başarı; negatif = hata (yükleme iptal) */
+}
+
+/* Modül kaldırıldığında çağrılır. */
+static void __exit hello_exit(void)
+{
+    printk(KERN_INFO "Güle güle: modül kaldırıldı\n");
+}
+
+module_init(hello_init);     /* giriş noktasını kaydet */
+module_exit(hello_exit);     /* çıkış noktasını kaydet */
+
+MODULE_LICENSE("GPL");       /* lisans; GPL olmayan modüller çekirdeği "kirletir" */
+MODULE_AUTHOR("Ad Soyad");
+MODULE_DESCRIPTION("Basit bir merhaba dünya modülü");
+MODULE_VERSION("1.0");
+\end{lstlisting}
+
+\uyari{\code{MODULE\_LICENSE} zorunludur. GPL uyumlu bir lisans belirtmezsen
+çekirdek ``tainted'' (kirlenmiş) olarak işaretlenir ve birçok GPL-only çekirdek
+sembolüne (fonksiyona) erişemezsin. Ayrıca giriş/çıkış fonksiyonları
+\code{static} olmalıdır --- global ad alanını kirletmemek için.}
+
+\gsub{Makefile ve Derleme}
+
+Çekirdek modülleri, çekirdeğin kendi \emph{kbuild} sistemiyle derlenir.
+Makefile şaşırtıcı derecede kısadır:
+
+\begin{lstlisting}[style=shstyle]
+# Makefile
+obj-m += hello.o                 # 'hello.c' -> 'hello.ko' üret
+
+# Çalışan çekirdeğin derleme dizinine yönlendir
+KDIR := /lib/modules/$(shell uname -r)/build
+
+all:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+\end{lstlisting}
+
+\notk[Kbuild nasıl çalışır?]{\code{obj-m += hello.o} satırı kbuild'e
+``\code{hello.c}'yi yüklenebilir bir modül olarak derle'' der. \code{-C \$(KDIR)}
+çekirdeğin Makefile'ına geçer, \code{M=\$(PWD)} ise ``modül kaynağım burada''
+anlamına gelir. Sonuç \code{.ko} (kernel object) uzantılı bir dosyadır.}
+
+\gsub{Modülü Yükleme ve Test Etme}
+
+\begin{lstlisting}[style=shstyle]
+$ make                          # hello.ko üret
+$ sudo insmod hello.ko          # modülü yükle -> hello_init çalışır
+$ lsmod | grep hello            # yüklü modülleri listele
+$ sudo rmmod hello              # modülü kaldır -> hello_exit çalışır
+
+$ dmesg | tail                  # çekirdek günlük mesajlarını gör
+# [ ... ] Merhaba: modül yüklendi
+# [ ... ] Güle güle: modül kaldırıldı
+
+$ modinfo hello.ko              # modül meta bilgisini gör (lisans, yazar...)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Günlükleme ve Modül Parametreleri}
+% =====================================================================
+
+\gsub{printk ve Günlük Seviyeleri}
+
+Çekirdekte \code{printf} yerine \code{printk} kullanılır. \code{printk},
+mesajlara bir \emph{öncelik seviyesi} ekler; bu seviye mesajın nereye ve
+ne zaman gösterileceğini etkiler.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Makro} & \color{anaMavi}\textbf{Seviye} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+KERN\_EMERG & 0 & Sistem kullanılamaz.\\
+\rowcolor{acikGri} KERN\_ERR & 3 & Hata durumu.\\
+KERN\_WARNING & 4 & Uyarı.\\
+\rowcolor{acikGri} KERN\_INFO & 6 & Bilgilendirme.\\
+KERN\_DEBUG & 7 & Hata ayıklama.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+/* Modern çekirdeklerde tercih edilen yardımcılar (pr_* makroları) */
+pr_info("aygıt %d başlatıldı\n", id);       /* = printk(KERN_INFO ...) */
+pr_err("bellek ayrılamadı\n");              /* = printk(KERN_ERR ...) */
+pr_warn("tampon neredeyse dolu\n");
+pr_debug("hata ayıklama: sayaç=%d\n", count); /* yalnızca DEBUG etkinse */
+
+/* Bir sürücü içinde daha iyisi: dev_* (aygıtı da yazdırır) */
+dev_info(dev, "başlatma tamam\n");
+dev_err(dev, "kayıt başarısız: %d\n", ret);
+\end{lstlisting}
+
+\ipucu{\code{dmesg} çekirdek halka tamponunu (ring buffer) gösterir; sürücü
+geliştirmede en çok kullanacağın araçtır. Canlı izlemek için \code{dmesg -w}
+(watch) kullan. \code{printk} biçim belirteçleri \code{printf}'e benzer ama
+çekirdeğe özgü olanlar da vardır: işaretçi için \code{\%p}, güvenli hash'li
+işaretçi; fiziksel adres için \code{\%pa}; \code{resource} için \code{\%pr}.}
+
+\gsub{Modül Parametreleri}
+
+Modüllere, yükleme anında dışarıdan değer geçirebiliriz --- tıpkı bir
+programa komut satırı argümanı geçmek gibi. Bu, aynı modülü farklı ayarlarla
+kullanmayı sağlar.
+
+\begin{lstlisting}
+#include <linux/moduleparam.h>
+
+static int buffer_size = 1024;              /* varsayılan değer */
+static char *device_name = "mydev";
+static int debug_enabled = 0;
+
+/* Parametreyi kaydet: (değişken, tip, sysfs izinleri) */
+module_param(buffer_size, int, 0644);
+MODULE_PARM_DESC(buffer_size, "Tampon boyutu (bayt)");
+
+module_param(device_name, charp, 0644);     /* charp = char pointer */
+MODULE_PARM_DESC(device_name, "Aygıt adı");
+
+module_param(debug_enabled, bool, 0644);
+MODULE_PARM_DESC(debug_enabled, "Hata ayıklama günlüğünü aç (0/1)");
+
+static int __init my_init(void)
+{
+    pr_info("tampon=%d ad=%s hata_ayıkla=%d\n",
+            buffer_size, device_name, debug_enabled);
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Parametreleri yükleme anında geç
+$ sudo insmod mymod.ko buffer_size=4096 device_name="sensor" debug_enabled=1
+
+# Yüklü bir modülün parametrelerini sysfs'ten oku (0644 izinleri sayesinde)
+$ cat /sys/module/mymod/parameters/buffer_size
+4096
+\end{lstlisting}
+
+\bilgi{\code{module\_param}'ın üçüncü argümanı, parametrenin
+\code{/sys/module/.../parameters/} altındaki dosya izinleridir. \code{0644}
+ile parametre çalışırken okunabilir (ve \code{root} tarafından yazılabilir);
+\code{0} verirsen sysfs'te hiç görünmez. Böylece bir sürücünün davranışını
+yeniden yüklemeden ayarlayabilirsin.}
+
+% #####################################################################
+\gpart{2}{Karakter Aygıtları}
+% #####################################################################
+
+% =====================================================================
+\gsec{Aygıt Dosyaları ve Aygıt Numaraları}
+% =====================================================================
+
+Linux'ta ``her şey bir dosyadır'' ilkesi donanım için de geçerlidir.
+Aygıtlar, \code{/dev} altındaki özel dosyalar aracılığıyla kullanıcı alanına
+sunulur. Bir uygulama bu dosyaya \code{open}, \code{read}, \code{write}
+yaptığında, çekirdek çağrıyı ilgili sürücüye yönlendirir.
+
+\gsub{Karakter vs Blok Aygıtları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tür} & \color{anaMavi}\textbf{Erişim} & \color{anaMavi}\textbf{Örnek}\\
+\midrule
+Karakter (char) & Bayt akışı, sırayla & Seri port, klavye, \code{/dev/null}\\
+\rowcolor{acikGri} Blok (block) & Sabit boyutlu bloklar, rastgele & Disk, SSD, USB bellek\\
+Ağ (network) & Paket, soket arayüzü & Ethernet, Wi-Fi\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Bu rehber \emph{karakter aygıtlarına} odaklanır; çünkü en yaygın ve öğrenmesi
+en kolay sürücü türüdür. Sensörler, GPIO, seri portlar genelde karakter
+aygıtı olarak sunulur.
+
+\gsub{Major ve Minor Numaraları}
+
+Her aygıt dosyası iki sayıyla tanımlanır: \emph{major} numara hangi sürücünün
+sorumlu olduğunu, \emph{minor} numara ise o sürücünün hangi somut aygıtı
+(birden çok aynı tip aygıt olabilir) belirtir.
+
+\begin{lstlisting}[style=shstyle]
+$ ls -l /dev/null /dev/ttyS0
+crw-rw-rw- 1 root root 1, 3 ... /dev/null    # major=1, minor=3
+crw-rw---- 1 root dialout 4, 64 ... /dev/ttyS0  # major=4, minor=64
+#  ^ 'c' = karakter aygıtı (block için 'b')
+\end{lstlisting}
+
+\begin{lstlisting}
+#include <linux/fs.h>
+
+dev_t dev;                                  /* aygıt numarası (major+minor) */
+
+/* Çekirdekten dinamik olarak bir major numara iste (önerilen) */
+ret = alloc_chrdev_region(&dev, 0, 1, "mydev");
+/*   &dev: sonuç, 0: ilk minor, 1: aygıt sayısı, "mydev": ad */
+
+int major = MAJOR(dev);                     /* numaradan major çıkar */
+int minor = MINOR(dev);                     /* numaradan minor çıkar */
+pr_info("major=%d minor=%d\n", major, minor);
+
+/* Kullanım sonrası serbest bırak (exit fonksiyonunda) */
+unregister_chrdev_region(dev, 1);
+\end{lstlisting}
+
+\ipucu{Eskiden sabit major numaralar (\code{register\_chrdev}) kullanılırdı ama
+çakışma riski vardır. Modern sürücüler \code{alloc\_chrdev\_region} ile
+çekirdekten \emph{dinamik} numara ister --- böylece sistemdeki başka bir
+sürücüyle çakışmaz.}
+
+% =====================================================================
+\gsec{Karakter Sürücüsü: file\_operations}
+% =====================================================================
+
+Bir karakter sürücüsünün kalbi \code{struct file\_operations}'tır: kullanıcı
+alanı sistem çağrılarını (\code{open}, \code{read}, \code{write}\dots) senin
+sürücü fonksiyonlarına bağlayan bir işaretçi tablosudur. Çekirdek, uygulama
+aygıt dosyasına bir işlem yaptığında ilgili fonksiyonu çağırır.
+
+\gsub{file\_operations Yapısı}
+
+\begin{lstlisting}
+#include <linux/fs.h>
+
+static int     my_open(struct inode *inode, struct file *file);
+static int     my_release(struct inode *inode, struct file *file);
+static ssize_t my_read(struct file *file, char __user *buf,
+                       size_t count, loff_t *offset);
+static ssize_t my_write(struct file *file, const char __user *buf,
+                        size_t count, loff_t *offset);
+
+static const struct file_operations my_fops = {
+    .owner   = THIS_MODULE,     /* modül sayacı yönetimi için */
+    .open    = my_open,
+    .release = my_release,      /* close() sistem çağrısına karşılık gelir */
+    .read    = my_read,
+    .write   = my_write,
+    .llseek  = default_llseek,
+};
+\end{lstlisting}
+
+\notk[\code{\_\_user} ne anlama gelir?]{\code{char \_\_user *buf} imzasındaki
+\code{\_\_user}, bu işaretçinin \emph{kullanıcı alanına} ait olduğunu belirtir.
+Çekirdek bu işaretçiyi doğrudan dereference \textbf{edemez} --- geçerliliği
+garanti değildir ve güvenlik açığı olur. Bunun yerine \code{copy\_to\_user} /
+\code{copy\_from\_user} kullanılır. \code{sparse} statik analiz aracı bu
+işaretlemeyi denetler.}
+
+\gsub{cdev ile Aygıtı Kaydetme}
+
+Aygıt numarasını aldıktan sonra, \code{struct cdev} ile \code{file\_operations}
+tablosunu çekirdeğe kaydederiz. Böylece o major/minor'a yapılan çağrılar
+bizim fonksiyonlarımıza gelir.
+
+\begin{lstlisting}
+#include <linux/cdev.h>
+
+static struct cdev my_cdev;                 /* karakter aygıtı yapısı */
+
+static int __init my_init(void)
+{
+    int ret;
+
+    /* 1) Aygıt numarası ayır */
+    ret = alloc_chrdev_region(&dev, 0, 1, "mydev");
+    if (ret < 0) {
+        pr_err("aygıt numarası ayrılamadı\n");
+        return ret;
+    }
+
+    /* 2) cdev'i file_operations ile ilklendir ve kaydet */
+    cdev_init(&my_cdev, &my_fops);
+    my_cdev.owner = THIS_MODULE;
+    ret = cdev_add(&my_cdev, dev, 1);       /* çekirdeğe ekle */
+    if (ret < 0) {
+        unregister_chrdev_region(dev, 1);   /* hata: geri al */
+        return ret;
+    }
+
+    pr_info("sürücü hazır (major=%d)\n", MAJOR(dev));
+    return 0;
+}
+
+static void __exit my_exit(void)
+{
+    cdev_del(&my_cdev);                     /* kaydı kaldır */
+    unregister_chrdev_region(dev, 1);       /* numarayı serbest bırak */
+}
+\end{lstlisting}
+
+\uyari{Çekirdek programlamada \textbf{hata yönetimi ve temizlik} kritiktir.
+Bir adım başarısız olursa, o ana kadar ayrılan tüm kaynakları
+\emph{ters sırayla} serbest bırakmalısın (yukarıdaki örnekte
+\code{alloc\_chrdev\_region} başarılı ama \code{cdev\_add} başarısızsa,
+numarayı geri veriyoruz). Sızdırılan çekirdek kaynağı, yeniden başlatmaya
+kadar geri gelmez.}
+
+% =====================================================================
+\gsec{Okuma, Yazma ve Kullanıcı Verisi}
+% =====================================================================
+
+Sürücünün asıl işi \code{read} ve \code{write} fonksiyonlarındadır. Buradaki
+en önemli kural: çekirdek ile kullanıcı alanı arasında veri, asla doğrudan
+işaretçiyle değil, özel fonksiyonlarla taşınır.
+
+\gsub{copy\_to\_user ve copy\_from\_user}
+
+\begin{lstlisting}
+#include <linux/uaccess.h>      /* copy_to_user, copy_from_user */
+#include <linux/slab.h>         /* kmalloc, kfree */
+
+#define BUF_SIZE 1024
+static char *device_buffer;     /* çekirdek içi tampon */
+static size_t buffer_len;       /* içindeki geçerli bayt sayısı */
+
+/* Kullanıcı aygıttan OKUYOR: veri çekirdek -> kullanıcı yönünde akar */
+static ssize_t my_read(struct file *file, char __user *buf,
+                       size_t count, loff_t *offset)
+{
+    size_t remaining;
+
+    if (*offset >= buffer_len)              /* dosya sonu */
+        return 0;
+
+    /* İstenen kadar ama en fazla kalan veri kadar oku */
+    if (count > buffer_len - *offset)
+        count = buffer_len - *offset;
+
+    /* Çekirdek tamponundan kullanıcı tamponuna kopyala.
+       Dönüş: KOPYALANAMAYAN bayt sayısı (0 = tam başarı). */
+    remaining = copy_to_user(buf, device_buffer + *offset, count);
+    if (remaining)
+        return -EFAULT;                     /* geçersiz kullanıcı adresi */
+
+    *offset += count;                       /* konumu ilerlet */
+    pr_debug("%zu bayt okundu\n", count);
+    return count;                           /* okunan bayt sayısını döndür */
+}
+
+/* Kullanıcı aygıta YAZIYOR: veri kullanıcı -> çekirdek yönünde akar */
+static ssize_t my_write(struct file *file, const char __user *buf,
+                        size_t count, loff_t *offset)
+{
+    if (count > BUF_SIZE)                    /* taşmayı önle */
+        count = BUF_SIZE;
+
+    if (copy_from_user(device_buffer, buf, count))
+        return -EFAULT;
+
+    buffer_len = count;
+    pr_debug("%zu bayt yazıldı\n", count);
+    return count;
+}
+\end{lstlisting}
+
+\uyari{\code{copy\_to\_user}/\code{copy\_from\_user} \textbf{başarısızlıkta
+kopyalanamayan bayt sayısını} döndürür, hata kodu değil. Sıfır dönmesi tam
+başarı demektir. Ayrıca bu fonksiyonlar \emph{uyuyabilir} (sayfa hatası
+tetikleyebilir), bu yüzden atomik bağlamda (spinlock tutarken, kesme
+işleyicide) çağrılamazlar. Doğrudan \code{*buf = x} yapmak ise ciddi bir
+güvenlik açığı ve çökme sebebidir.}
+
+\gsub{open ve release}
+
+\begin{lstlisting}
+static int my_open(struct inode *inode, struct file *file)
+{
+    /* Tampon henüz yoksa ayır (basit örnek; genelde init'te yapılır) */
+    if (!device_buffer) {
+        device_buffer = kmalloc(BUF_SIZE, GFP_KERNEL);
+        if (!device_buffer)
+            return -ENOMEM;                 /* bellek yok */
+    }
+    pr_info("aygıt açıldı\n");
+    return 0;
+}
+
+static int my_release(struct inode *inode, struct file *file)
+{
+    pr_info("aygıt kapatıldı\n");
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Sürücüyü Test Etme}
+
+\begin{lstlisting}[style=shstyle]
+# Aygıt düğümünü elle oluştur (major numarayı dmesg'den al)
+$ sudo mknod /dev/mydev c 240 0     # c=karakter, 240=major, 0=minor
+$ sudo chmod 666 /dev/mydev
+
+# Yaz ve oku
+$ echo "merhaba sürücü" > /dev/mydev
+$ cat /dev/mydev
+merhaba sürücü
+
+# Düşük seviye test
+$ dd if=/dev/mydev bs=1 count=10
+\end{lstlisting}
+
+% =====================================================================
+\gsec{ioctl: Aygıt Kontrol Komutları}
+% =====================================================================
+
+\code{read}/\code{write} bayt akışı içindir, ama aygıtlara çoğu zaman
+\emph{komut} göndermemiz gerekir: ``baud hızını ayarla'', ``sıfırla'',
+``durumu sorgula''. Bunun için \code{ioctl} (input/output control) kullanılır.
+
+\gsub{ioctl Komutlarını Tanımlama}
+
+Komut numaraları rastgele seçilmez; çakışmayı önleyen makrolarla üretilir.
+Bu makrolar komuta bir yön (okuma/yazma) ve veri boyutu da kodlar.
+
+\begin{lstlisting}
+#include <linux/ioctl.h>
+
+#define MYDEV_MAGIC 'k'                     /* sürücüye özel "sihirli" harf */
+
+/* _IO: veri yok, _IOR: oku, _IOW: yaz, _IOWR: her ikisi */
+#define MYDEV_RESET     _IO(MYDEV_MAGIC, 0)
+#define MYDEV_GET_SIZE  _IOR(MYDEV_MAGIC, 1, int)
+#define MYDEV_SET_SIZE  _IOW(MYDEV_MAGIC, 2, int)
+
+static long my_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+    int value;
+
+    switch (cmd) {
+    case MYDEV_RESET:
+        buffer_len = 0;                     /* tamponu sıfırla */
+        memset(device_buffer, 0, BUF_SIZE);
+        pr_info("aygıt sıfırlandı\n");
+        break;
+
+    case MYDEV_GET_SIZE:                    /* çekirdek -> kullanıcı */
+        value = buffer_len;
+        if (copy_to_user((int __user *)arg, &value, sizeof(value)))
+            return -EFAULT;
+        break;
+
+    case MYDEV_SET_SIZE:                    /* kullanıcı -> çekirdek */
+        if (copy_from_user(&value, (int __user *)arg, sizeof(value)))
+            return -EFAULT;
+        if (value < 0 || value > BUF_SIZE)
+            return -EINVAL;                 /* geçersiz argüman */
+        buffer_len = value;
+        break;
+
+    default:
+        return -ENOTTY;                     /* bilinmeyen komut */
+    }
+    return 0;
+}
+
+/* file_operations'a ekle: */
+/*   .unlocked_ioctl = my_ioctl, */
+\end{lstlisting}
+
+\gsub{Kullanıcı Alanından ioctl Çağırma}
+
+\begin{lstlisting}
+/* Kullanıcı alanı programı (aynı komut tanımlarını paylaşır) */
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
+int fd = open("/dev/mydev", O_RDWR);
+
+ioctl(fd, MYDEV_RESET);                     /* argümansız komut */
+
+int size = 512;
+ioctl(fd, MYDEV_SET_SIZE, &size);           /* değer gönder */
+
+int current;
+ioctl(fd, MYDEV_GET_SIZE, &current);        /* değer al */
+printf("mevcut boyut: %d\n", current);
+
+close(fd);
+\end{lstlisting}
+
+\bilgi{\code{ioctl} güçlüdür ama tip güvenliği zayıftır (her şey
+\code{unsigned long arg}'dan geçer). Modern çekirdek geliştirmede, basit
+durum sorguları için \code{ioctl} yerine \code{sysfs} nitelikleri (Kısım 4)
+tercih edilir --- çünkü kabuktan \code{cat}/\code{echo} ile erişilebilir ve
+kendini belgeler. Yine de karmaşık, ikili protokoller için \code{ioctl}
+vazgeçilmezdir.}
+
+% =====================================================================
+\gsec{Otomatik Aygıt Düğümü: udev ve class}
+% =====================================================================
+
+Yukarıda aygıt düğümünü elle \code{mknod} ile oluşturduk --- bu zahmetli ve
+hataya açıktır. Gerçek sürücüler, çekirdeğin \emph{aygıt modeli} üzerinden bir
+\code{class} ve \code{device} kaydeder; \emph{udev} arka planı bunu görüp
+\code{/dev} altında düğümü \textbf{otomatik} oluşturur.
+
+\begin{lstlisting}
+#include <linux/device.h>
+
+static struct class *my_class;
+static struct device *my_device;
+
+static int __init my_init(void)
+{
+    /* ... alloc_chrdev_region + cdev_add (yukarıdaki gibi) ... */
+
+    /* 1) Bir aygıt sınıfı oluştur -> /sys/class/myclass/ */
+    my_class = class_create("myclass");     /* çekirdek 6.4+ imzası */
+    if (IS_ERR(my_class)) {
+        cdev_del(&my_cdev);
+        unregister_chrdev_region(dev, 1);
+        return PTR_ERR(my_class);
+    }
+
+    /* 2) Aygıtı oluştur -> udev /dev/mydev düğümünü otomatik yapar */
+    my_device = device_create(my_class, NULL, dev, NULL, "mydev");
+    if (IS_ERR(my_device)) {
+        class_destroy(my_class);
+        cdev_del(&my_cdev);
+        unregister_chrdev_region(dev, 1);
+        return PTR_ERR(my_device);
+    }
+
+    pr_info("/dev/mydev otomatik oluşturuldu\n");
+    return 0;
+}
+
+static void __exit my_exit(void)
+{
+    device_destroy(my_class, dev);          /* ters sırayla temizle */
+    class_destroy(my_class);
+    cdev_del(&my_cdev);
+    unregister_chrdev_region(dev, 1);
+}
+\end{lstlisting}
+
+\notk[IS\_ERR ve PTR\_ERR]{Birçok çekirdek fonksiyonu, hata durumunda
+\code{NULL} yerine bir \emph{hata işaretçisi} döndürür (adres uzayının en
+üstündeki özel değerler). \code{IS\_ERR(ptr)} bunun bir hata olup olmadığını
+kontrol eder, \code{PTR\_ERR(ptr)} ise onu bir hata koduna (\code{-ENOMEM}
+gibi) çevirir. Bu, çekirdekte çok yaygın bir kalıptır; işaretçi dönen
+fonksiyonlarda mutlaka kontrol et.}
+
+\bilgi{Bu noktada tam işlevsel bir karakter sürücün var: dinamik major numara,
+\code{cdev} kaydı, \code{read}/\code{write}/\code{ioctl} ve \code{udev} ile
+otomatik \code{/dev} düğümü. Bu iskelet, gerçek sürücülerin çoğunun temelini
+oluşturur --- geri kalanı, \code{read}/\code{write} içinde gerçek donanımla
+konuşmaktan ibarettir.}
+
+% #####################################################################
+\gpart{3}{Çekirdek Altyapısı}
+% #####################################################################
+
+% =====================================================================
+\gsec{Çekirdekte Bellek Yönetimi}
+% =====================================================================
+
+Çekirdekte \code{malloc} yoktur; bellek ayırmanın kendine özgü fonksiyonları
+ve kuralları vardır. Yanlış ayırma bayrağı veya sızıntı, tüm sistemi
+etkileyebilir --- kullanıcı alanındaki gibi süreç bitince otomatik temizlik
+yoktur.
+
+\gsub{kmalloc, kzalloc ve vmalloc}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Fonksiyon} & \color{anaMavi}\textbf{Özellik}\\
+\midrule
+kmalloc & Fiziksel olarak \emph{bitişik} bellek; küçük, hızlı; DMA'ya uygun.\\
+\rowcolor{acikGri} kzalloc & \code{kmalloc} + sıfırlama (önerilir).\\
+vmalloc & Sanal olarak bitişik (fiziksel dağınık); büyük ayırmalar için.\\
+\rowcolor{acikGri} kfree / vfree & İlgili serbest bırakma fonksiyonları.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+#include <linux/slab.h>
+
+/* GFP_KERNEL: normal ayırma; uyuyabilir (bloklayabilir).
+   GFP_ATOMIC: uyumaz; kesme bağlamında / spinlock tutarken kullan. */
+char *buffer = kmalloc(size, GFP_KERNEL);
+if (!buffer)
+    return -ENOMEM;                         /* ayırma başarısız */
+
+/* Sıfırlanmış bellek (calloc benzeri) -- tercih edilen */
+struct my_data *data = kzalloc(sizeof(*data), GFP_KERNEL);
+if (!data)
+    return -ENOMEM;
+
+/* Büyük tampon (fiziksel bitişiklik gerekmiyorsa) */
+void *big = vmalloc(10 * 1024 * 1024);      /* 10 MB */
+
+/* Serbest bırak (doğru eşleşen fonksiyonla!) */
+kfree(buffer);
+kfree(data);
+vfree(big);
+\end{lstlisting}
+
+\uyari{\textbf{GFP bayrağını doğru seç:} \code{GFP\_KERNEL} bellek beklerken
+\emph{uyuyabilir}; bu yüzden kesme işleyicide veya spinlock tutarken
+kullanılamaz --- orada \code{GFP\_ATOMIC} gerekir (uyumaz ama başarısız olma
+olasılığı daha yüksektir). Yanlış bağlamda \code{GFP\_KERNEL} kullanmak
+kilitlenmeye (deadlock) yol açar.}
+
+\gsub{Kaynak Yönetimli (devm) Ayırma}
+
+Modern sürücüler, hata yollarını basitleştirmek için \code{devm\_*}
+fonksiyonlarını kullanır: bunlar aygıta ``bağlı'' ayırmalardır ve aygıt
+kaldırıldığında \emph{otomatik} serbest bırakılır. Böylece \code{kfree}
+çağrılarını unutma riski ortadan kalkar.
+
+\begin{lstlisting}
+/* Aygıt kaldırıldığında otomatik serbest bırakılır -- kfree gerekmez! */
+struct my_data *data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+if (!data)
+    return -ENOMEM;
+/* ... temizlik kodunda kfree(data) YOK; çekirdek halleder */
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Eşzamanlılık ve Kilitleme}
+% =====================================================================
+
+Çekirdek doğası gereği eşzamanlıdır: aynı sürücü kodu birden çok CPU'da,
+birden çok süreç tarafından, hatta bir kesmeyle yarıda kesilerek aynı anda
+çalışabilir. Paylaşılan veriyi korumadan bırakırsan \emph{yarış koşulları}
+(race conditions) oluşur --- veri bozulur, sistem çöker. Kilitleme bunu önler.
+
+\gsub{Yarış Koşulu Neden Oluşur?}
+
+\code{counter++} gibi ``basit'' bir işlem bile aslında üç adımdır (oku, artır,
+yaz). İki CPU aynı anda yaparsa güncellemelerden biri kaybolabilir. Çözüm:
+kritik bölgeyi (paylaşılan veriye eriştiğin kod) bir kilitle korumak.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Mekanizma} & \color{anaMavi}\textbf{Ne zaman?}\\
+\midrule
+mutex & Uyuyabilen bağlam (süreç); kritik bölge uzun/uyuyabilir.\\
+\rowcolor{acikGri} spinlock & Kesme bağlamı veya kısa kritik bölge; uyuyamaz.\\
+atomic\_t & Tek bir tam sayı sayaç/bayrak; kilitsiz.\\
+\rowcolor{acikGri} RCU & Çok okuyan, az yazan; yüksek performans.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Mutex}
+
+Mutex, kritik bölgeyi tutan iş parçacığı uyuyabildiğinde kullanılır (örneğin
+içinde \code{copy\_to\_user} veya \code{kmalloc(GFP\_KERNEL)} olan bölge).
+
+\begin{lstlisting}
+#include <linux/mutex.h>
+
+static DEFINE_MUTEX(my_lock);               /* statik mutex tanımla ve ilklendir */
+
+static ssize_t my_write(struct file *file, const char __user *buf,
+                        size_t count, loff_t *offset)
+{
+    if (mutex_lock_interruptible(&my_lock))  /* kilidi al (sinyalle kesilebilir) */
+        return -ERESTARTSYS;
+
+    /* --- kritik bölge: paylaşılan tampona güvenle eriş --- */
+    if (copy_from_user(device_buffer, buf, count)) {
+        mutex_unlock(&my_lock);             /* hata yolunda da kilidi bırak! */
+        return -EFAULT;
+    }
+    buffer_len = count;
+    /* --- kritik bölge sonu --- */
+
+    mutex_unlock(&my_lock);                 /* kilidi bırak */
+    return count;
+}
+\end{lstlisting}
+
+\gsub{Spinlock}
+
+Spinlock, kilidi alamayan CPU'nun \emph{uyumadan bekleyip döndüğü} (busy-wait)
+bir kilittir. Kesme işleyicilerinde veya çok kısa kritik bölgelerde kullanılır
+--- çünkü orada uyumak yasaktır.
+
+\begin{lstlisting}
+#include <linux/spinlock.h>
+
+static DEFINE_SPINLOCK(my_spinlock);
+static int shared_counter;
+
+void update_counter(void)
+{
+    unsigned long flags;
+
+    /* irqsave: kilidi al VE bu CPU'daki kesmeleri kapat.
+       Kesmeyle paylaşılan veri için şart (deadlock önler). */
+    spin_lock_irqsave(&my_spinlock, flags);
+
+    shared_counter++;                       /* çok kısa kritik bölge */
+
+    spin_unlock_irqrestore(&my_spinlock, flags);  /* bırak + kesmeleri geri aç */
+}
+\end{lstlisting}
+
+\uyari{\textbf{Spinlock tutarken asla uyuma!} Kilit tutulurken
+\code{kmalloc(GFP\_KERNEL)}, \code{copy\_to\_user}, \code{mutex\_lock} gibi
+uyuyabilen hiçbir çağrı yapılamaz --- yaparsan kilitlenme olur. Ayrıca kritik
+bölgeyi olabildiğince kısa tut, çünkü bekleyen CPU boşa döner (güç ve
+performans israfı).}
+
+\gsub{Atomik İşlemler}
+
+Sadece tek bir sayacı korumak için tam bir kilit gereksiz yüktür. Atomik
+tipler, bölünmez okuma-değiştirme-yazma işlemleri sunar.
+
+\begin{lstlisting}
+#include <linux/atomic.h>
+
+static atomic_t open_count = ATOMIC_INIT(0);
+
+static int my_open(struct inode *inode, struct file *file)
+{
+    atomic_inc(&open_count);                /* kilitsiz, güvenli artırma */
+    pr_info("aygıt %d kez açık\n", atomic_read(&open_count));
+    return 0;
+}
+
+static int my_release(struct inode *inode, struct file *file)
+{
+    atomic_dec(&open_count);
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Kesmeler (Interrupts)}
+% =====================================================================
+
+Donanım, ilgi istediğinde (veri hazır, tuşa basıldı\dots) CPU'ya bir
+\emph{kesme} (interrupt) sinyali gönderir. Sürücü, bu kesmeye bir
+\emph{işleyici} (handler --- ISR) kaydeder. Kesme geldiğinde çekirdek, o an ne
+yapıyorsa duraklatıp işleyiciyi çalıştırır. Bu, donanımı sürekli yoklamaktan
+(polling) çok daha verimlidir.
+
+\gsub{Kesme İşleyicisi Kaydetme}
+
+\begin{lstlisting}
+#include <linux/interrupt.h>
+
+static int irq_number;
+
+/* Kesme işleyicisi (ISR). ATOMIK bağlamda çalışır: uyuyamaz,
+   kmalloc(GFP_KERNEL)/copy_to_user çağıramaz, kısa olmalı. */
+static irqreturn_t my_irq_handler(int irq, void *dev_id)
+{
+    /* En kısa işi burada yap (donanımı onayla, bayrak set et) */
+    pr_debug("kesme alındı: irq=%d\n", irq);
+
+    return IRQ_HANDLED;                     /* kesme bizim; işlendi */
+}
+
+static int __init my_init(void)
+{
+    irq_number = 42;                        /* gerçekte donanımdan/DT'den alınır */
+
+    /* İşleyiciyi kaydet */
+    int ret = request_irq(irq_number, my_irq_handler,
+                          IRQF_SHARED,      /* IRQ hattı paylaşılabilir */
+                          "mydev", &my_dev_id);
+    if (ret)
+        return ret;
+    return 0;
+}
+
+static void __exit my_exit(void)
+{
+    free_irq(irq_number, &my_dev_id);       /* işleyiciyi kaldır */
+}
+\end{lstlisting}
+
+\gsub{Üst Yarı ve Alt Yarı (Top/Bottom Half)}
+
+Kesme işleyicisi kısa olmalıdır --- çalışırken diğer kesmeler gecikir. Bu
+yüzden iş ikiye bölünür: \textbf{üst yarı} (top half --- gerçek ISR) yalnızca
+acil, kısa işi yapar; ağır iş \textbf{alt yarıya} (bottom half) ertelenir ve
+daha güvenli bir bağlamda çalışır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Mekanizma} & \color{anaMavi}\textbf{Bağlam} & \color{anaMavi}\textbf{Uyuyabilir mi?}\\
+\midrule
+Tasklet & Atomik (softirq) & Hayır (eski, artık workqueue tercih edilir)\\
+\rowcolor{acikGri} Workqueue & Süreç (kernel thread) & Evet\\
+Threaded IRQ & Kendi çekirdek ipliği & Evet\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+#include <linux/workqueue.h>
+
+/* Alt yarı: süreç bağlamında çalışır -> uyuyabilir, kmalloc yapabilir */
+static void my_work_handler(struct work_struct *work)
+{
+    /* Ağır işi burada güvenle yap (uzun işlem, uyuyan çağrılar...) */
+    pr_info("alt yarı çalışıyor: veri işleniyor\n");
+}
+
+static DECLARE_WORK(my_work, my_work_handler);
+
+/* Üst yarı (ISR): sadece işi zamanla, hemen dön */
+static irqreturn_t my_irq_handler(int irq, void *dev_id)
+{
+    schedule_work(&my_work);                /* alt yarıyı tetikle */
+    return IRQ_HANDLED;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{Threaded IRQ} modern ve pratik bir yaklaşımdır:
+\code{request\_threaded\_irq()} ile hem hızlı bir üst yarı hem de kendi
+ipliğinde uyuyabilen bir alt yarı fonksiyonu verirsin. Çekirdek ikisini
+otomatik yönetir; ayrı workqueue/tasklet kurmana gerek kalmaz.}
+
+% =====================================================================
+\gsec{Çekirdekte Zaman}
+% =====================================================================
+
+Sürücüler sık sık zamanla ilgilenir: gecikme koyma, zaman aşımı, periyodik iş.
+Çekirdeğin zaman birimi \emph{jiffy}'dir --- sistem açılışından beri geçen
+zamanlayıcı tik sayısı.
+
+\gsub{jiffies ve Gecikmeler}
+
+\begin{lstlisting}
+#include <linux/jiffies.h>
+#include <linux/delay.h>
+
+unsigned long start = jiffies;              /* şu anki tik sayısı */
+
+/* HZ = saniyedeki tik sayısı (genelde 100, 250 veya 1000) */
+unsigned long timeout = jiffies + 2 * HZ;   /* şimdiden 2 saniye sonrası */
+
+if (time_after(jiffies, timeout))           /* zaman aşımı kontrolü */
+    pr_warn("zaman aşımı!\n");
+
+/* Kısa MEŞGUL bekleme (uyumaz) -- yalnızca çok kısa, atomik bağlamda */
+udelay(50);                                 /* 50 mikrosaniye */
+mdelay(5);                                  /* 5 milisaniye (kaçın!) */
+
+/* UYUYAN bekleme (tercih edilen, süreç bağlamında) -- CPU'yu bırakır */
+msleep(100);                                /* 100 ms uyu */
+usleep_range(50, 100);                      /* 50-100 us esnek uyku */
+\end{lstlisting}
+
+\uyari{\code{udelay}/\code{mdelay} CPU'yu \emph{meşgul} tutarak bekler (busy-wait)
+--- işlemciyi boşa harcar. Sadece atomik bağlamda ve çok kısa süreler için
+kullan. Süreç bağlamında her zaman \code{msleep}/\code{usleep\_range} tercih
+et; bunlar CPU'yu başka işlere bırakır.}
+
+\gsub{Çekirdek Zamanlayıcıları}
+
+Belirli bir süre sonra bir fonksiyonun çağrılmasını istiyorsak zamanlayıcı
+(timer) kurarız --- örneğin bir donanım yanıtı için zaman aşımı.
+
+\begin{lstlisting}
+#include <linux/timer.h>
+
+static struct timer_list my_timer;
+
+/* Zaman dolduğunda çağrılır (softirq bağlamı -> uyuyamaz) */
+static void my_timer_callback(struct timer_list *t)
+{
+    pr_info("zamanlayıcı ateşlendi\n");
+    /* Periyodik istiyorsak yeniden kur: */
+    mod_timer(&my_timer, jiffies + HZ);     /* 1 saniye sonra tekrar */
+}
+
+static int __init my_init(void)
+{
+    timer_setup(&my_timer, my_timer_callback, 0);   /* ilklendir */
+    mod_timer(&my_timer, jiffies + HZ);             /* 1 sn sonra ateşle */
+    return 0;
+}
+
+static void __exit my_exit(void)
+{
+    del_timer_sync(&my_timer);              /* zamanlayıcıyı güvenle durdur */
+}
+\end{lstlisting}
+
+\ipucu{Daha yüksek çözünürlük gerekiyorsa \code{hrtimer} (high-resolution
+timer) nanosaniye hassasiyeti sunar. Periyodik ve uyuyabilen işler için ise
+\code{delayed\_work} (gecikmeli workqueue) genelde en pratik çözümdür ---
+hem zamanlar hem de süreç bağlamında çalışır.}
+
+% #####################################################################
+\gpart{4}{Aygıt Modeli ve Sürücü Çerçeveleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{sysfs ile Kullanıcı Arayüzü}
+% =====================================================================
+
+sysfs (\code{/sys}), çekirdeğin iç durumunu dosya-benzeri bir hiyerarşi olarak
+kullanıcı alanına sunar. Bir sürücü, \emph{nitelik} (attribute) dosyaları
+oluşturarak ayarlarını ve durumunu \code{cat}/\code{echo} ile erişilebilir
+kılar --- \code{ioctl}'e göre çok daha keşfedilebilir ve betiklenebilir.
+
+\gsub{sysfs Niteliği Oluşturma}
+
+\begin{lstlisting}
+/* Kullanıcı dosyayı OKUDUĞUNDA çağrılır (cat) */
+static ssize_t value_show(struct device *dev,
+                          struct device_attribute *attr, char *buf)
+{
+    return sysfs_emit(buf, "%d\n", my_value);   /* güvenli tampon yazımı */
+}
+
+/* Kullanıcı dosyaya YAZDIĞINDA çağrılır (echo) */
+static ssize_t value_store(struct device *dev, struct device_attribute *attr,
+                           const char *buf, size_t count)
+{
+    int ret = kstrtoint(buf, 10, &my_value);    /* metni int'e çevir */
+    if (ret < 0)
+        return ret;                             /* geçersiz girdi */
+    return count;                               /* tüketilen bayt sayısı */
+}
+
+/* Nitelik: 0644 izinli, "value" adlı, okuma+yazma dosyası */
+static DEVICE_ATTR_RW(value);
+
+/* Kaydet (device_create sonrası): -> /sys/.../mydev/value */
+device_create_file(my_device, &dev_attr_value);
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Artık kabuktan doğrudan erişilir
+$ cat /sys/class/myclass/mydev/value
+42
+$ echo 100 | sudo tee /sys/class/myclass/mydev/value
+\end{lstlisting}
+
+\notk[sysfs kuralı]{sysfs dosyaları ideal olarak \textbf{dosya başına tek bir
+değer} içermelidir (bir sayı, bir metin) --- karmaşık ikili yapılar değil.
+``Bir dosya, bir değer'' kuralı, sysfs'i basit ve betiklenebilir tutar.
+Karmaşık veri için \code{debugfs} veya karakter aygıtı daha uygundur.}
+
+% =====================================================================
+\gsec{Platform Sürücüleri}
+% =====================================================================
+
+PCI veya USB gibi kendini tanıtan (enumerable) veri yollarında aygıtlar
+otomatik keşfedilir. Ama bir SoC üzerindeki tümleşik çevre birimleri
+(GPIO, I2C denetleyici, UART\dots) kendini tanıtmaz --- bunlara \emph{platform
+aygıtı} denir ve varlıkları sisteme ayrıca bildirilir. Gömülü Linux'ta en çok
+karşılaşılan sürücü türüdür.
+
+\gsub{Platform Sürücüsünün İskeleti}
+
+Çekirdek, aygıt ile sürücüyü bir \emph{isim} veya \emph{uyumluluk} dizesiyle
+eşleştirir; eşleşince sürücünün \code{probe} fonksiyonu çağrılır.
+
+\begin{lstlisting}
+#include <linux/platform_device.h>
+#include <linux/mod_devicetable.h>
+
+/* Aygıt bulunup sürücüye bağlandığında çağrılır -- init işini burada yap */
+static int my_probe(struct platform_device *pdev)
+{
+    struct device *dev = &pdev->dev;
+    dev_info(dev, "aygıt bulundu, başlatılıyor\n");
+
+    /* Kaynakları al (bellek, IRQ, saat...) -- sonraki bölüm */
+    /* devm_* ile ayır: remove'da otomatik temizlenir */
+    return 0;
+}
+
+/* Aygıt kaldırıldığında çağrılır -- temizlik */
+static void my_remove(struct platform_device *pdev)
+{
+    dev_info(&pdev->dev, "aygıt kaldırıldı\n");
+}
+
+/* Device tree "compatible" eşleştirme tablosu */
+static const struct of_device_id my_of_match[] = {
+    { .compatible = "mycompany,mydevice" },
+    { /* sonlandırıcı boş girdi */ }
+};
+MODULE_DEVICE_TABLE(of, my_of_match);
+
+static struct platform_driver my_driver = {
+    .probe  = my_probe,
+    .remove = my_remove,
+    .driver = {
+        .name           = "my_driver",
+        .of_match_table = my_of_match,
+    },
+};
+
+/* Tüm init/exit kalıbını tek makroyla üret */
+module_platform_driver(my_driver);
+\end{lstlisting}
+
+\bilgi{\code{module\_platform\_driver()} makrosu, \code{module\_init}/
+\code{module\_exit} fonksiyonlarını ve sürücü kayıt/kayıt-silme çağrılarını
+otomatik üretir --- basit sürücülerde onlarca satır boilerplate'i tek satıra
+indirir. Benzer makrolar \code{module\_i2c\_driver}, \code{module\_pci\_driver}
+için de vardır.}
+
+% =====================================================================
+\gsec{Device Tree ve Kaynaklar}
+% =====================================================================
+
+Device Tree (DT), donanımın \emph{nerede} olduğunu (adresler, kesme numaraları,
+saatler) koddan ayrı, bildirimsel bir dosyada tarif eder. Böylece aynı sürücü,
+farklı kartlarda farklı adreslerle --- kodu değiştirmeden --- çalışır. Gömülü
+sistemlerde donanım tanımının standart yoludur.
+
+\gsub{Device Tree Düğümü}
+
+\begin{lstlisting}[style=shstyle]
+/* Device Tree kaynağı (.dts) -- donanımı tarif eder, kod değil */
+mydevice@10000000 {
+    compatible = "mycompany,mydevice";  /* sürücüyle eşleşen dize */
+    reg = <0x10000000 0x1000>;          /* register adresi + boyut */
+    interrupts = <0 42 4>;              /* kesme numarası ve tipi */
+    clocks = <&clk_controller 5>;       /* kullandığı saat */
+    my-custom-property = <100>;         /* sürücüye özel ayar */
+};
+\end{lstlisting}
+
+\gsub{probe İçinde Kaynak Alma}
+
+Sürücü, DT'de tanımlı kaynakları \code{probe} sırasında okur. \code{devm\_*}
+sürümleri, aygıt kaldırılınca kaynakları otomatik serbest bırakır.
+
+\begin{lstlisting}
+static int my_probe(struct platform_device *pdev)
+{
+    struct device *dev = &pdev->dev;
+    void __iomem *regs;
+    int irq, ret;
+    u32 custom;
+
+    /* 1) Register bellek bölgesini al ve eşle (MMIO) */
+    regs = devm_platform_ioremap_resource(pdev, 0);
+    if (IS_ERR(regs))
+        return PTR_ERR(regs);
+
+    /* 2) Kesme numarasını al */
+    irq = platform_get_irq(pdev, 0);
+    if (irq < 0)
+        return irq;
+
+    ret = devm_request_irq(dev, irq, my_irq_handler, 0, "mydev", pdev);
+    if (ret)
+        return ret;
+
+    /* 3) DT'den özel bir özelliği oku */
+    if (of_property_read_u32(dev->of_node, "my-custom-property", &custom) == 0)
+        dev_info(dev, "özel değer: %u\n", custom);
+
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Donanım Register'larına Erişim (MMIO)}
+
+Çoğu çevre birimi, register'ları bellek adreslerine eşlenmiş olarak sunar
+(Memory-Mapped I/O). Bu register'lara \emph{asla} doğrudan işaretçiyle değil,
+özel erişim fonksiyonlarıyla (\code{readl}/\code{writel}) erişilir --- bunlar
+doğru bariyerleri ve sıralamayı garanti eder.
+
+\begin{lstlisting}
+#include <linux/io.h>
+
+#define REG_CONTROL  0x00                   /* register ofsetleri */
+#define REG_STATUS   0x04
+#define REG_DATA     0x08
+
+/* 32-bit register oku */
+u32 status = readl(regs + REG_STATUS);
+
+/* 32-bit register'a yaz */
+writel(0x1, regs + REG_CONTROL);            /* aygıtı etkinleştir */
+
+/* Bir durum bitini bekle (zaman aşımıyla) */
+u32 val;
+ret = readl_poll_timeout(regs + REG_STATUS, val,
+                         (val & BIT(0)),    /* koşul: bit 0 set olana kadar */
+                         10, 1000);         /* 10us aralık, 1000us zaman aşımı */
+if (ret)
+    dev_err(dev, "aygıt hazır olmadı\n");
+\end{lstlisting}
+
+\uyari{Donanım register'larına normal işaretçiyle (\code{*(u32*)addr})
+erişmek yanlıştır: derleyici erişimleri yeniden sıralayabilir, önbelleğe
+alabilir veya birleştirebilir --- donanımla iletişimi bozar. Her zaman
+\code{readl}/\code{writel} (ve 8/16 bit için \code{readb}/\code{readw})
+kullan; bunlar \code{volatile} erişim ve bellek bariyerlerini garanti eder.}
+
+% #####################################################################
+\gpart{5}{İleri Konular ve Hata Ayıklama}
+% #####################################################################
+
+% =====================================================================
+\gsec{Bekleme Kuyrukları ve Bloklamalı G/Ç}
+% =====================================================================
+
+Çoğu zaman \code{read}, veri henüz hazır değilken çağrılır. Sürücü ya hemen
+``veri yok'' dönmeli (bloklamasız) ya da veri gelene kadar süreci
+\emph{uyutmalıdır} (bloklamalı). İkincisi için \emph{bekleme kuyrukları}
+(wait queues) kullanılır: süreç uyur, CPU'yu harcamaz; veri gelince uyandırılır.
+
+\gsub{Bekleme Kuyruğu ile Uyutma ve Uyandırma}
+
+\begin{lstlisting}
+#include <linux/wait.h>
+#include <linux/sched.h>
+
+static DECLARE_WAIT_QUEUE_HEAD(read_queue);
+static bool data_ready;
+
+/* OKUMA tarafı: veri yoksa uyu */
+static ssize_t my_read(struct file *file, char __user *buf,
+                       size_t count, loff_t *offset)
+{
+    /* Bloklamasız istendiyse ve veri yoksa hemen dön */
+    if ((file->f_flags & O_NONBLOCK) && !data_ready)
+        return -EAGAIN;
+
+    /* data_ready true olana kadar UYU (sinyalle kesilebilir) */
+    if (wait_event_interruptible(read_queue, data_ready))
+        return -ERESTARTSYS;                /* sinyal geldi */
+
+    /* Buraya gelindi: veri hazır -> kullanıcıya kopyala */
+    if (copy_to_user(buf, device_buffer, count))
+        return -EFAULT;
+    data_ready = false;
+    return count;
+}
+
+/* ÜRETİCİ taraf (ör. kesme işleyici): veri hazır, uyuyanları uyandır */
+static void data_arrived(void)
+{
+    data_ready = true;
+    wake_up_interruptible(&read_queue);     /* bekleyen okuyucuları uyandır */
+}
+\end{lstlisting}
+
+\bilgi{\code{wait\_event\_interruptible} bir \emph{koşul} bekler ve koşul
+sağlanana dek uyur; sahte uyanmalara (spurious wakeup) karşı koşulu döngüde
+tekrar kontrol eder --- bu yüzden onu elle döngüye almana gerek yoktur.
+``interruptible'' sürümü, sürecin sinyalle (Ctrl+C) uyandırılabilmesini sağlar;
+bu neredeyse her zaman tercih edilir (aksi halde süreç öldürülemez).}
+
+\gsub{poll/select Desteği}
+
+Bir uygulamanın birden çok aygıtı aynı anda \code{poll}/\code{select}/
+\code{epoll} ile beklemesi için sürücü \code{poll} fonksiyonunu sağlamalıdır.
+
+\begin{lstlisting}
+#include <linux/poll.h>
+
+static __poll_t my_poll(struct file *file, struct poll_table_struct *wait)
+{
+    __poll_t mask = 0;
+
+    poll_wait(file, &read_queue, wait);     /* kuyruğu poll tablosuna kaydet */
+
+    if (data_ready)
+        mask |= POLLIN | POLLRDNORM;        /* okunacak veri var */
+
+    return mask;                            /* hazır olan olayları bildir */
+}
+/* file_operations: .poll = my_poll, */
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Hata Ayıklama Teknikleri}
+% =====================================================================
+
+Çekirdekte hata ayıklamak kullanıcı alanından zordur: \code{gdb} ile adım adım
+ilerlemek genelde pratik değildir. Bu yüzden çekirdek, kendine özgü zengin
+hata ayıklama araçları sunar.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Araç} & \color{anaMavi}\textbf{Kullanım}\\
+\midrule
+dmesg / printk & En temel; mesajlarla izleme.\\
+\rowcolor{acikGri} dynamic debug & \code{pr\_debug}'ı çalışırken aç/kapa.\\
+ftrace & Fonksiyon çağrı izleme, zamanlama.\\
+\rowcolor{acikGri} kgdb / kdb & Çekirdek düzeyinde kesme noktalı hata ayıklama.\\
+KASAN & Bellek hatası dedektörü (use-after-free, taşma).\\
+\rowcolor{acikGri} debugfs & Hata ayıklama için serbest biçimli sysfs.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Kernel Oops ve Panic Okuma}
+
+Bir sürücü hatası (örneğin \code{NULL} işaretçi dereference), \emph{oops}
+üretir --- çekirdek bir yığın izi (stack trace) ve register durumu basar.
+Bunu okumak, hatanın nerede olduğunu bulmanın anahtarıdır.
+
+\begin{lstlisting}[style=shstyle]
+# Tipik bir oops mesajı (dmesg'de)
+BUG: kernel NULL pointer dereference at 0000000000000000
+RIP: 0010:my_read+0x1a/0x80 [mymod]     # <- HATA BURADA: my_read, +0x1a ofset
+Call Trace:
+ vfs_read+0x9d/0x150                     # çağrı yığını (aşağıdan yukarı okunur)
+ ksys_read+0x67/0xe0
+ do_syscall_64+0x59/0x90
+
+# Ofseti kaynak satırına çevir (hata ayıklama sembolleriyle)
+$ addr2line -e mymod.ko 0x1a
+/home/user/mymod.c:42                    # tam olarak 42. satır!
+\end{lstlisting}
+
+\gsub{debugfs ile İç Durum Sunma}
+
+\begin{lstlisting}
+#include <linux/debugfs.h>
+
+static struct dentry *debug_dir;
+static u32 error_count;                     /* izlemek istediğimiz sayaç */
+
+static int __init my_init(void)
+{
+    /* /sys/kernel/debug/mydev/ altında dosyalar oluştur */
+    debug_dir = debugfs_create_dir("mydev", NULL);
+    debugfs_create_u32("error_count", 0644, debug_dir, &error_count);
+    return 0;
+}
+
+static void __exit my_exit(void)
+{
+    debugfs_remove_recursive(debug_dir);    /* tümünü temizle */
+}
+\end{lstlisting}
+
+\ipucu{Geliştirme sırasında \code{debugfs} paha biçilmezdir: bir sayaç veya
+bayrağı, tek satırla (\code{debugfs\_create\_u32}) kabuktan izlenebilir hale
+getirir. sysfs'in aksine debugfs'in ``kararlı ABI'' garantisi yoktur --- yani
+kuralları gevşektir ve tam da hata ayıklama için tasarlanmıştır. Üretim
+arayüzleri için sysfs, hata ayıklama için debugfs kullan.}
+
+% =====================================================================
+\gsec{Kapanış: Sürücü Geliştirme Yol Haritası}
+% =====================================================================
+
+Bu rehberde bir Linux sürücüsünün tüm temel parçalarını gördük. Gerçek bir
+sürücü, bu parçaların belirli bir donanım için birleştirilmesidir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{İhtiyaç} & \color{anaMavi}\textbf{Kullanılan mekanizma}\\
+\midrule
+Modülü yükle/kaldır & \code{module\_init} / \code{module\_exit}\\
+\rowcolor{acikGri} Kullanıcı alanına arayüz & Karakter aygıtı (\code{cdev} + \code{file\_operations})\\
+Komut gönderme & \code{ioctl} veya sysfs niteliği\\
+\rowcolor{acikGri} Otomatik \code{/dev} düğümü & \code{class\_create} + \code{device\_create}\\
+Bellek ayırma & \code{kzalloc} / \code{devm\_kzalloc}\\
+\rowcolor{acikGri} Paylaşılan veri koruma & \code{mutex} / \code{spinlock} / \code{atomic\_t}\\
+Donanım olayları & Kesme işleyici + alt yarı (workqueue)\\
+\rowcolor{acikGri} Zaman aşımı / periyodik iş & Zamanlayıcı / \code{delayed\_work}\\
+Gömülü donanım keşfi & Platform sürücüsü + Device Tree\\
+\rowcolor{acikGri} Bloklamalı okuma & Bekleme kuyruğu + \code{poll}\\
+Hata ayıklama & \code{dmesg}, \code{ftrace}, \code{debugfs}, KASAN\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Sürücü geliştirmeyi öğrenmenin en iyi yolu \textbf{gerçek kod okumaktır}:
+çekirdek kaynağındaki \code{drivers/} dizini, her tür donanım için binlerce
+örnek sürücü içerir. Basit bir örnekle (\code{drivers/char/} altında) başla,
+onu bir sanal makinede derleyip değiştir. Ayrıca çekirdek belgeleri
+(\code{Documentation/} dizini) ve ``Linux Device Drivers'' (LDD3) kitabı
+temel başvurulardır. Küçük bir karakter sürücüsü yaz, \code{dmesg} ile izle,
+kır ve düzelt --- öğrenmenin tek yolu budur. İyi kodlamalar!}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.6pt}}\\[6pt]
+{\color{ortaGri}\small Rehberin sonu --- Çekirdek alanında dikkatli olun!}
+\end{center}
+
+\end{document}
