@@ -284,6 +284,224 @@ int main(void) {
 geri vermelisin. Bu ayrım, ileri C'nin en kritik konusudur.}
 
 % =====================================================================
+\gsec{Derleme Zamanı ve Çalışma Zamanı: Bellek Ne Zaman Oluşur?}
+% =====================================================================
+
+Bir programın belleği tek bir anda ortaya çıkmaz. Bazı kararlar
+\emph{derleme zamanında} (compile-time) betona döküllür, bazıları
+\emph{bağlama zamanında} (link-time) çözülür, bir kısmı program
+\emph{yüklenirken} (load-time) hazırlanır ve geri kalanı ancak
+\emph{çalışma zamanında} (run-time) oluşur. Bu ekseni ayırt edebilmek,
+``neden bu değişkenin adresi her çalıştırmada değişiyor?'' veya ``bu
+\code{malloc} aslında ne yapıyor?'' gibi soruların cevabıdır.
+
+\gsub{Genel Bakış: Hangi Bilgi Ne Zaman Belirlenir?}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Zaman} & \color{anaMavi}\textbf{Ne belirlenir / ne oluşur?}\\
+\midrule
+Derleme & Tip boyutları (\code{sizeof}), sabit ifadeler, yerel değişkenlerin çerçevedeki \emph{ofsetleri}, global/static nesnelerin hangi section'a gireceği, sembol tablosu, kod (\code{.text}).\\
+\rowcolor{acikGri} Bağlama & Semboller çözülür (relocation), section'lar birleştirilir, her sembole \emph{sanal adres} atanır (statik bağlamada nihai, dinamikte göreli).\\
+Yükleme & ELF segmentleri \code{mmap} ile eşlenir, \code{.bss} sıfırlanır, ASLR taban adresleri seçer, dinamik bağlayıcı kütüphaneleri bağlar.\\
+\rowcolor{acikGri} Çalışma & Stack çerçeveleri push/pop edilir, heap \code{brk}/\code{mmap} ile büyür, sayfalar talep üzerine fiziksel belleğe düşer.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\notk[Anahtar sezgi]{Derleyici \emph{düzeni} (layout: boyutlar ve ofsetler)
+belirler; \emph{gerçek adresler} ve \emph{fiziksel bellek} çalışma zamanına
+kadar var olmaz. Bu yüzden \code{sizeof} derleme zamanı sabitidir ama
+\code{\&x} çalışma zamanı değeridir.}
+
+\gsub{Derleme Zamanında Ne Belirlenir?}
+
+Derleyici tek bir \emph{çeviri birimini} (translation unit: önişlemden geçmiş
+\code{.c}) işler. Bu aşamada olanlar:
+
+\begin{itemize}
+\item \textbf{Sabit katlama (constant folding):} Derleme zamanı sabit ifadeler
+      derlenirken hesaplanır; çalışma zamanında çarpma/toplama yapılmaz.
+\item \textbf{Tip ve boyut çözümü:} \code{sizeof}, \code{\_Alignof}, dizi
+      boyutları tamsayı sabitine dönüşür.
+\item \textbf{Yerleşim planı:} Global/static nesneler değerine göre
+      \code{.data} (ilklenmiş), \code{.bss} (sıfır) veya \code{.rodata}
+      (salt-okunur) section'ına atanır; yerel değişkenlere çerçeve içinde
+      \emph{ofset} verilir (henüz adres değil).
+\item \textbf{Sembol tablosu:} Tanımlı ve dışa bağımlı (undefined) semboller
+      nesne dosyasına yazılır.
+\end{itemize}
+
+\begin{lstlisting}
+int   saniye  = 24 * 60 * 60;   // .data: derleyici 86400 yazar (folding)
+int   sayac;                    // .bss : yer ayrilir ama dosyada yer kaplamaz
+const char *msg = "merhaba";    // isaretci .data'da, "merhaba" .rodata'da
+char  buf[4096];                // .bss : 4096 bayt, ikili dosyayi buyutmez
+
+int kare(int x) { return x * x; }  // .text: makine kodu
+\end{lstlisting}
+
+\ornek[Section'ları nesne dosyasında görme]{Derle ama bağlama, sonra araçlarla
+içine bak.}
+\begin{lstlisting}[style=shstyle]
+$ gcc -c ornek.c -o ornek.o
+
+$ size ornek.o           # section boyutlari
+   text    data     bss     dec     hex filename
+    123      12    4100    4235    108b ornek.o
+
+$ nm ornek.o             # semboller (T=text, D=data, B=bss, U=cozulmemis)
+0000000000000000 T kare
+0000000000000000 D saniye
+0000000000000000 B sayac
+                 U printf
+
+$ readelf -S ornek.o     # section basliklari (.text .data .bss .rodata ...)
+$ objdump -d ornek.o     # makine kodunu disassemble et
+\end{lstlisting}
+
+\uyari{\code{.bss}, ikili dosyada yalnızca bir ``boyut'' olarak durur; 4~KB'lık
+bir global dizi diskteki dosyayı büyütmez, ama çalışma zamanında bellekte yer
+kaplar. \code{.data} ise başlangıç değerlerini dosyada taşıdığı için dosyayı
+büyütür.}
+
+\gsub{Bağlama (Link) Zamanı: Adreslerin Atanması}
+
+Bağlayıcı (\code{ld}) tüm \code{.o} dosyalarını ve kütüphaneleri birleştirir:
+
+\begin{itemize}
+\item \textbf{Sembol çözümü:} Bir dosyadaki \code{U printf} gibi çözülmemiş
+      referanslar, tanımın bulunduğu yere bağlanır. Bulunamazsa
+      \emph{undefined reference} hatası burada çıkar.
+\item \textbf{Relocation:} Aynı türden section'lar birleştirilir ve her
+      sembole nihai sanal adres verilir; koddaki adres yer tutucuları
+      düzeltilir.
+\item \textbf{Statik vs dinamik:} Statik bağlamada kütüphane kodu ikiliye
+      kopyalanır (adresler kesinleşir). Dinamik bağlamada yalnızca bir
+      referans bırakılır; asıl bağlama yükleme zamanına ertelenir.
+\end{itemize}
+
+\begin{lstlisting}[style=shstyle]
+$ ldd ./program          # hangi paylasimli kutuphanelere bagli?
+        linux-vdso.so.1
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6
+        /lib64/ld-linux-x86-64.so.2   # dinamik baglayici (yukleyici)
+
+$ gcc main.c -static -o program   # her seyi ikiliye kopyala (buyuk ama bagimsiz)
+\end{lstlisting}
+
+\gsub{Yükleme (Load) Zamanı: Program Belleğe Nasıl Gelir?}
+
+\code{execve} sistem çağrısı çalıştığında çekirdek ve dinamik bağlayıcı
+sırayla şunları yapar:
+
+\begin{enumerate}
+\item Çekirdek ELF başlığını okur; \code{.text}, \code{.data} segmentlerini
+      dosyadan \code{mmap} ile sanal belleğe eşler (henüz fiziksel RAM'e
+      kopyalanmaz --- bkz. talep üzerine sayfalama).
+\item \code{.bss} için sıfırlanmış sayfalar ayrılır.
+\item \textbf{ASLR} (Address Space Layout Randomization) etkinse stack, heap,
+      kütüphaneler ve (PIE ikililerde) kod \emph{rastgele} taban adreslerine
+      yerleştirilir --- bu yüzden adresler her çalıştırmada değişir.
+\item Dinamik bağlayıcı (\code{ld.so}) paylaşımlı kütüphaneleri eşler ve
+      sembolleri \textbf{GOT/PLT} üzerinden bağlar (çoğu zaman \emph{lazy}:
+      fonksiyon ilk çağrıldığında).
+\item Kontrol \code{\_start}'a geçer; o \code{\_\_libc\_start\_main}'i, o da
+      senin \code{main}'ini çağırır.
+\end{enumerate}
+
+\begin{lstlisting}[style=shstyle]
+$ setarch -R ./program   # ASLR'yi kapatarak calistir (adresler sabitlenir)
+$ ltrace ./program       # kutuphane cagrilarini izle (lazy binding gorulur)
+$ LD_DEBUG=bindings ./program   # dinamik baglayicinin ne yaptigini gor
+\end{lstlisting}
+
+\bilgi{``Adres neden her çalıştırmada farklı?'' sorusunun cevabı ASLR'dir.
+Aynı programı iki kez çalıştırıp \code{\&local} yazdırırsan farklı değerler
+görürsün; \code{setarch -R} ile aynılaşırlar.}
+
+\gsub{Çalışma Zamanında Stack: Yığın Çerçevesi}
+
+Her fonksiyon çağrısında bir \emph{çerçeve} (stack frame) oluşur: dönüş
+adresi, kaydedilen register'lar ve yerel değişkenler. Derleyici bunların
+\emph{ofsetlerini} derleme zamanında bilir; asıl adresler çalışma zamanında,
+\code{rsp}/\code{rbp} register'larına göre belirlenir.
+
+\begin{lstlisting}
+int topla(int a, int b) {
+    int s = a + b;   // 's' cercevede rbp'ye gore sabit ofsette
+    return s;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+$ gcc -O0 -c topla.c && objdump -d topla.o
+topla:
+   push   %rbp              # eski cerceve tabanini sakla (prologue)
+   mov    %rsp,%rbp         # yeni cerceve tabani
+   mov    %edi,-0x14(%rbp)  # a -> yerel ofset
+   mov    %esi,-0x18(%rbp)  # b -> yerel ofset
+   ...
+   pop    %rbp              # cerceveyi geri al (epilogue)
+   ret                      # donus adresine don
+\end{lstlisting}
+
+\uyari{Stack sınırlıdır (tipik olarak 8~MB, \code{ulimit -s}). Çok derin özyineleme
+veya devasa yerel dizi (\code{int buf[1000000];}) \emph{stack overflow} ve
+segfault üretir. Büyük tamponları heap'ten al.}
+
+\gsub{Çalışma Zamanında Heap: brk, mmap ve Talep Üzerine Sayfalama}
+
+Heap tamamen çalışma zamanı olgusudur. \code{malloc} bir sistem çağrısı
+\emph{değildir}; kullanıcı alanında bir ayırıcıdır (glibc'de ptmalloc) ve
+çekirdekten toptan bellek ister:
+
+\begin{itemize}
+\item Küçük istekler için \code{brk}/\code{sbrk} ile heap sınırını yukarı iter
+      ve bu bloktan parçalar dağıtır.
+\item Büyük istekler için (varsayılan eşik $\approx$128~KB, \code{M\_MMAP\_THRESHOLD})
+      doğrudan \code{mmap} ile anonim bölge alır; \code{free} bunu \code{munmap}
+      ile geri verir.
+\item \textbf{Talep üzerine sayfalama (demand paging):} \code{malloc} sana
+      \emph{sanal} adres verir; fiziksel RAM ancak o sayfaya ilk
+      \emph{dokunduğunda} bir \emph{page fault} ile atanır. Bu yüzden büyük bir
+      \code{malloc} anında RAM tüketmez.
+\end{itemize}
+
+\begin{lstlisting}[style=shstyle]
+$ strace -e trace=brk,mmap,munmap ./program   # malloc'un altindaki cagrilar
+$ /usr/bin/time -v ./program | grep resident   # RSS: gercekten kullanilan RAM
+\end{lstlisting}
+
+\notk[VSZ vs RSS]{\code{top}/\code{ps} çıktısındaki \textbf{VSZ} ayrılan
+\emph{sanal} bellektir (dokunulmamış \code{malloc} dahil); \textbf{RSS} ise
+fiilen RAM'e düşmüş sayfalardır. 1~GB \code{malloc} edip hiç yazmazsan VSZ
+büyür, RSS neredeyse sabit kalır.}
+
+\gsub{Somut İnceleme: Canlı Bellek Haritası}
+
+Çalışan bir sürecin tüm bölgelerini \code{/proc} altından okuyabilirsin ---
+teoriyi gözünle görmenin en iyi yolu:
+
+\begin{lstlisting}[style=shstyle]
+$ cat /proc/self/maps        # veya /proc/<PID>/maps
+555...000-555...000 r-xp  ...  /path/program   # .text (kod, calistirilabilir)
+555...000-555...000 r--p  ...  /path/program   # .rodata (salt-okunur)
+555...000-555...000 rw-p  ...  /path/program   # .data + .bss
+555...000-556...000 rw-p  ...  [heap]          # brk ile buyuyen heap
+7f5...000-7f5...000 r-xp  ...  libc.so.6       # paylasimli kutuphane
+7ff...000-7ff...000 rw-p  ...  [stack]         # stack (asagi buyur)
+
+$ pmap -x <PID>              # ayni bilginin ozetlenmis, okunakli hali
+\end{lstlisting}
+
+\ipucu{İzin sütunu (\code{r-xp}, \code{rw-p}) segmentin doğasını ele verir:
+kod \code{r-x} (yazılamaz, çalıştırılabilir), veri \code{rw-} (çalıştırılamaz).
+Bu ayrım güvenliğin temelidir: \code{W\^{}X} ilkesi bir bölgenin aynı anda hem
+yazılabilir hem çalıştırılabilir olmasını engeller.}
+
+% =====================================================================
 \gsec{Bellek, Saklama Sınıfları ve Nitelikler}
 % =====================================================================
 
@@ -4179,6 +4397,204 @@ end
 \textbf{pwndbg}/\textbf{GEF} eklentileri kullanılabilir. Bellek hataları için
 GDB'yi \textbf{AddressSanitizer} (\code{-fsanitize=address}) ile birlikte
 kullanmak, hatayı oluştuğu anda yakalar.}
+
+% =====================================================================
+\gsec{Bağlayıcı (Linker) Derinlemesine: ld, Kütüphaneler ve Linker Script}
+% =====================================================================
+
+Bağlayıcı, nesne dosyalarını ve kütüphaneleri tek bir çalıştırılabilire (ya
+da paylaşımlı kütüphaneye) birleştiren araçtır. \emph{Derleme Zamanı ve
+Çalışma Zamanı} bölümünde bağlamanın \emph{ne zaman} olduğunu görmüştük; burada
+\emph{nasıl} yönetildiğine iniyoruz: \code{ld} kullanımı, kendi kütüphaneni
+üretme ve belleği bayt bayt yerleştiren linker script'ler.
+
+\gsub{gcc ile ld İlişkisi: Kim Kimi Çağırır?}
+
+Pratikte \code{ld}'yi nadiren doğrudan çağırırsın; \code{gcc} onu senin için
+çalıştırır ve C çalışma zamanı nesnelerini (\code{crt1.o}, \code{crti.o}\dots)
+ile libc yollarını otomatik ekler. Elle \code{ld} çağırmak bunların hepsini
+kendin vermeni gerektirir --- bu yüzden ``sıradan'' bağlamada \code{gcc}'yi
+sürücü olarak kullan, \code{ld}'ye özel seçenekleri \code{-Wl,} ile ilet.
+
+\begin{lstlisting}[style=shstyle]
+$ gcc -v main.c -o main    # gcc'nin arka planda cagirdigi ld/collect2 satirini gorurusun
+$ gcc main.o -o main       # onerilen: gcc surucu olarak (crt + libc otomatik)
+
+# gcc'den ld'ye secenek gecirme: -Wl,<secenek>[,<arg>]
+$ gcc main.o -o main -Wl,-Map=main.map      # ld'ye -Map=main.map ilet
+$ gcc main.o -o main -Wl,--gc-sections       # kullanilmayan section'lari at
+\end{lstlisting}
+
+\uyari{Bağlama sırası önemlidir: \code{-l} bayrağı, onu \emph{kullanan} nesne
+dosyalarından \emph{sonra} gelmelidir. \code{gcc -lm main.c} çoğu zaman
+``undefined reference to sqrt'' verir; doğrusu \code{gcc main.c -lm}. Bağlayıcı
+arşivleri soldan sağa tarar ve yalnızca o ana dek çözülmemiş sembolleri alır.}
+
+\gsub{Statik Kütüphane Oluşturma (.a)}
+
+Statik kütüphane, nesne dosyalarının \code{ar} ile paketlenmiş bir arşividir.
+Bağlama sırasında gereken nesneler \emph{ikiliye kopyalanır}.
+
+\begin{lstlisting}[style=shstyle]
+$ gcc -c topla.c carp.c            # topla.o, carp.o uret
+$ ar rcs libmat.a topla.o carp.o   # arsivle (r=ekle c=olustur s=indeks)
+$ ar t libmat.a                    # icindekileri listele
+
+$ gcc main.c -L. -lmat -o main     # -L. : bu dizinde ara, -lmat : libmat.a
+\end{lstlisting}
+
+\gsub{Paylaşımlı Kütüphane Oluşturma (.so)}
+
+Paylaşımlı kütüphane çalışma zamanında bağlanır; kod ikiliye kopyalanmaz,
+birden çok program aynı \code{.so}'yu paylaşır. Konumdan bağımsız kod
+(\code{-fPIC}) şarttır.
+
+\begin{lstlisting}[style=shstyle]
+$ gcc -fPIC -c topla.c carp.c
+$ gcc -shared -Wl,-soname,libmat.so.1 -o libmat.so.1.0.0 topla.o carp.o
+$ ln -sf libmat.so.1.0.0 libmat.so.1     # soname -> gercek dosya
+$ ln -sf libmat.so.1     libmat.so        # baglama adi (-lmat bunu bulur)
+
+$ gcc main.c -L. -lmat -o main            # baglama zamani
+$ ./main                                  # HATA: libmat.so.1 bulunamadi
+$ LD_LIBRARY_PATH=. ./main                # calisma zamani yolunu ver
+\end{lstlisting}
+
+\notk[soname, rpath ve ldconfig]{\code{soname} (\code{libmat.so.1}) ABI sürümünü
+kodlar; yalnızca uyumsuz değişimde artırılır. Yolu ikiliye \emph{gömmek} için
+\code{gcc \dots{} -Wl,-rpath,'\$ORIGIN'} (ikilinin yanındaki \code{.so}'yu bulur).
+Sisteme kalıcı kurulum için \code{.so}'yu \code{/usr/local/lib}'e koyup
+\code{sudo ldconfig} çalıştır.}
+
+\gsub{Sık Kullanılan Bağlama Bayrakları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bayrak} & \color{anaMavi}\textbf{Görev}\\
+\midrule
+-Wl,-Map=out.map & Bellek/sembol haritası dosyası üret (neyin nereye gittiği).\\
+\rowcolor{acikGri} -ffunction-sections -fdata-sections & Her fonksiyon/veriyi ayrı section'a koy (aşağıdakiyle birlikte).\\
+-Wl,--gc-sections & Hiç kullanılmayan section'ları at (ikili küçülür).\\
+\rowcolor{acikGri} -Wl,--wrap=malloc & \code{malloc} çağrılarını \code{\_\_wrap\_malloc}'a yönlendir (test/mock).\\
+-Wl,-Bstatic -lfoo -Wl,-Bdynamic & Yalnız \code{foo}'yu statik, gerisini dinamik bağla.\\
+\rowcolor{acikGri} -Wl,--as-needed & Fiilen kullanılmayan \code{.so} bağımlılıklarını ekleme.\\
+-nostdlib / -nostartfiles & libc / crt nesnelerini ekleme (gömülü, çekirdek, freestanding).\\
+\rowcolor{acikGri} -Wl,--version-script=v.map & Hangi sembollerin dışa açık (global) olacağını denetle.\\
+-Wl,-T,link.ld & Özel linker script kullan (aşağıya bkz.).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ornek[--wrap ile fonksiyon sarmalama]{Bir sembolü kendi kodunla değiştir;
+gerçeğine \code{\_\_real\_} önekiyle eriş. Ayırma sayacı takmak için birebir.}
+\begin{lstlisting}
+#include <stdlib.h>
+extern void *__real_malloc(size_t);   // gercek malloc
+void *__wrap_malloc(size_t n) {       // tum malloc cagrilari buraya gelir
+    void *p = __real_malloc(n);
+    /* burada log/sayac ekleyebilirsin */
+    return p;
+}
+// Derleme:  gcc main.c wrap.c -Wl,--wrap=malloc -o main
+\end{lstlisting}
+
+\gsub{Linker Script Nedir, Ne Zaman Gerekir?}
+
+Linker script (genelde \code{.ld} uzantılı), bağlayıcıya \emph{section'ları
+hangi bellek adreslerine yerleştireceğini} anlatan bir metin dosyasıdır.
+\code{ld}'nin zaten dahili (varsayılan) bir script'i vardır; sıradan Linux
+uygulamalarında ona dokunmana gerek yoktur. \textbf{Kendi script'ini}
+şu durumlarda yazarsın:
+
+\begin{itemize}
+\item Gömülü/bare-metal (STM32 vb.): Flash ve RAM adreslerini fiziksel
+      olarak sen belirlemelisin.
+\item Çekirdek/bootloader: \code{ENTRY} noktası ve segment adresleri kesin
+      olmalı.
+\item Özel section'lar: Belirli veriyi bilinen bir adrese sabitlemek.
+\end{itemize}
+
+\begin{lstlisting}[style=shstyle]
+$ ld --verbose            # ld'nin VARSAYILAN linker script'ini bas (ogrenmek icin)
+\end{lstlisting}
+
+\gsub{Minimal Linker Script Anatomisi}
+
+Üç temel yapı taşı vardır: \code{ENTRY} (giriş sembolü), \code{MEMORY} (fiziksel
+bellek bölgeleri) ve \code{SECTIONS} (çıktı section'larının yerleşimi).
+\code{.} sembolü ``konum sayacıdır'' (location counter) --- yerleştirdikçe
+ilerler.
+
+\begin{lstlisting}[style=shstyle]
+/* link.ld --- gomulu bir hedef icin ornek */
+ENTRY(_start)                     /* giris noktasi sembolu */
+
+MEMORY {                          /* fiziksel bellek haritasi */
+  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 512K
+  RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 128K
+}
+
+SECTIONS {
+  .text : {                       /* kod + salt-okunur veri -> FLASH */
+    *(.text*)                     /* tum girdi .text section'lari */
+    *(.rodata*)
+  } > FLASH
+
+  .data : {                       /* ilklenmis veri: RAM'de calisir... */
+    _sdata = .;                   /* baslangic adresini sembole yaz */
+    *(.data*)
+    _edata = .;
+  } > RAM AT > FLASH              /* ...ama ilk degerleri FLASH'ta durur (LMA) */
+
+  .bss : {                        /* sifirlanacak veri -> RAM */
+    _sbss = .;
+    *(.bss*)
+    _ebss = .;
+  } > RAM
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Kullanim (gomulu, libc'siz):
+$ arm-none-eabi-gcc -T link.ld -nostdlib start.o main.o -o firmware.elf
+# Linux'ta gcc surucusuyle:
+$ gcc -T link.ld main.o -o program
+\end{lstlisting}
+
+\bilgi{Script içinde tanımlanan \code{\_sdata}, \code{\_ebss} gibi semboller
+C tarafından \code{extern} olarak görülür. Başlangıç kodu (startup) bunları
+kullanarak \code{.data}'yı FLASH'tan RAM'e kopyalar ve \code{.bss}'i sıfırlar
+--- yani \code{main}'den önce belleği ``kuran'' koddur. Ayrıntılı bir gömülü
+örnek için \emph{STM32/ARM Gömülü} rehberindeki linker script bölümüne bakabilirsin.}
+
+\notk[VMA vs LMA]{\textbf{VMA} (Virtual Memory Address) section'ın çalışırken
+bulunacağı adres; \textbf{LMA} (Load Memory Address) ise başlangıçta
+\emph{yüklendiği} adrestir. \code{> RAM AT > FLASH} kalıbı ``çalışması RAM'de
+ama ilk değeri FLASH'ta'' demektir; farkı startup kodu kopyalayarak kapatır.}
+
+\gsub{Sembol Görünürlüğünü Denetleme (version script)}
+
+Bir paylaşımlı kütüphanede hangi sembollerin dışarıya açık olacağını version
+script ile sınırlarsın --- ABI'yi temiz tutar, iç sembolleri gizler.
+
+\begin{lstlisting}[style=shstyle]
+/* dinamik semboller: sadece api_* disari acik, gerisi gizli */
+{
+  global:
+    api_*;
+  local:
+    *;
+};
+\end{lstlisting}
+\begin{lstlisting}[style=shstyle]
+$ gcc -shared -fPIC -Wl,--version-script=exports.map -o libapi.so *.o
+$ nm -D libapi.so        # disa acik (dynamic) sembolleri dogrula
+\end{lstlisting}
+
+\ipucu{Aynı işi kaynak tarafında \code{\_\_attribute\_\_((visibility("hidden")))}
+ve \code{gcc -fvisibility=hidden} ile de yaparsın; büyük kütüphanelerde bağlama
+süresini ve sembol çakışmalarını azaltır.}
 
 % =====================================================================
 \gsec{Ek: Derleme, Hata Ayıklama ve Araçlar}

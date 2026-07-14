@@ -1,0 +1,2562 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{132C4A}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={C++ ile GLFW ve OpenGL Rehberi},
+  pdfauthor={Grafik Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}C++ ile GLFW \& OpenGL}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C++) ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+  morekeywords={GLFWwindow,GLFWmonitor,GLuint,GLint,GLfloat,GLchar,GLenum,
+    GLsizei,GLboolean,GLbitfield,GLvoid,GLdouble,GLubyte,glm,vec2,vec3,vec4,
+    mat3,mat4,quat,uint32_t,int32_t,uint8_t,size_t,nullptr,constexpr,noexcept,
+    override,final,auto,uint,in,out,layout,uniform,sampler2D,std}
+}
+\lstset{style=cppstyle}
+
+% ==================== KOD LİSTELEME (GLSL) ====================
+\lstdefinestyle{glslstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{mor}\bfseries,
+  keywordstyle=[2]\color{turuncu}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,numbersep=8pt,
+  backgroundcolor=\color{acikMor!35},
+  frame=single,framesep=6pt,rulecolor=\color{mor!40},
+  breaklines=true,showstringspaces=false,tabsize=4,
+  columns=fullflexible,keepspaces=true,extendedchars=true,
+  morekeywords={void,float,int,bool,vec2,vec3,vec4,mat2,mat3,mat4,
+    in,out,inout,uniform,layout,location,sampler2D,samplerCube,
+    if,else,for,while,return,const,struct,discard},
+  morekeywords=[2]{gl_Position,gl_FragCoord,gl_PointSize,gl_VertexID,
+    texture,normalize,dot,cross,reflect,pow,max,min,mix,clamp,length},
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\newcommand{\hd}[1]{\texttt{\color{koyuGri}\textless #1\textgreater}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries C++ ile GLFW}\\[10pt]
+{\color{vurguMavi}\LARGE Bilgisayar Grafiği, Matematik ve OpenGL Rehberi}\\[8pt]
+{\color{ortaGri}\large Teoriden Pencereye, Matematikten İlk Üçgene Kapsamlı Başvuru}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge önce bilgisayar grafiğinin \textbf{nasıl çalıştığını} (grafik boru
+hattı, GPU, rasterizasyon), sonra grafiğin \textbf{matematiğini} (vektörler,
+matrisler, dönüşümler, projeksiyon) ve ardından \textbf{GLFW + OpenGL} ile
+adım adım kod yazmayı \textbf{çok sayıda çalışan örnekle} anlatır.
+Tüm kod örnekleri İngilizce isimlendirmeyle, üretim projelerindeki
+gerçek stile uygun yazılmıştır.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kapsam --- Kısım 1 (Grafik Temelleri):} bilgisayar grafiği nedir
+\textbullet\ raster vs vektör \textbullet\ GPU \& CPU \textbullet\ grafik boru hattı
+\textbullet\ koordinat uzayları \textbullet\ renk \& framebuffer \textbullet\ çift tamponlama.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 2 (Grafik Matematiği):} vektörler \textbullet\ nokta \& çapraz çarpım
+\textbullet\ matrisler \& sayısal örnekler \textbullet\ öteleme/ölçek/döndürme \textbullet\ homojen koordinatlar
+\textbullet\ Model-View-Projection \textbullet\ kamera (LookAt) \textbullet\ perspektif \& ortografik projeksiyon.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 3 (GLFW):} kurulum \& CMake \textbullet\ ilk pencere
+\textbullet\ hata callback'i \textbullet\ olay döngüsü \textbullet\ GLAD \textbullet\ klavye/fare/scroll girdisi
+\textbullet\ tam ekran \& monitör \textbullet\ delta time \& FPS sayacı.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 4 (OpenGL Çizim):} GLSL derinlemesine \textbullet\ VBO/VAO/EBO
+\textbullet\ tam ilk üçgen programı \textbullet\ uniform'lar \textbullet\ dokular \& çoklu doku karışımı
+\textbullet\ glm ile dönüşümler \textbullet\ 3B küp \& derinlik testi \textbullet\ FPS kamera sınıfı \textbullet\ Phong aydınlatma.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 5 (Projeler):} soyutlanmış Shader sınıfı \textbullet\ hata denetimi yardımcıları
+\textbullet\ dönen renkli küp (tam program) \textbullet\ hata ayıklama tablosu \textbullet\ sonraki adımlar.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 14 Temmuz 2026}\\[4pt]
+{\color{ortaGri} C++17 \textbullet\ GLFW 3.x \textbullet\ OpenGL 3.3 Core \textbullet\ GLAD \textbullet\ GLM}
+\vspace*{0.4cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Bilgisayar Grafiğinin Temelleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{Bilgisayar Grafiği Nedir?}
+% =====================================================================
+
+Bilgisayar grafiği, sayısal verileri (noktalar, renkler, geometri) ekrandaki
+piksellere dönüştürme bilimidir. Bir üçgenin köşe koordinatlarından yola çıkıp,
+onu ekranda renkli bir yüzey olarak görmemizi sağlayan tüm matematiksel ve
+donanımsal süreç bu başlık altındadır. GLFW ve OpenGL öğrenmeden önce
+\emph{neyi} kontrol ettiğimizi anlamak, sonraki her satırı çok daha anlamlı kılar.
+
+\gsub{Raster ve Vektör Grafik}
+
+İki temel grafik temsili vardır. Aradaki farkı bilmek, GPU'nun neden
+piksellerle çalıştığını anlamanın anahtarıdır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tür} & \color{anaMavi}\textbf{Nasıl saklanır?} & \color{anaMavi}\textbf{Örnek}\\
+\midrule
+Raster & Piksellerden oluşan bir ızgara; her piksel bir renk değeri tutar. Büyütünce bozulur (pikselleşme). & PNG, JPEG, ekran görüntüsü, fotoğraf.\\
+\rowcolor{acikGri} Vektör & Matematiksel şekiller (doğru, eğri, çokgen). Sonsuz büyütülebilir, bozulmaz. & SVG, font, CAD çizimi.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Ekranımız bir raster aygıttır: sonunda her şey piksele dönmek zorundadır. OpenGL
+ile aslında \emph{vektörel} tanımlar (köşe koordinatları) veririz; GPU bunları
+\textbf{rasterizasyon} adı verilen adımda piksellere çevirir.
+
+\gsub{Gerçek Zamanlı ve Offline Grafik}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Yaklaşım} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Gerçek zamanlı (real-time) & Kareyi milisaniyeler içinde üretmek gerekir (60 FPS $\approx$ 16.6 ms/kare, 144 FPS $\approx$ 6.9 ms/kare). Oyunlar, simülasyonlar. Rasterizasyon tabanlıdır ve \textbf{OpenGL/GLFW bu dünyadadır}.\\
+\rowcolor{acikGri} Offline (ışın izleme) & Kare başına saniyeler/dakikalar harcanabilir. Fotogerçekçilik hedeflenir. Sinema efektleri (ray tracing / path tracing).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{Bu rehberdeki her şey \textbf{gerçek zamanlı rasterizasyon} üzerinedir.
+Amacımız kareyi mümkün olan en hızlı şekilde çizip ekrana basmaktır; bunun için
+GPU'nun paralel gücünü kullanırız. 60 FPS demek, tüm sahneyi (girdi, mantık,
+çizim) 16.6 milisaniyede bitirmek zorunda olmak demektir --- bu yüzden her çağrının
+maliyeti önemlidir.}
+
+\gsub{CPU ve GPU: İş Bölümü}
+
+CPU birkaç güçlü çekirdekle sıralı işleri iyi yapar; GPU ise binlerce basit
+çekirdekle \emph{aynı işlemi} milyonlarca veri üzerinde paralel yürütür. Bir
+ekran 1920$\times$1080 = ~2 milyon piksel içerir; her karede hepsini boyamak
+paralellik ister. İşte GPU tam bu iş için vardır.
+
+\begin{center}
+\begin{tabular}{|>{\centering\arraybackslash}p{0.44\textwidth}|>{\centering\arraybackslash}p{0.44\textwidth}|}
+\hline
+\rowcolor{anaMavi}\color{white}\textbf{CPU} & \color{white}\textbf{GPU}\\
+\hline
+\cellcolor{acikMavi} Az sayıda (4--32) güçlü çekirdek & \cellcolor{acikYesil} Binlerce basit çekirdek\\
+\hline
+\cellcolor{acikMavi} Karmaşık, dallı, sıralı mantık & \cellcolor{acikYesil} Basit, paralel, aynı-işlem\\
+\hline
+\cellcolor{acikMavi} Düşük gecikme (latency) & \cellcolor{acikYesil} Yüksek verim (throughput)\\
+\hline
+\end{tabular}
+\end{center}
+
+\notk[Programlama modeli]{CPU'da C++ ile \emph{host} kodu yazarız (GLFW penceresi,
+oyun mantığı). GPU'da ise GLSL ile \emph{shader} yazarız (her köşe/piksel için
+çalışan minik programlar). OpenGL bu ikisi arasındaki köprüdür: CPU'daki veriyi
+GPU'ya yükler ve shader'ları çalıştırır. Verinin CPU'dan GPU'ya kopyalanması
+pahalıdır; bu yüzden veriyi bir kez yükleyip defalarca kullanmayı hedefleriz.}
+
+% =====================================================================
+\gsec{Grafik Boru Hattı (Graphics Pipeline)}
+% =====================================================================
+
+Grafik boru hattı, köşe verisinin (vertex) ekrandaki renkli piksele dönüşene
+kadar geçtiği aşamalar zinciridir. OpenGL 3.3 Core'da bu boru hattının bazı
+aşamalarını biz programlarız (shader), bazıları ise sabit-fonksiyondur (GPU
+donanımı yapar). Tüm OpenGL kodunuz aslında bu boru hattını beslemekten ibarettir.
+
+\gsub{Boru Hattının Aşamaları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}r >{\raggedright\arraybackslash}X c@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Aşama} & \color{anaMavi}\textbf{Ne yapar?} & \color{anaMavi}\textbf{Kim?}\\
+\midrule
+1. Vertex verisi & VBO'dan köşe özniteliklerini (konum, renk, UV) okur. & Biz (VAO)\\
+\rowcolor{acikGri} 2. Vertex Shader & Her köşeyi işler; genelde MVP ile clip uzayına taşır. & \textbf{Biz (GLSL)}\\
+3. Primitive Assembly & Köşeleri üçgen/çizgi/nokta olarak gruplar. & GPU\\
+\rowcolor{acikGri} 4. (Geometry Shader) & Opsiyonel: yeni geometri üretebilir. & Biz (ops.)\\
+5. Rasterizasyon & Üçgeni kapsadığı piksellere (fragment) böler; öznitelikleri interpolasyonla yayar. & GPU\\
+\rowcolor{acikGri} 6. Fragment Shader & Her fragment'in nihai rengini hesaplar (doku, ışık). & \textbf{Biz (GLSL)}\\
+7. Testler \& Karıştırma & Derinlik testi, stencil, alpha blend uygulanır. & GPU\\
+\rowcolor{acikGri} 8. Framebuffer & Sonuç piksel renk tamponuna yazılır. & GPU\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{OpenGL 3.3 Core Profile'da \textbf{en az iki shader yazmak zorunludur}:
+bir \emph{vertex shader} ve bir \emph{fragment shader}. Bunlar olmadan hiçbir şey
+çizilmez. Rehberin 4. kısmında bunları satır satır yazacağız.}
+
+\gsub{Bir Üçgenin Yolculuğu}
+
+Somut düşünelim: ekranın ortasına bir üçgen çizmek istiyoruz. Üç köşesinin
+konumunu C++ dizisinde tanımlarız $\rightarrow$ VBO ile GPU belleğine yükleriz
+$\rightarrow$ vertex shader her köşeyi \code{gl\_Position} olarak clip uzayına
+yerleştirir $\rightarrow$ rasterizasyon üçgenin içindeki tüm pikselleri bulur
+$\rightarrow$ fragment shader her pikseli (ör. turuncuya) boyar $\rightarrow$
+sonuç ekrana gelir.
+
+\ornek[Zihinsel model]{OpenGL bir "durum makinesidir" (state machine). Sen
+"şu tamponu bağla", "şu shader'ı kullan", "şimdi çiz" dersin; OpenGL o anki
+duruma göre boru hattını çalıştırır. Bu yüzden çağrı \emph{sırası} çok önemlidir.
+Bir nesneyi \emph{bind} etmek, "sonraki komutlar bu nesneyi etkilesin" demektir.}
+
+% =====================================================================
+\gsec{Koordinat Sistemleri ve Uzaylar}
+% =====================================================================
+
+Bir 3B nesne ekrana gelene kadar birçok koordinat uzayından geçer. Bu
+dönüşümlerin tamamı matris çarpımlarıdır (Kısım 2). Şimdilik hangi uzayların
+olduğunu ve ne işe yaradığını kavrayalım.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Uzay} & \color{anaMavi}\textbf{Açıklama} & \color{anaMavi}\textbf{Dönüşüm}\\
+\midrule
+Local (Model) & Nesnenin kendi merkezine göre koordinatları. & ---\\
+\rowcolor{acikGri} World & Nesnenin sahnedeki (dünyadaki) yeri. & Model matrisi\\
+View (Kamera) & Her şeyin kameraya göre konumu. & View matrisi\\
+\rowcolor{acikGri} Clip & Perspektif uygulanmış, kırpma yapılan uzay. & Projection matrisi\\
+NDC & Normalized Device Coords: $[-1,1]^3$ küpü. & Perspektif bölme ($w$)\\
+\rowcolor{acikGri} Screen & Piksel koordinatları (viewport). & Viewport dönüşümü\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\notk[MVP zinciri]{Bir köşenin ekrandaki yeri şu çarpımla bulunur:
+\[
+\mathbf{v}_{clip} = \mathbf{P} \cdot \mathbf{V} \cdot \mathbf{M} \cdot \mathbf{v}_{local}
+\]
+Bu üç matrisi (Model, View, Projection) vertex shader'a uniform olarak
+göndeririz. Kısım 2 bu matrislerin nasıl kurulduğunu, Kısım 4 ise koda nasıl
+döküldüğünü anlatır.}
+
+\gsub{Normalized Device Coordinates (NDC)}
+
+Vertex shader'dan çıkan \code{gl\_Position} clip uzayındadır. GPU bunu $w$
+bileşenine bölerek NDC'ye geçer. NDC, her ekseni $[-1, 1]$ arasında olan bir
+küptür: sol alt köşe $(-1,-1)$, sağ üst $(+1,+1)$, merkez $(0,0)$. Bu küpün
+dışında kalan her şey \textbf{kırpılır} (clip). En basit üçgeni doğrudan NDC'de
+tanımlayarak (matris kullanmadan) çizebiliriz --- ilk örneğimizde tam olarak
+bunu yapacağız.
+
+\begin{center}
+\begin{tabular}{|>{\centering\arraybackslash}p{0.3\textwidth}|>{\centering\arraybackslash}p{0.3\textwidth}|}
+\hline
+\rowcolor{anaMavi}\multicolumn{2}{|c|}{\color{white}\textbf{NDC Düzlemi (z'yi yok sayarsak)}}\\
+\hline
+\cellcolor{acikMor}$(-1,+1)$ sol üst & \cellcolor{acikMor}$(+1,+1)$ sağ üst\\
+\hline
+\multicolumn{2}{|c|}{\cellcolor{acikGri} merkez $(0,0)$}\\
+\hline
+\cellcolor{acikYesil}$(-1,-1)$ sol alt & \cellcolor{acikYesil}$(+1,-1)$ sağ alt\\
+\hline
+\end{tabular}
+\end{center}
+
+\uyari{OpenGL'de NDC'nin Y ekseni \textbf{yukarı} doğrudur (matematiksel gelenek),
+ama ekran piksel koordinatlarında Y genelde \textbf{aşağı} doğrudur. Doku (texture)
+koordinatlarında bu ters çevrim sık sık kafa karıştırır; ilerde göreceğiz.}
+
+% =====================================================================
+\gsec{Renk, Framebuffer ve Çift Tamponlama}
+% =====================================================================
+
+\gsub{Renklerin Temsili}
+
+Ekranda renk, kırmızı-yeşil-mavi (RGB) ışığın toplamıyla oluşur (toplamsal renk
+karışımı). OpenGL'de renkleri genelde $[0.0, 1.0]$ aralığında \code{float}
+olarak veririz; bazen alfa (saydamlık) ile birlikte RGBA olarak.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c c c c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{R} & \color{anaMavi}\textbf{G} & \color{anaMavi}\textbf{B} & \color{anaMavi}\textbf{A} & \color{anaMavi}\textbf{Renk}\\
+\midrule
+1.0 & 0.0 & 0.0 & 1.0 & Kırmızı\\
+\rowcolor{acikGri} 0.0 & 1.0 & 0.0 & 1.0 & Yeşil\\
+0.0 & 0.0 & 1.0 & 1.0 & Mavi\\
+\rowcolor{acikGri} 1.0 & 1.0 & 1.0 & 1.0 & Beyaz\\
+0.2 & 0.3 & 0.3 & 1.0 & Koyu turkuaz (klasik arka plan)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Framebuffer ve Çift Tamponlama}
+
+Framebuffer, o an ekranda gösterilecek pikselleri tutan bellek bloğudur. Eğer
+tek bir tampona hem çizip hem gösterirsek, yarı çizilmiş kareler görünür ve
+görüntü titrer (flicker, tearing). Çözüm \textbf{çift tamponlamadır}:
+
+\begin{center}
+\begin{tabular}{|>{\centering\arraybackslash}p{0.42\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|}
+\hline
+\rowcolor{anaMavi}\color{white}\textbf{Tampon} & \color{white}\textbf{Rol}\\
+\hline
+\cellcolor{acikMavi}\textbf{Back Buffer} & GPU bir sonraki kareyi buraya \emph{gizlice} çizer.\\
+\hline
+\cellcolor{acikYesil}\textbf{Front Buffer} & Ekranda o an görünen kare.\\
+\hline
+\end{tabular}
+\end{center}
+
+Kare bittiğinde iki tampon \textbf{yer değiştirir} (swap). GLFW'de bunu
+\code{glfwSwapBuffers(window)} çağrısı yapar. Böylece kullanıcı hiçbir zaman
+yarı çizilmiş kare görmez.
+
+\notk[VSync]{Tamponların yer değiştirmesini ekranın yenileme hızıyla (60/144 Hz)
+senkronlamak "VSync"tir. GLFW'de \code{glfwSwapInterval(1)} ile açılır; ekran
+yırtılmasını (tearing) engeller ama FPS'i yenileme hızına sabitler.
+\code{glfwSwapInterval(0)} ile kapatılır (FPS sınırsız, ölçüm için faydalı).}
+
+\ipucu{Kısım 1'i bitirdin! Artık grafiğin \emph{ne} yaptığını biliyorsun:
+vektörel geometriyi GPU boru hattından geçirip, koordinat uzayları arasında
+dönüştürerek, çift tamponlu bir framebuffer'a rasterize etmek. Şimdi bu
+dönüşümlerin \emph{matematiğine} geçiyoruz.}
+
+% #####################################################################
+\gpart{2}{Grafik Matematiği}
+% #####################################################################
+
+Bu kısım grafiğin dilini kurar. Endişelenme: her kavramı hem matematiksel
+gösterimle hem de birazdan kullanacağımız \textbf{GLM} kütüphanesindeki karşılığıyla
+vereceğiz. GLM (OpenGL Mathematics), GLSL sözdizimini C++'a taşıyan başlık-only
+bir kütüphanedir; \code{glm::vec3}, \code{glm::mat4} gibi tipleri sağlar. Bütün
+kod örneklerinde İngilizce isimler kullanacağız.
+
+% =====================================================================
+\gsec{Trigonometri: Grafiğin Açı Dili}
+% =====================================================================
+
+Trigonometri, açılar ile uzunluklar arasındaki ilişkidir ve grafiğin her yerinde
+karşımıza çıkar: döndürme matrisleri, dairesel hareket, kamera yönü, dalga
+efektleri, aydınlatma... Döndürmeyi gerçekten anlamak için önce sinüs ve kosinüsü
+sağlam oturtmak gerekir. Bu bölüm sıfırdan kurar.
+
+\gsub{Radyan ve Derece}
+
+Açıyı iki birimle ölçeriz. \textbf{Derece} günlük birimdir (tam tur $=360^\circ$).
+\textbf{Radyan} ise matematiğin ve tüm grafik kütüphanelerinin doğal birimidir:
+bir açının radyan değeri, birim çemberde o açının gerdiği yay uzunluğudur. Tam
+tur $=2\pi$ radyandır.
+
+\[
+180^\circ = \pi \text{ radyan} \qquad\Longrightarrow\qquad
+\text{radyan} = \text{derece}\times\frac{\pi}{180}
+\]
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c c c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Derece} & \color{anaMavi}\textbf{Radyan} & \color{anaMavi}\textbf{$\sin$} & \color{anaMavi}\textbf{$\cos$}\\
+\midrule
+$0^\circ$   & $0$        & $0$            & $1$\\
+\rowcolor{acikGri} $30^\circ$  & $\pi/6$    & $0.5$          & $\approx 0.866$\\
+$45^\circ$  & $\pi/4$    & $\approx 0.707$ & $\approx 0.707$\\
+\rowcolor{acikGri} $60^\circ$  & $\pi/3$    & $\approx 0.866$ & $0.5$\\
+$90^\circ$  & $\pi/2$    & $1$            & $0$\\
+\rowcolor{acikGri} $180^\circ$ & $\pi$      & $0$            & $-1$\\
+$270^\circ$ & $3\pi/2$   & $-1$           & $0$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\uyari{C++ \code{<cmath>} fonksiyonları (\code{sin}, \code{cos}, \code{tan}) ve
+GLM'nin trigonometrik/döndürme fonksiyonları \textbf{radyan} bekler. Derece ile
+çalışmak istersen daima \code{glm::radians(derece)} ile çevir. Bu, yeni
+başlayanların bir numaralı hatasıdır --- \code{sin(90)}, sandığın $1$'i değil,
+$90$ radyanın sinüsü olan $\approx 0.894$'ü verir.}
+
+\begin{lstlisting}
+#include <cmath>
+#include <glm/glm.hpp>
+
+const float PI = 3.14159265358979f;
+
+float radians = glm::radians(90.0f);   // 1.5708 (pi/2)
+float degrees = glm::degrees(PI);      // 180.0
+float s = std::sin(radians);           // 1.0
+float c = std::cos(radians);           // ~0.0
+\end{lstlisting}
+
+\gsub{Birim Çember: Sinüs ve Kosinüs}
+
+En sağlam sezgi \emph{birim çemberdir}: merkezi orijinde, yarıçapı 1 olan çember.
+Merkezden $\theta$ açısıyla çizilen yarıçapın çember üzerindeki ucu tam olarak
+$(\cos\theta,\ \sin\theta)$ noktasıdır.
+
+\[
+\text{çember üzerindeki nokta} = (\cos\theta,\ \sin\theta)
+\]
+
+Yani: \textbf{kosinüs} noktanın X (yatay) bileşeni, \textbf{sinüs} ise Y (dikey)
+bileşenidir. $\theta$ arttıkça nokta çember boyunca saat yönünün tersine döner.
+Bu tek cümle, döndürme ve dairesel hareketin tamamının temelidir.
+
+\begin{center}
+\begin{tabular}{|>{\centering\arraybackslash}p{0.28\textwidth}|>{\centering\arraybackslash}p{0.28\textwidth}|>{\centering\arraybackslash}p{0.28\textwidth}|}
+\hline
+\rowcolor{anaMavi}\color{white}\textbf{Açı $\theta$} & \color{white}\textbf{$\cos\theta$ (X)} & \color{white}\textbf{$\sin\theta$ (Y)}\\
+\hline
+\cellcolor{acikMavi}$0^\circ$ (sağ) & $1$ & $0$\\
+\hline
+\cellcolor{acikYesil}$90^\circ$ (yukarı) & $0$ & $1$\\
+\hline
+\cellcolor{acikMor}$180^\circ$ (sol) & $-1$ & $0$\\
+\hline
+\cellcolor{turuncu!18}$270^\circ$ (aşağı) & $0$ & $-1$\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}
+// Move an object along a circle of radius r (classic orbit)
+float angle  = (float)glfwGetTime();   // grows over time (radians)
+float radius = 2.0f;
+float x = radius * std::cos(angle);    // horizontal position
+float y = radius * std::sin(angle);    // vertical position
+glm::vec3 orbitPos(x, y, 0.0f);        // point orbiting the origin
+\end{lstlisting}
+
+\bilgi{Dik üçgen tanımıyla köprü: bir dik üçgende $\sin\theta=\dfrac{\text{karşı}}
+{\text{hipotenüs}}$, $\cos\theta=\dfrac{\text{komşu}}{\text{hipotenüs}}$,
+$\tan\theta=\dfrac{\sin\theta}{\cos\theta}=\dfrac{\text{karşı}}{\text{komşu}}$.
+Birim çemberde hipotenüs $=1$ olduğu için karşı kenar doğrudan $\sin$, komşu
+kenar doğrudan $\cos$ olur --- iki tanım aynı şeydir.}
+
+\gsub{Temel Özdeşlikler}
+
+Grafik kodunda sık işine yarayacak birkaç özdeşlik:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Özdeşlik} & \color{anaMavi}\textbf{Nerede işe yarar?}\\
+\midrule
+$\sin^2\theta + \cos^2\theta = 1$ & Pisagor; birim vektör olduğunu doğrular, normalize kısayolu.\\
+\rowcolor{acikGri} $\sin(-\theta) = -\sin\theta$ & Tek fonksiyon (simetri).\\
+$\cos(-\theta) = \cos\theta$ & Çift fonksiyon (simetri).\\
+\rowcolor{acikGri} $\sin(\theta) = \cos(\theta - 90^\circ)$ & Sinüs, kosinüsün kaydırılmışıdır (faz farkı).\\
+Periyot $= 2\pi$ & Her ikisi de $2\pi$'de tekrarlar; dalga/animasyon döngüsü.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ornek[$(\cos\theta,\sin\theta)$ neden birim vektördür?]{Uzunluğu hesaplayalım:
+\[
+\lVert(\cos\theta,\sin\theta)\rVert=\sqrt{\cos^2\theta+\sin^2\theta}=\sqrt{1}=1.
+\]
+İşte bu yüzden $(\cos\theta,\sin\theta)$ her zaman \emph{birim} bir yön verir ---
+kamera bakış yönü üretirken (yaw/pitch) tam da bundan faydalanırız.}
+
+\gsub{Tanjant ve atan2: Noktadan Açıya}
+
+Bazen tersine gitmek gerekir: elimizde bir yön vektörü var, açısını istiyoruz.
+Bunun için \code{atan2(y, x)} kullanılır --- sıradan \code{atan}'dan farkı, dört
+bölgeyi (quadrant) doğru ayırt etmesi ve $-\pi$ ile $+\pi$ arasında doğru açıyı
+vermesidir.
+
+\begin{lstlisting}
+// Direction from player to target -> angle to face it
+glm::vec2 toTarget = targetPos - playerPos;
+float facingAngle  = std::atan2(toTarget.y, toTarget.x); // radians, -PI..PI
+
+// Turn it back into a facing direction vector:
+glm::vec2 facing(std::cos(facingAngle), std::sin(facingAngle));
+\end{lstlisting}
+
+\uyari{Her zaman \code{atan2(y, x)} kullan, \code{atan(y/x)} değil. \code{atan}
+noktanın hangi çeyrekte olduğunu bilemez (ör. $(1,1)$ ile $(-1,-1)$ aynı oranı
+verir) ve $x=0$'da sıfıra bölme yaşarsın. \code{atan2} bu iki sorunu da çözer.}
+
+\gsub{Trigonometri Neden Döndürme Matrisinin İçinde?}
+
+Şimdi her şey birleşiyor. Bir $(x, y)$ noktasını $\theta$ açısıyla döndürünce yeni
+konum şudur:
+\[
+x' = x\cos\theta - y\sin\theta,\qquad y' = x\sin\theta + y\cos\theta
+\]
+Bu iki satır tam olarak Z-ekseni döndürme matrisinin ilk iki satırıdır (bir
+sonraki bölümde göreceğiz). Yani döndürme matrisindeki bütün o $\sin$/$\cos$
+değerleri, "noktayı birim çember boyunca $\theta$ kadar kaydır" demenin matris
+dilindeki karşılığıdır.
+
+\begin{lstlisting}
+// Rotating a 2D point by hand (what the rotation matrix does internally)
+glm::vec2 rotate2D(glm::vec2 p, float theta) {
+    float s = std::sin(theta), c = std::cos(theta);
+    return glm::vec2(p.x * c - p.y * s,   // x' = x cos - y sin
+                     p.x * s + p.y * c);  // y' = x sin + y cos
+}
+\end{lstlisting}
+
+\bilgi{Trigonometri ile animasyon: \code{sin} ve \code{cos} $[-1, 1]$ arasında
+yumuşakça salındığı için "nefes alma", yukarı-aşağı süzülme, yanıp sönme gibi
+efektlerin doğal kaynağıdır. \code{float offset = std::sin(glfwGetTime() * hız) *
+genlik;} tek satırla pürüzsüz bir salınım verir. Aynı fikir, GLSL'de dalga/su
+efektlerinin de temelidir.}
+
+\ipucu{Grafikte trigonometriyi üç yerde göreceksin: (1) \textbf{döndürme}
+(matrislerdeki $\sin$/$\cos$), (2) \textbf{yön üretme} (yaw/pitch $\to$ birim
+vektör, kamera bölümü), (3) \textbf{periyodik hareket} (yörünge, dalga,
+salınım). Üçü de bu bölümdeki tek fikre dayanır: açı $\to$ çember üzerinde nokta.}
+
+% =====================================================================
+\gsec{Vektörler}
+% =====================================================================
+
+Vektör, hem büyüklüğü (uzunluk) hem yönü olan bir niceliktir. Grafikte konumları,
+yönleri, renkleri, hızları temsil eder. 3B'de üç bileşeni vardır: $\mathbf{v} =
+(x, y, z)$.
+
+\gsub{Temel İşlemler}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{İşlem} & \color{anaMavi}\textbf{Formül} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+Toplama & $\mathbf{a}+\mathbf{b}=(a_x{+}b_x,\dots)$ & Yer değiştirmelerin zinciri.\\
+\rowcolor{acikGri} Skalerle çarpma & $s\mathbf{a}=(sa_x,\dots)$ & Uzatma/kısaltma.\\
+Uzunluk & $\lVert\mathbf{a}\rVert=\sqrt{a_x^2+a_y^2+a_z^2}$ & Büyüklük (norm).\\
+\rowcolor{acikGri} Normalizasyon & $\hat{\mathbf{a}}=\mathbf{a}/\lVert\mathbf{a}\rVert$ & Uzunluğu 1 olan birim yön.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+glm::vec3 a(1.0f, 2.0f, 3.0f);
+glm::vec3 b(4.0f, 5.0f, 6.0f);
+
+glm::vec3 sum       = a + b;              // (5, 7, 9)
+glm::vec3 scaled    = 2.0f * a;           // (2, 4, 6)
+float     len       = glm::length(a);     // sqrt(14) ~ 3.742
+glm::vec3 unit       = glm::normalize(a); // length becomes 1
+\end{lstlisting}
+
+\uyari{Bir vektörü normalize etmek onu \emph{birim vektör} yapar (uzunluğu 1).
+Işık ve kamera hesaplarının neredeyse tamamı yön vektörlerinin normalize
+olmasını bekler; unutursan aydınlatma yanlış çıkar. \code{glm::normalize} ile
+sıfır vektörü normalize etme --- 0'a bölme NaN üretir.}
+
+\gsub{Nokta Çarpım (Dot Product)}
+
+İki vektörün nokta çarpımı bir \emph{skalerdir} ve aralarındaki açıyla ilgilidir:
+\[
+\mathbf{a}\cdot\mathbf{b}=a_xb_x+a_yb_y+a_zb_z=\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\cos\theta
+\]
+Her iki vektör de birim ise, nokta çarpım doğrudan $\cos\theta$'dır. Bu, grafikte
+altın değerindedir: bir yüzeyin ışığa ne kadar dönük olduğunu (diffuse
+aydınlatma) tam olarak bu belirler.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{$\mathbf{a}\cdot\mathbf{b}$ işareti} & \color{anaMavi}\textbf{Yorum}\\
+\midrule
+$>0$ & Vektörler aynı yöne bakıyor (açı $<90^\circ$).\\
+\rowcolor{acikGri} $=0$ & Dik (ortogonal).\\
+$<0$ & Zıt yöne bakıyor (açı $>90^\circ$).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+float d = glm::dot(a, b);                    // 1*4 + 2*5 + 3*6 = 32
+
+// Angle between two directions (in radians):
+glm::vec3 u = glm::normalize(a);
+glm::vec3 v = glm::normalize(b);
+float angle = glm::acos(glm::dot(u, v));     // 0..PI
+
+// Is the surface facing the light? (diffuse factor)
+float diffuse = glm::max(glm::dot(normal, lightDir), 0.0f);
+\end{lstlisting}
+
+\gsub{Çapraz Çarpım (Cross Product)}
+
+İki vektörün çapraz çarpımı, \textbf{her ikisine de dik} yeni bir vektördür.
+Yüzey normallerini ve kamera baz eksenlerini bulmakta vazgeçilmezdir.
+\[
+\mathbf{a}\times\mathbf{b}=(a_yb_z-a_zb_y,\; a_zb_x-a_xb_z,\; a_xb_y-a_yb_x)
+\]
+
+\begin{lstlisting}
+glm::vec3 n = glm::cross(a, b);   // vector perpendicular to both a and b
+
+// Surface normal of a triangle (from two edges):
+glm::vec3 edge1  = p1 - p0;
+glm::vec3 edge2  = p2 - p0;
+glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+\end{lstlisting}
+
+\bilgi{Çapraz çarpımın yönü \emph{sağ el kuralına} uyar ve sıra önemlidir:
+$\mathbf{a}\times\mathbf{b}=-(\mathbf{b}\times\mathbf{a})$. Yüzey normalinin
+"dışarı" mı "içeri" mi baktığı, köşe sıralamana (winding order) bağlıdır ---
+bu, arka yüz eleme (back-face culling) için kritiktir.}
+
+% =====================================================================
+\gsec{Matrisler ve Dönüşümler}
+% =====================================================================
+
+Matris, bir sayı ızgarasıdır ve grafikte \textbf{dönüşümleri} temsil eder. Bir
+noktayı bir matrisle çarpmak onu öteler, döndürür veya ölçekler. 3B grafikte
+$4\times4$ matrisler kullanırız (nedenini homojen koordinatlarda göreceğiz).
+
+\gsub{Matris Çarpımı ve Birim Matris}
+
+Bir dönüşümü bir vektöre uygulamak, matris$\times$vektör çarpımıdır. Birden fazla
+dönüşümü birleştirmek ise matris$\times$matris çarpımıdır. \textbf{Birim matris}
+$\mathbf{I}$ hiçbir şeyi değiştirmez (1 ile çarpmak gibi):
+\[
+\mathbf{I}=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}
+\]
+
+\ornek[Sayısal örnek: $2\times2$ matris $\times$ vektör]{Bir noktayı 90° döndüren
+matris ile $(1,0)$ noktasını çarpalım:
+\[
+\begin{pmatrix}\cos90^\circ&-\sin90^\circ\\\sin90^\circ&\cos90^\circ\end{pmatrix}
+\begin{pmatrix}1\\0\end{pmatrix}=
+\begin{pmatrix}0&-1\\1&0\end{pmatrix}\begin{pmatrix}1\\0\end{pmatrix}=
+\begin{pmatrix}0\\1\end{pmatrix}
+\]
+$(1,0)$ noktası $(0,1)$'e döndü --- yani saat yönünün tersine 90°. İşte tüm
+dönüşümler bu satır$\times$sütun çarpımından ibarettir.}
+
+\begin{lstlisting}
+#include <glm/gtc/matrix_transform.hpp>
+
+glm::mat4 identity(1.0f);  // constructing with 1.0f => IDENTITY (very common gotcha!)
+\end{lstlisting}
+
+\uyari{\code{glm::mat4 m;} demek matrisi \emph{sıfırlamaz} ve birim yapmaz;
+ilklendirilmemiş kalabilir. Her zaman \code{glm::mat4 m(1.0f)} yazarak açıkça
+birim matris kur. Sıfır matrisle çarpılan her nokta orijine çöker ve ekranda
+hiçbir şey görünmez.}
+
+\uyari{Matris çarpımı \textbf{değişmeli değildir}: $\mathbf{A}\mathbf{B}\neq
+\mathbf{B}\mathbf{A}$. "Önce döndür sonra öte" ile "önce öte sonra döndür"
+tamamen farklı sonuç verir. Sıra her şeydir.}
+
+\gsub{Öteleme (Translation)}
+
+Bir noktayı $(t_x, t_y, t_z)$ kadar kaydırır. Homojen $4\times4$ formu:
+\[
+\mathbf{T}=\begin{pmatrix}1&0&0&t_x\\0&1&0&t_y\\0&0&1&t_z\\0&0&0&1\end{pmatrix}
+\]
+
+\begin{lstlisting}
+glm::mat4 translation =
+    glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.0f));
+// Moves the object +2 on X and +1 on Y.
+\end{lstlisting}
+
+\gsub{Ölçekleme (Scale)}
+
+Her ekseni bağımsız büyütür/küçültür:
+\[
+\mathbf{S}=\begin{pmatrix}s_x&0&0&0\\0&s_y&0&0\\0&0&s_z&0\\0&0&0&1\end{pmatrix}
+\]
+
+\begin{lstlisting}
+glm::mat4 scaling = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)); // 2x on every axis
+\end{lstlisting}
+
+\gsub{Döndürme (Rotation)}
+
+Bir eksen etrafında $\theta$ açısıyla döndürür. Örneğin Z ekseni etrafında:
+\[
+\mathbf{R}_z(\theta)=\begin{pmatrix}\cos\theta&-\sin\theta&0&0\\\sin\theta&\cos\theta&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}
+\]
+
+\begin{lstlisting}
+// glm::radians converts degrees -> radians (GLM expects radians!)
+glm::mat4 rotation = glm::rotate(glm::mat4(1.0f),
+                                 glm::radians(45.0f),          // angle
+                                 glm::vec3(0.0f, 0.0f, 1.0f)); // around Z axis
+\end{lstlisting}
+
+\uyari{GLM'nin trigonometrik ve döndürme fonksiyonları \textbf{radyan} bekler,
+derece değil. \code{glm::rotate(m, 90.0f, axis)} yazarsan 90 \emph{radyan}
+dönersin (yani ~5157 derece). Daima \code{glm::radians(90.0f)} kullan.}
+
+\gsub{Dönüşümleri Birleştirme}
+
+Birden fazla dönüşümü tek matriste toplayabiliriz. Kritik nokta: GLM'de (ve
+OpenGL'de) çarpım \textbf{sağdan sola} uygulanır. Yani kodda önce yazdığın matris,
+noktaya en \emph{son} uygulanır.
+
+\begin{lstlisting}
+// Goal: first scale the object, then rotate it, and finally translate it.
+// Application order to a vertex v: T * R * S * v  (S applies to v first)
+glm::mat4 model(1.0f);
+model = glm::translate(model, position);              // applied 3rd
+model = glm::rotate(model, glm::radians(angle), axis); // applied 2nd
+model = glm::scale(model, scale);                     // applied 1st (closest to v)
+// Result: model = T * R * S
+\end{lstlisting}
+
+\notk[Sağdan sola sezgisi]{\code{model = T; model *= R; model *= S;} zinciri
+$\mathbf{T}\cdot\mathbf{R}\cdot\mathbf{S}$ üretir. Bir köşe $\mathbf{v}$ bununla
+çarpılınca önce $\mathbf{S}$ (ölçek), sonra $\mathbf{R}$ (döndür), en son
+$\mathbf{T}$ (öte) etkir. Doğru sıra: önce yerel şekli düzenle (ölçek/döndür),
+en son dünyaya yerleştir (öte). Tersini yaparsan nesne orijin etrafında yörüngeye
+girer.}
+
+% =====================================================================
+\gsec{Homojen Koordinatlar}
+% =====================================================================
+
+Neden $3\times3$ değil de $4\times4$ matris? Çünkü \textbf{öteleme} bir matris
+çarpımıyla ifade edilemez --- düz matris çarpımı orijini sabit tutar. Çözüm:
+noktalara dördüncü bir bileşen $w$ ekleyip $(x, y, z, w)$ yapmak. Buna
+\emph{homojen koordinatlar} denir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{$w$ değeri} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+$w = 1$ & Bir \textbf{nokta} (konum). Öteleme onu etkiler.\\
+\rowcolor{acikGri} $w = 0$ & Bir \textbf{yön} (vektör). Öteleme onu etkilemez, sadece döndürme/ölçek.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+glm::vec4 point     = glm::vec4(pos, 1.0f);  // w=1: a position, translation affects it
+glm::vec4 direction = glm::vec4(dir, 0.0f);  // w=0: a direction, translation ignored
+
+glm::mat4 model = /* ... */;
+glm::vec3 worldPos = glm::vec3(model * point);      // translated + rotated + scaled
+glm::vec3 worldDir = glm::vec3(model * direction);  // only rotated + scaled
+\end{lstlisting}
+
+\bilgi{Bu ayrım çok işe yarar: bir konum noktasını dünyaya taşırken (w=1) öteleme
+uygulanmalı, ama bir yön vektörünü (ör. ışık yönü, yüzey normali, w=0) taşırken
+öteleme \emph{uygulanmamalı} --- yönün başladığı yer önemsizdir.}
+
+\gsub{Perspektif Bölme}
+
+Perspektif projeksiyondan sonra $w$ artık 1 olmayabilir. GPU, clip uzayından
+NDC'ye geçerken her bileşeni $w$'ye böler:
+\[
+(x, y, z, w) \;\longrightarrow\; \left(\tfrac{x}{w}, \tfrac{y}{w}, \tfrac{z}{w}\right)
+\]
+İşte "uzaktakiler küçük görünür" etkisi buradan gelir: uzak nesnelerde $w$
+büyüktür, bölünce koordinatlar küçülür. Bu bölmeyi GPU otomatik yapar; biz
+sadece doğru projeksiyon matrisini vermekle yükümlüyüz.
+
+% =====================================================================
+\gsec{View ve Projection: Kamera Matematiği}
+% =====================================================================
+
+\gsub{View Matrisi (LookAt)}
+
+Aslında "kamerayı hareket ettirmek" diye bir şey yoktur; bunun yerine \emph{tüm
+dünyayı} kameranın tersine hareket ettiririz. View matrisi bunu yapar. GLM'nin
+\code{lookAt} fonksiyonu üç şeyle bir kamera kurar:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Parametre} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+eye (position) & Kameranın dünyadaki konumu.\\
+\rowcolor{acikGri} center (target) & Kameranın baktığı nokta.\\
+up & "Yukarı" yönü (genelde $(0,1,0)$).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+glm::vec3 cameraPos    = glm::vec3(0.0f, 0.0f,  3.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f,  0.0f);
+glm::vec3 worldUp      = glm::vec3(0.0f, 1.0f,  0.0f);
+
+glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, worldUp);
+\end{lstlisting}
+
+\notk[Perde arkası]{\code{lookAt} içeride kamera için üç dik birim eksen kurar:
+\emph{forward} (target$-$eye), \emph{right} (up $\times$ forward) ve \emph{true up}
+(forward $\times$ right). Bu çapraz çarpımlar tam da 6. bölümde öğrendiğimiz işlemdir.
+Sonra bu eksenlerle dünyayı kamera uzayına döndürüp öteler.}
+
+\gsub{Projection Matrisi}
+
+Projeksiyon matrisi 3B sahneyi 2B ekrana nasıl "yansıtacağımızı" belirler ve
+görünür hacmi (frustum) tanımlar. İki tür vardır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Perspektif} & \color{anaMavi}\textbf{Ortografik}\\
+\midrule
+Uzaktakiler küçülür (gerçekçi, 3B oyunlar). & Boyut mesafeden bağımsız (CAD, 2B, izometrik).\\
+\rowcolor{acikGri} Görünür hacim bir \emph{piramit kesiği} (frustum). & Görünür hacim bir \emph{dikdörtgen prizma}.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+// Perspective: FOV, aspect ratio, near and far planes
+float aspect = (float)width / (float)height;
+glm::mat4 projection = glm::perspective(glm::radians(45.0f), // vertical field of view
+                                        aspect,              // width / height
+                                        0.1f,                // near (must be > 0!)
+                                        100.0f);             // far
+
+// Orthographic: left, right, bottom, top, near, far
+glm::mat4 ortho = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+\end{lstlisting}
+
+\uyari{Perspektifte \code{near} düzlemi kesinlikle \textbf{0'dan büyük} olmalıdır
+(ör. 0.1). 0 verirsen derinlik tamponu (z-buffer) hassasiyeti bozulur ve
+"z-fighting" (titreşen yüzeyler) yaşarsın. Ayrıca near/far aralığını gereksiz
+geniş tutma; hassasiyet near'a yakın toplanır.}
+
+\gsub{Hepsini Birleştirmek}
+
+Artık MVP zincirini tamamlayabiliriz. Vertex shader'da her köşeyi şöyle
+dönüştüreceğiz:
+
+\begin{lstlisting}
+// On the C++ side we build three matrices and send them as uniforms:
+glm::mat4 model      = /* object's placement in the world */;
+glm::mat4 view       = glm::lookAt(cameraPos, cameraTarget, worldUp);
+glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+
+// Inside the GLSL vertex shader:
+//   gl_Position = projection * view * model * vec4(aPos, 1.0);
+\end{lstlisting}
+
+\ipucu{Kısım 2 bitti. Artık bir noktanın modelden ekrana yolculuğunun her
+adımının matematiğini biliyorsun. Bundan sonrası bu matematiği çalışan bir
+pencerede canlandırmak: GLFW ile pencere açıp OpenGL ile çizmek.}
+
+% #####################################################################
+\gpart{3}{GLFW: Pencere, Bağlam ve Girdi}
+% #####################################################################
+
+GLFW (Graphics Library Framework), çok platformlu, hafif bir C kütüphanesidir.
+Tek işi vardır ama onu çok iyi yapar: bir OpenGL \textbf{bağlamı (context)} olan
+pencere açmak, olayları (klavye, fare, boyutlandırma) yönetmek ve tamponları
+değiştirmek. GLFW hiçbir şey \emph{çizmez} --- çizim OpenGL'in işidir. GLFW ise
+üzerine çizeceğin tuvali ve girdi sistemini sağlar.
+
+% =====================================================================
+\gsec{Kurulum ve Derleme}
+% =====================================================================
+
+Bir OpenGL projesi tipik olarak üç parçadan oluşur:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bileşen} & \color{anaMavi}\textbf{Görevi}\\
+\midrule
+GLFW & Pencere + bağlam + girdi.\\
+\rowcolor{acikGri} GLAD (veya GLEW) & OpenGL fonksiyon işaretçilerini çalışma anında yükler.\\
+GLM & Vektör/matris matematiği (başlık-only).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{\textbf{GLAD neden gerekli?} OpenGL'in modern fonksiyonları (ör.
+\code{glCreateShader}) sürücüde bulunur ve adresleri çalışma anında öğrenilmelidir.
+GLAD bu adresleri senin için yükler. GLAD kodunu \url{https://glad.dav1d.de}
+sitesinden üretirsin: API=OpenGL, Version=3.3, Profile=Core seçip indir.}
+
+\gsub{Linux'ta Paketlerin Kurulumu}
+
+\begin{lstlisting}[style=shstyle]
+# Debian / Ubuntu
+$ sudo apt install libglfw3-dev libglm-dev cmake g++
+# Download GLAD from glad.dav1d.de and add it (glad.c + include/) to the project
+
+# Fedora
+$ sudo dnf install glfw-devel glm-devel cmake gcc-c++
+
+# Arch
+$ sudo pacman -S glfw glm cmake
+\end{lstlisting}
+
+\gsub{CMake ile Proje Yapısı}
+
+Önerilen dizin düzeni:
+
+\begin{lstlisting}[style=shstyle]
+project/
+|-- CMakeLists.txt
+|-- src/
+|   \-- main.cpp
+|-- glad/
+|   |-- src/glad.c
+|   |-- include/glad/glad.h
+|   \-- include/KHR/khrplatform.h
+\-- shaders/
+    |-- basic.vert
+    \-- basic.frag
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# CMakeLists.txt
+cmake_minimum_required(VERSION 3.16)
+project(GlfwGuide LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
+
+add_executable(app
+    src/main.cpp
+    glad/src/glad.c)          # include GLAD in the build
+
+target_include_directories(app PRIVATE glad/include)
+target_link_libraries(app PRIVATE glfw OpenGL::GL ${CMAKE_DL_LIBS})
+# ${CMAKE_DL_LIBS}: GLAD may need libdl for dlopen
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Build
+$ cmake -S . -B build
+$ cmake --build build
+$ ./build/app
+\end{lstlisting}
+
+\notk[Elle derleme]{CMake istemiyorsan tek satırla da derleyebilirsin:
+\code{g++ -std=c++17 src/main.cpp glad/src/glad.c -Iglad/include -lglfw -lGL -ldl -o app}}
+
+% =====================================================================
+\gsec{İlk Pencere}
+% =====================================================================
+
+Şimdi en küçük tam GLFW programını yazalım. Bu program bir pencere açar, koyu
+turkuaz bir arka planla temizler ve kullanıcı kapatana kadar açık tutar. Her
+satırı yorumluyoruz.
+
+\begin{lstlisting}
+#include <glad/glad.h>   // GLAD must be included BEFORE GLFW!
+#include <GLFW/glfw3.h>
+#include <iostream>
+
+// GLFW reports internal errors through this callback
+void errorCallback(int code, const char* description) {
+    std::cerr << "GLFW error " << code << ": " << description << '\n';
+}
+
+int main() {
+    // 1) Register the error callback (before glfwInit so init errors are caught)
+    glfwSetErrorCallback(errorCallback);
+
+    // 2) Initialize GLFW
+    if (!glfwInit()) {
+        std::cerr << "Failed to initialize GLFW\n";
+        return -1;
+    }
+
+    // 3) Request OpenGL 3.3 Core profile
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // required on macOS
+#endif
+
+    // 4) Create the window (width, height, title, monitor, share)
+    GLFWwindow* window = glfwCreateWindow(800, 600, "First Window", nullptr, nullptr);
+    if (!window) {
+        std::cerr << "Failed to create window\n";
+        glfwTerminate();
+        return -1;
+    }
+
+    // 5) Make this window's OpenGL context current on the calling thread
+    glfwMakeContextCurrent(window);
+
+    // 6) Load OpenGL function pointers via GLAD (AFTER the context is current!)
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD\n";
+        return -1;
+    }
+
+    // 7) Set the region OpenGL renders into
+    glViewport(0, 0, 800, 600);
+
+    // 8) MAIN LOOP: run until the window is asked to close
+    while (!glfwWindowShouldClose(window)) {
+        // Clear the background
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // dark teal
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Swap the front/back buffers (present the frame)
+        glfwSwapBuffers(window);
+        // Process pending events (keyboard, mouse, close)
+        glfwPollEvents();
+    }
+
+    // 9) Release resources
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{\code{glad.h} her zaman \code{glfw3.h}'den \textbf{önce} dahil edilmelidir,
+çünkü GLAD OpenGL başlıklarını kendi tanımlar ve GLFW bunu algılar. Sıra tersse
+"gl.h already included" hataları alırsın. Ayrıca GLAD'i \emph{ancak}
+\code{glfwMakeContextCurrent}'tan sonra yükle --- fonksiyonlar bir bağlam
+olmadan çözülemez.}
+
+\gsub{Ana Döngünün Anatomisi}
+
+Her gerçek zamanlı uygulamanın kalbi bu döngüdür. Her tur bir \emph{kare}dir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Adım} & \color{anaMavi}\textbf{Çağrı}\\
+\midrule
+Kapatma kontrolü & \code{glfwWindowShouldClose(window)}\\
+\rowcolor{acikGri} Girdi işle & \code{processInput()} (bizim fonksiyon)\\
+Ekranı temizle & \code{glClear(...)}\\
+\rowcolor{acikGri} Çizim & \code{glDrawArrays / glDrawElements}\\
+Tamponları değiştir & \code{glfwSwapBuffers(window)}\\
+\rowcolor{acikGri} Olayları işle & \code{glfwPollEvents()}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Callback'ler ve Olay İşleme}
+% =====================================================================
+
+GLFW olayları (pencere boyutu değişti, tuşa basıldı, fare oynadı) \textbf{callback}
+fonksiyonlarıyla bildirir. Sen bir fonksiyon yazar, onu GLFW'ye kaydedersin; GLFW
+uygun olay olduğunda onu çağırır.
+
+\gsub{Pencere Boyutlandırma}
+
+Kullanıcı pencereyi yeniden boyutlandırınca viewport'u güncellemezsen çizimin
+gerilir. Bunu bir framebuffer-size callback ile çözeriz:
+
+\begin{lstlisting}
+// GLFW calls this whenever the framebuffer (drawable area) is resized
+void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height); // update OpenGL's drawing region
+}
+
+int main() {
+    // ... window setup ...
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    // ...
+}
+\end{lstlisting}
+
+\notk[Neden framebuffer boyutu?]{Yüksek-DPI (Retina) ekranlarda pencere boyutu
+(ekran birimi) ile framebuffer boyutu (gerçek piksel) farklı olabilir.
+\code{glViewport} gerçek pikselleri ister, o yüzden \emph{framebuffer} boyutu
+callback'ini kullanırız, pencere boyutunu değil.}
+
+\gsub{Klavye Girdisi: İki Yöntem}
+
+Klavyeyi iki şekilde okuyabilirsin. Sürekli hareket için \emph{polling}, tek
+seferlik olaylar için \emph{callback} uygundur.
+
+\begin{lstlisting}
+// METHOD 1: Polling — query state every frame (ideal for continuous movement)
+void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true); // quit on ESC
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        std::cout << "Moving forward...\n";
+}
+
+// METHOD 2: Callback — event based (ideal for single presses, menus, shortcuts)
+void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        std::cout << "Fire!\n";                  // once, at the moment of press
+    if (key == GLFW_KEY_F && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL))
+        std::cout << "Ctrl+F pressed\n";         // modifier keys
+}
+
+int main() {
+    // ...
+    glfwSetKeyCallback(window, keyCallback);
+    while (!glfwWindowShouldClose(window)) {
+        processInput(window);  // polling happens here
+        // ... draw ...
+    }
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{action değeri} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+GLFW\_PRESS & Tuşa yeni basıldı.\\
+\rowcolor{acikGri} GLFW\_RELEASE & Tuş bırakıldı.\\
+GLFW\_REPEAT & Tuş basılı tutuluyor (tekrar).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Karakter/oyuncu hareketi için \textbf{polling} kullan (\code{glfwGetKey}):
+her karede "W basılı mı?" diye sor, basılıysa hareket ettir. Menü seçimi, zıplama,
+ateş gibi \emph{tek seferlik} eylemler için \textbf{callback} kullan --- böylece
+tuş basılı tutulunca eylem tekrarlanmaz.}
+
+\gsub{Fare Girdisi}
+
+Fare konumu, tuşları ve tekerleği için ayrı callback'ler vardır. FPS kamera için
+fare hareketini kullanacağız (Kısım 4).
+
+\begin{lstlisting}
+// Mouse movement (cursor position, in screen pixels)
+void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+    std::cout << "Cursor: " << xpos << ", " << ypos << "\n";
+}
+
+// Scroll wheel (horizontal and vertical offsets)
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    std::cout << "Scroll: " << yoffset << "\n"; // ideal for zoom
+}
+
+// Mouse buttons
+void mouseButtonCallback(GLFWwindow* win, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        std::cout << "Left click\n";
+}
+
+int main() {
+    // ...
+    glfwSetCursorPosCallback(window, cursorPosCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+
+    // For an FPS camera: hide the cursor and lock it to the window
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Zaman, Delta Time ve FPS}
+% =====================================================================
+
+Farklı bilgisayarlar farklı hızlarda kare üretir. Hareketi kare sayısına
+bağlarsan, hızlı makinede nesne uçar, yavaşta sürünür. Çözüm: her hareketi
+\textbf{delta time} (iki kare arası geçen süre) ile çarpmak. Böylece hız
+donanımdan bağımsız olur.
+
+\begin{lstlisting}
+float deltaTime = 0.0f;  // duration of the last frame (seconds)
+float lastFrame = 0.0f;  // timestamp of the previous frame
+
+int main() {
+    // ...
+    while (!glfwWindowShouldClose(window)) {
+        float currentFrame = (float)glfwGetTime(); // seconds since program start
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        // Scale movement by delta time (units: distance per second)
+        float velocity = 2.5f * deltaTime;
+        cameraPos += velocity * direction;   // now independent of FPS!
+
+        // ... draw ...
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+\end{lstlisting}
+
+\gsub{Basit FPS Sayacı}
+
+\begin{lstlisting}
+double previousSeconds = glfwGetTime();
+int    frameCount = 0;
+
+// Inside the main loop:
+double currentSeconds = glfwGetTime();
+frameCount++;
+if (currentSeconds - previousSeconds >= 1.0) {  // one second elapsed
+    std::cout << "FPS: " << frameCount << '\n';
+    frameCount = 0;
+    previousSeconds = currentSeconds;
+}
+\end{lstlisting}
+
+\ipucu{\code{glfwSwapInterval(1)} ile VSync açarak FPS'i ekran yenileme hızına
+sabitleyebilir, GPU'yu boşuna yormazsın. Performans ölçerken \code{glfwSwapInterval(0)}
+ile kapat ki gerçek kare süresini görebilesin.}
+
+% #####################################################################
+\gpart{4}{OpenGL ile Çizim}
+% #####################################################################
+
+Artık pencere ve girdi hazır. Bu kısımda gerçek çizime geçiyoruz: köşe verisini
+GPU'ya yükleyip, shader'larla işleyip, ekrana üçgen, kare, dokulu yüzey ve nihayet
+aydınlatılmış 3B küp çizeceğiz. Kısım 2'nin matematiği burada canlanacak.
+
+% =====================================================================
+\gsec{Shader'lar ve GLSL Dili Derinlemesine}
+% =====================================================================
+
+Shader, GPU üzerinde çalışan küçük bir programdır. Modern OpenGL'de shader olmadan
+tek bir piksel bile çizemezsin --- bu yüzden shader'ları gerçekten anlamak
+zorunludur. Shader'lar \textbf{GLSL} (OpenGL Shading Language) ile yazılır; C'ye
+çok benzeyen ama grafik için özelleştirilmiş bir dildir.
+
+\gsub{Shader Türleri ve Boru Hattındaki Yeri}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Shader} & \color{anaMavi}\textbf{Zorunlu?} & \color{anaMavi}\textbf{Ne yapar?}\\
+\midrule
+Vertex & Evet & Her \emph{köşe} için bir kez çalışır; konumu clip uzayına koyar, öznitelikleri sonraki aşamaya geçirir.\\
+\rowcolor{acikGri} Fragment & Evet & Her \emph{fragment} (aday piksel) için bir kez çalışır; nihai rengi üretir.\\
+Geometry & Hayır & Primitive'leri işler; yeni geometri üretebilir (ör. tek noktadan quad).\\
+\rowcolor{acikGri} Tessellation & Hayır & Yüzeyleri dinamik olarak alt bölümlere ayırır (arazi, LOD).\\
+Compute & Hayır & Grafikten bağımsız genel amaçlı GPU hesabı (parçacık, fizik).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{Bu rehberde yalnızca zorunlu ikiliyi --- \textbf{vertex} ve \textbf{fragment}
+--- kullanıyoruz. İkisi bir \emph{shader programı} altında derlenip bağlanır.
+Vertex'in \code{out} değişkenleri, fragment'in \code{in} değişkenlerine
+\emph{isim üzerinden} bağlanır ve arada rasterizasyon interpolasyon yapar.}
+
+\gsub{Bir Shader'ın İskeleti}
+
+\begin{lstlisting}[style=glslstyle]
+#version 330 core   // GLSL version: OpenGL 3.3 Core -> GLSL 330
+
+// (input/output/uniform declarations go here)
+
+void main() {
+    // shader body — runs once per vertex/fragment
+}
+\end{lstlisting}
+
+\notk[Sürüm eşleşmesi]{\code{\#version 330 core}, OpenGL 3.3 Core bağlamıyla
+eşleşir. GLSL sürüm numarası OpenGL'inkinden farklıdır: GL 3.3 $\to$ GLSL 330,
+GL 4.6 $\to$ GLSL 460. \code{\#version} satırı dosyanın \textbf{ilk} satırı
+olmalıdır --- önünde yorum bile olamaz.}
+
+\gsub{Veri Tipleri}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{vurguMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tip} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+float, int, bool & Skaler tipler.\\
+\rowcolor{acikGri} vec2, vec3, vec4 & 2/3/4 bileşenli float vektör (konum, renk, UV).\\
+ivec3, bvec3 & int / bool vektörleri.\\
+\rowcolor{acikGri} mat2, mat3, mat4 & Kare matrisler (dönüşümler).\\
+sampler2D & Bir dokuya erişim tutamacı.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=glslstyle]
+vec3 color    = vec3(1.0, 0.5, 0.2);       // orange
+vec4 position = vec4(color, 1.0);          // vec3 + w -> vec4 (constructor stitching)
+vec3 uniform3 = vec3(0.5);                 // (0.5, 0.5, 0.5) — all the same
+mat4 identity = mat4(1.0);                 // identity matrix
+\end{lstlisting}
+
+\gsub{Swizzling: Vektör Bileşenlerine Erişim}
+
+GLSL'in en sevilen özelliği \textbf{swizzling}'dir: vektör bileşenlerini harflerle
+seçip yeniden düzenleyebilirsin. \code{x,y,z,w} (konum), \code{r,g,b,a} (renk) ve
+\code{s,t,p,q} (doku) aynı bileşenlere farklı isimlerdir.
+
+\begin{lstlisting}[style=glslstyle]
+vec4 v = vec4(1.0, 2.0, 3.0, 4.0);
+
+float x   = v.x;         // 1.0
+vec2  xy  = v.xy;        // (1.0, 2.0)
+vec3  bgr = v.bgr;       // (3.0, 2.0, 1.0) — reverse color channels
+vec3  all = v.xxx;       // (1.0, 1.0, 1.0) — repetition is allowed
+v.xy = v.yx;             // swap components
+\end{lstlisting}
+
+\ipucu{Swizzling sadece okuma değil, atama için de çalışır. \code{fragColor.rgb *=
+0.5;} tüm renk kanallarını yarıya indirirken alfayı korur.}
+
+\gsub{Giriş, Çıkış ve Nitelikler (in / out / uniform)}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{turuncu}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Nitelik} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+in & Bu shader'a \emph{gelen} veri. Vertex'te: VBO'dan öznitelik. Fragment'te: vertex'ten interpolasyonla gelen değer.\\
+\rowcolor{acikGri} out & Bu shader'dan \emph{çıkan} veri. Vertex'te: sonraki aşamaya. Fragment'te: framebuffer'a (renk).\\
+uniform & CPU'dan (C++) gelen, tüm çizim boyunca \emph{sabit} global değer.\\
+\rowcolor{acikGri} layout(location=N) & Bir \code{in} özniteliğine sabit numara atar; \code{glVertexAttribPointer}'daki index ile eşleşir.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=glslstyle]
+// VERTEX SHADER — example showing all three qualifiers
+#version 330 core
+layout (location = 0) in vec3 aPos;     // position attribute from the VBO
+layout (location = 1) in vec3 aColor;   // color attribute from the VBO
+
+out vec3 vColor;        // passed to the fragment shader (gets interpolated)
+uniform mat4 mvp;       // constant transform matrix from the CPU
+
+void main() {
+    gl_Position = mvp * vec4(aPos, 1.0);   // required output: clip-space position
+    vColor = aColor;                       // forward color to the next stage
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// FRAGMENT SHADER — receives the vertex shader's out as in
+#version 330 core
+in  vec3 vColor;        // interpolated color from the vertex shader
+out vec4 FragColor;     // final color written to the framebuffer
+uniform float alpha;    // transparency from the CPU
+
+void main() {
+    FragColor = vec4(vColor, alpha);
+}
+\end{lstlisting}
+
+\uyari{Vertex'teki \code{out} ile fragment'teki \code{in} \textbf{aynı ada ve tipe}
+sahip olmalıdır --- eşleşme isim üzerindendir. Adı yanlış yazarsan fragment o
+değeri hiç almaz ve genelde siyah ekranla karşılaşırsın.}
+
+\gsub{Yerleşik Değişkenler ve Fonksiyonlar}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\bfseries\color{turuncu}}l c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Değişken} & \color{anaMavi}\textbf{Shader} & \color{anaMavi}\textbf{Rolü}\\
+\midrule
+gl\_Position & Vertex & \textbf{Zorunlu çıktı}: köşenin clip uzayı konumu (vec4).\\
+\rowcolor{acikGri} gl\_FragCoord & Fragment & Fragment'in ekran piksel koordinatı (salt-okunur).\\
+gl\_VertexID & Vertex & O anki köşenin indeksi.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=glslstyle]
+// A helper function + built-ins in a fragment shader
+float luminance(vec3 c) {
+    return dot(c, vec3(0.2126, 0.7152, 0.0722)); // grayscale weights
+}
+
+void main() {
+    vec3 texColor = texture(image, uv).rgb;
+    float gray    = luminance(texColor);
+    vec3 result   = mix(texColor, vec3(gray), 0.5); // 50% desaturated
+    FragColor = vec4(result, 1.0);
+}
+\end{lstlisting}
+
+\bilgi{Fragment shader'da \code{discard;} anahtar kelimesi o fragment'i tamamen
+atar (hiç yazılmaz) --- ağaç yaprağı gibi delikli dokularda saydam pikselleri
+elemek için kullanılır. GLSL'de \code{if}/\code{for} vardır ama GPU'da dallanma
+pahalı olabilir; mümkünse \code{mix}/\code{step} gibi dalsız işlevleri tercih et.}
+
+\ipucu{Shader'ları anlamanın en hızlı yolu \emph{oynamaktır}: bir zaman uniform'u
+alıp \code{sin} ile renkleri dalgalandır. \url{https://www.shadertoy.com} tam da
+bu deneyler için bir oyun alanıdır.}
+
+% =====================================================================
+\gsec{VBO, VAO ve İlk Üçgen}
+% =====================================================================
+
+Modern OpenGL'de üçgen çizmek için üç kavramı bilmemiz gerekir:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Nesne} & \color{anaMavi}\textbf{Görevi}\\
+\midrule
+VBO (Vertex Buffer Object) & Köşe verisini (konum, renk...) GPU belleğine koyar.\\
+\rowcolor{acikGri} VAO (Vertex Array Object) & Bu verinin \emph{nasıl yorumlanacağını} kaydeder (öznitelik düzeni).\\
+Shader Program & Vertex + fragment shader'ın derlenmiş, bağlanmış hali.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Shader'ları Yazmak}
+
+\begin{lstlisting}[style=glslstyle]
+// basic.vert — VERTEX SHADER
+#version 330 core
+layout (location = 0) in vec3 aPos;   // attribute 0: position
+
+void main() {
+    // Put the position straight into clip space (w=1). No matrix — vertices are in NDC.
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// basic.frag — FRAGMENT SHADER
+#version 330 core
+out vec4 FragColor;   // this fragment's final color
+
+void main() {
+    FragColor = vec4(1.0, 0.5, 0.2, 1.0);  // orange (RGBA)
+}
+\end{lstlisting}
+
+\gsub{Shader Derleme ve Bağlama}
+
+Shader kaynak kodu bir string'dir; onu GPU'da derleyip programa bağlamalıyız.
+Hata kontrolü şart --- yoksa siyah ekranla baş başa kalırsın.
+
+\begin{lstlisting}
+unsigned int compileShader(unsigned int type, const char* source) {
+    unsigned int shader = glCreateShader(type); // GL_VERTEX_SHADER / GL_FRAGMENT_SHADER
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
+
+    int success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char log[512];
+        glGetShaderInfoLog(shader, 512, nullptr, log);
+        std::cerr << "Shader compile error:\n" << log << "\n";
+    }
+    return shader;
+}
+
+unsigned int createShaderProgram(const char* vertexSrc, const char* fragmentSrc) {
+    unsigned int vs = compileShader(GL_VERTEX_SHADER,   vertexSrc);
+    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentSrc);
+
+    unsigned int program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+
+    int success;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        char log[512];
+        glGetProgramInfoLog(program, 512, nullptr, log);
+        std::cerr << "Program link error:\n" << log << "\n";
+    }
+    // The compiled shaders are now embedded in the program; delete the singles
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    return program;
+}
+\end{lstlisting}
+
+\gsub{Köşe Verisi, VAO/VBO Kurulumu ve Çizim}
+
+\begin{lstlisting}
+// Three vertices in NDC: bottom-left, bottom-right, top-center
+float vertices[] = {
+    -0.5f, -0.5f, 0.0f,   // bottom left
+     0.5f, -0.5f, 0.0f,   // bottom right
+     0.0f,  0.5f, 0.0f    // top center
+};
+
+unsigned int VAO, VBO;
+glGenVertexArrays(1, &VAO);
+glGenBuffers(1, &VBO);
+
+glBindVertexArray(VAO);                     // 1) bind the VAO (recording begins)
+
+glBindBuffer(GL_ARRAY_BUFFER, VBO);         // 2) bind the VBO
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // 3) upload
+
+// 4) Describe attribute 0: 3 floats, position; stride = 3 floats; offset = 0
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);               // 5) enable attribute 0
+
+// (optional) unbind — the VAO already recorded the layout
+glBindBuffer(GL_ARRAY_BUFFER, 0);
+glBindVertexArray(0);
+\end{lstlisting}
+
+\begin{lstlisting}
+// Inside the main loop — drawing:
+glUseProgram(shaderProgram);   // use our shader
+glBindVertexArray(VAO);        // restore the layout
+glDrawArrays(GL_TRIANGLES, 0, 3); // start at 0, draw 3 vertices
+\end{lstlisting}
+
+\notk[glVertexAttribPointer'ın parametreleri]{Bu fonksiyon OpenGL'de en çok kafa
+karıştırandır. \code{(index, size, type, normalized, stride, offset)}: \emph{index}
+= shader'daki \code{location}; \emph{size} = bileşen sayısı (vec3 için 3);
+\emph{stride} = bir köşenin toplam bayt boyu; \emph{offset} = bu özniteliğin köşe
+içindeki başlangıç baytı.}
+
+\uyari{Hiçbir şey görünmüyorsa kontrol listesi: (1) Shader'lar derlendi/bağlandı mı
+(log'a bak)? (2) \code{glUseProgram} çağrıldı mı? (3) VAO bağlı mı? (4) Köşeler
+NDC $[-1,1]$ içinde mi? (5) Üçgen sarım yönü yüzünden culling'e mi takıldı?
+(6) \code{glClear} rengi ile çizim rengi aynı mı (görünmez üçgen)?}
+
+\gsub{Tam, Kendi Kendine Yeten İlk Üçgen Programı}
+
+Yukarıdaki parçaları tek, derlenip çalışan bir dosyada birleştirelim:
+
+\begin{lstlisting}
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <iostream>
+
+const char* vertexSrc = R"(
+#version 330 core
+layout (location = 0) in vec3 aPos;
+void main() { gl_Position = vec4(aPos, 1.0); }
+)";
+
+const char* fragmentSrc = R"(
+#version 330 core
+out vec4 FragColor;
+void main() { FragColor = vec4(1.0, 0.5, 0.2, 1.0); }
+)";
+
+int main() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Triangle", nullptr, nullptr);
+    glfwMakeContextCurrent(window);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    // Compile shaders (inline for brevity)
+    unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &vertexSrc, nullptr);   glCompileShader(vs);
+    unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &fragmentSrc, nullptr); glCompileShader(fs);
+    unsigned int program = glCreateProgram();
+    glAttachShader(program, vs); glAttachShader(program, fs);
+    glLinkProgram(program);
+    glDeleteShader(vs); glDeleteShader(fs);
+
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f
+    };
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    while (!glfwWindowShouldClose(window)) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(program);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(program);
+    glfwTerminate();
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Bu tam programı derleyip çalıştırdığında koyu turkuaz zeminde turuncu bir
+üçgen görürsün. OpenGL yolculuğunun "merhaba dünya"sıdır --- buradan sonrası
+detay eklemekten ibaret.}
+
+% =====================================================================
+\gsec{Öznitelikler ve Renk İnterpolasyonu}
+% =====================================================================
+
+Şimdi her köşeye \emph{renk} de ekleyelim. Rasterizasyon, köşe renklerini üçgen
+yüzeyi boyunca otomatik \textbf{interpolasyon} yapar --- ortadaki piksel üç rengin
+karışımı olur.
+
+\begin{lstlisting}
+// Each vertex: 3 position + 3 color = 6 floats
+float vertices[] = {
+    // position          // color
+    -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom left  — red
+     0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom right — green
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top          — blue
+};
+
+glBindVertexArray(VAO);
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+// Attribute 0: position (offset 0)
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+// Attribute 1: color (offset 3 floats = 12 bytes)
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                      (void*)(3 * sizeof(float)));
+glEnableVertexAttribArray(1);
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// VERTEX SHADER — forward the color to the fragment shader
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 vColor;   // bridge to the fragment shader (gets interpolated)
+
+void main() {
+    gl_Position = vec4(aPos, 1.0);
+    vColor = aColor;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// FRAGMENT SHADER — use the interpolated color
+#version 330 core
+in  vec3 vColor;    // comes from the vertex shader, SPREAD across the surface
+out vec4 FragColor;
+
+void main() {
+    FragColor = vec4(vColor, 1.0);
+}
+\end{lstlisting}
+
+\bilgi{Vertex shader'daki \code{out vec3 vColor}, fragment shader'daki \code{in vec3
+vColor} ile \emph{isim üzerinden} eşleşir. GPU köşe değerlerini üçgen yüzeyinde
+perspektif-doğru interpolasyonla yayar. Sonuç: köşeleri kırmızı/yeşil/mavi olan,
+ortası yumuşak geçişli bir üçgen.}
+
+% =====================================================================
+\gsec{EBO ile Dikdörtgen ve Uniform'lar}
+% =====================================================================
+
+\gsub{EBO (Element Buffer Object)}
+
+Bir dikdörtgen iki üçgenden oluşur (6 köşe), ama sadece 4 benzersiz köşe vardır.
+Köşeleri tekrar etmemek için \textbf{EBO} kullanırız: köşeleri bir kez tanımlar,
+indekslerle hangi köşenin hangi üçgende olduğunu belirtiriz.
+
+\begin{lstlisting}
+float vertices[] = {
+     0.5f,  0.5f, 0.0f,  // 0: top right
+     0.5f, -0.5f, 0.0f,  // 1: bottom right
+    -0.5f, -0.5f, 0.0f,  // 2: bottom left
+    -0.5f,  0.5f, 0.0f   // 3: top left
+};
+unsigned int indices[] = {
+    0, 1, 3,   // first triangle
+    1, 2, 3    // second triangle
+};
+
+unsigned int VAO, VBO, EBO;
+glGenVertexArrays(1, &VAO);
+glGenBuffers(1, &VBO);
+glGenBuffers(1, &EBO);
+
+glBindVertexArray(VAO);
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);   // the EBO is recorded into the VAO too
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+
+// Drawing: glDrawElements instead of glDrawArrays
+glBindVertexArray(VAO);
+glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 6 indices
+\end{lstlisting}
+
+\uyari{EBO bağını (\code{GL\_ELEMENT\_ARRAY\_BUFFER}) VAO bağlıyken çözme! VAO,
+o an bağlı EBO'yu hatırlar. Eğer VAO'yu çözmeden önce EBO'yu 0'a bağlarsan
+çizim başarısız olur. Doğru sıra: önce VAO'yu çöz, sonra istersen EBO'yu.}
+
+\gsub{Uniform'lar: CPU'dan Shader'a Veri}
+
+\emph{Öznitelikler} her köşe için farklıdır; \textbf{uniform}'lar ise tüm çizim
+boyunca sabit, CPU'dan gönderilen global değerlerdir. Örnek: rengi zamanla
+değiştiren bir üçgen.
+
+\begin{lstlisting}[style=glslstyle]
+// FRAGMENT SHADER
+#version 330 core
+out vec4 FragColor;
+uniform vec4 dynamicColor;   // will come from the CPU
+
+void main() {
+    FragColor = dynamicColor;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+// C++ main loop: oscillate the color over time
+glUseProgram(shaderProgram);  // use the program FIRST!
+float t     = (float)glfwGetTime();
+float green = (sin(t) / 2.0f) + 0.5f;   // oscillates in 0..1
+
+int location = glGetUniformLocation(shaderProgram, "dynamicColor");
+glUniform4f(location, 0.0f, green, 0.0f, 1.0f);  // update the uniform
+
+glBindVertexArray(VAO);
+glDrawArrays(GL_TRIANGLES, 0, 3);
+\end{lstlisting}
+
+\uyari{\code{glUniform*} çağrısı, güncellenecek uniform'un ait olduğu programın
+\emph{o an kullanımda} olmasını gerektirir. Yani önce \code{glUseProgram}, sonra
+\code{glUniform}. \code{glGetUniformLocation} $-1$ dönerse uniform bulunamamış
+(veya kullanılmadığı için silinmiş) demektir.}
+
+% =====================================================================
+\gsec{Dokular (Textures)}
+% =====================================================================
+
+Doku, bir yüzeye "yapıştırdığımız" resimdir. Her köşeye bir \emph{doku koordinatı}
+(UV, $[0,1]$ aralığında) veririz; rasterizasyon bunları interpolasyonla yayar ve
+fragment shader dokudan örnekleyerek (sample) rengi okur. Resmi yüklemek için
+hafif \code{stb\_image.h} kütüphanesi standarttır.
+
+\begin{lstlisting}
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+unsigned int texture;
+glGenTextures(1, &texture);
+glBindTexture(GL_TEXTURE_2D, texture);
+
+// Wrapping and filtering settings
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+// Load the image
+int width, height, channels;
+stbi_set_flip_vertically_on_load(true);   // OpenGL's UV origin is bottom-left!
+unsigned char* data = stbi_load("wall.jpg", &width, &height, &channels, 0);
+if (data) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+} else {
+    std::cerr << "Failed to load texture\n";
+}
+stbi_image_free(data);   // free the CPU-side data (already copied to the GPU)
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// VERTEX SHADER — forward the UV coordinate
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aUV;
+out vec2 uv;
+void main() {
+    gl_Position = vec4(aPos, 1.0);
+    uv = aUV;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// FRAGMENT SHADER — sample from the texture
+#version 330 core
+in  vec2 uv;
+out vec4 FragColor;
+uniform sampler2D image;   // bound texture unit
+void main() {
+    FragColor = texture(image, uv);   // read the color at uv
+}
+\end{lstlisting}
+
+\gsub{İki Dokuyu Karıştırmak (Texture Units)}
+
+Birden fazla doku kullanırken her birini bir \emph{birime} bağlarsın. Klasik
+alıştırma: iki dokuyu \code{mix} ile harmanlamak.
+
+\begin{lstlisting}
+// Bind two textures to units 0 and 1
+glActiveTexture(GL_TEXTURE0);
+glBindTexture(GL_TEXTURE_2D, texture0);
+glActiveTexture(GL_TEXTURE1);
+glBindTexture(GL_TEXTURE_2D, texture1);
+
+// Tell each sampler which unit to read from
+glUseProgram(shaderProgram);
+glUniform1i(glGetUniformLocation(shaderProgram, "textureA"), 0);
+glUniform1i(glGetUniformLocation(shaderProgram, "textureB"), 1);
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// FRAGMENT SHADER — blend two textures 80% / 20%
+#version 330 core
+in  vec2 uv;
+out vec4 FragColor;
+uniform sampler2D textureA;
+uniform sampler2D textureB;
+void main() {
+    FragColor = mix(texture(textureA, uv), texture(textureB, uv), 0.2);
+}
+\end{lstlisting}
+
+\uyari{\code{stbi\_set\_flip\_vertically\_on\_load(true)} genelde şarttır: resim
+formatları soldan-üstten başlar, OpenGL doku koordinatları ise soldan-alttan.
+Çevirmezsen dokular baş aşağı görünür.}
+
+% =====================================================================
+\gsec{glm ile Dönüşümleri Uygulamak}
+% =====================================================================
+
+Kısım 2'nin matrislerini artık gerçek çizime bağlıyoruz. Bir matrisi shader'a
+uniform olarak gönderip vertex shader'da köşeleri dönüştüreceğiz.
+
+\begin{lstlisting}
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>   // for value_ptr
+
+// Inside the main loop:
+glm::mat4 transform(1.0f);
+transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f)); // to bottom-right
+transform = glm::rotate(transform, (float)glfwGetTime(),             // spin over time
+                        glm::vec3(0.0f, 0.0f, 1.0f));
+
+glUseProgram(shaderProgram);
+unsigned int loc = glGetUniformLocation(shaderProgram, "transform");
+// send the mat4: 1 matrix, do not transpose (GL_FALSE), data pointer
+glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// VERTEX SHADER
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aUV;
+out vec2 uv;
+uniform mat4 transform;
+void main() {
+    gl_Position = transform * vec4(aPos, 1.0);  // apply the transform
+    uv = aUV;
+}
+\end{lstlisting}
+
+\uyari{\code{glUniformMatrix4fv}'nin üçüncü parametresi \code{transpose}'dur. GLM
+matrisleri \emph{sütun-öncelikli} (column-major) saklar ve OpenGL de öyle bekler,
+bu yüzden \textbf{GL\_FALSE} verilir. GL\_TRUE verirsen matris transpoze olur ve
+dönüşümler bozulur. \code{glm::value\_ptr} ise mat4'ün ham float işaretçisini verir.}
+
+% =====================================================================
+\gsec{3B'ye Geçiş: Küp ve Derinlik Testi}
+% =====================================================================
+
+Şimdi düz üçgenden gerçek 3B'ye geçiyoruz. MVP zincirini kuracak, derinlik
+tamponunu açacak ve dönen bir küp çizeceğiz.
+
+\gsub{Derinlik Testini Açmak}
+
+3B'de arkadaki nesneler öndekiler tarafından örtülmeli. Bunu \textbf{derinlik
+testi} (z-buffer) sağlar. Açmazsan üçgenler çizim sırasına göre üst üste biner.
+
+\begin{lstlisting}
+// Once, during setup:
+glEnable(GL_DEPTH_TEST);
+
+// Every frame, clear the depth buffer ALONG WITH the color buffer:
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+\end{lstlisting}
+
+\uyari{Derinlik testini açtıysan her karede \code{GL\_DEPTH\_BUFFER\_BIT}'i de
+temizlemeyi unutma. Unutursan bir önceki karenin derinlik değerleri kalır ve
+nesneler rastgele kaybolur/parçalanır. Bu çok yaygın bir 3B hatasıdır.}
+
+\gsub{MVP ile Dönen Küp}
+
+Küp 36 köşeden oluşur (6 yüz $\times$ 2 üçgen $\times$ 3 köşe). Üç matrisi kurup
+shader'a gönderelim.
+
+\begin{lstlisting}
+glEnable(GL_DEPTH_TEST);
+
+// Main loop:
+glClearColor(0.1f, 0.1f, 0.12f, 1.0f);
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+glUseProgram(shaderProgram);
+
+// MODEL: spin the cube on its own axis over time
+glm::mat4 model = glm::rotate(glm::mat4(1.0f),
+                              (float)glfwGetTime() * glm::radians(50.0f),
+                              glm::vec3(0.5f, 1.0f, 0.0f));
+// VIEW: pull the camera back (+3 on Z, world moves -3)
+glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+// PROJECTION: perspective
+glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                        800.0f / 600.0f, 0.1f, 100.0f);
+
+// Send all three
+glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"),
+                   1, GL_FALSE, glm::value_ptr(model));
+glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"),
+                   1, GL_FALSE, glm::value_ptr(view));
+glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"),
+                   1, GL_FALSE, glm::value_ptr(projection));
+
+glBindVertexArray(VAO);
+glDrawArrays(GL_TRIANGLES, 0, 36);   // 36 vertices = full cube
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// VERTEX SHADER — the MVP chain
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aUV;
+out vec2 uv;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+void main() {
+    // Right to left: model first, then view, then projection
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    uv = aUV;
+}
+\end{lstlisting}
+
+\bilgi{İşte Kısım 2'deki $\mathbf{v}_{clip}=\mathbf{P}\cdot\mathbf{V}\cdot\mathbf{M}
+\cdot\mathbf{v}$ formülünün canlı hali. Model küpü döndürür, View onu kameranın
+önüne taşır, Projection perspektif verir. Bu üç matris 3B grafiğin bel kemiğidir.}
+
+% =====================================================================
+\gsec{Kamera Sınıfı (FPS Kamera)}
+% =====================================================================
+
+Sabit kamera sıkıcı. Şimdi klavye+fare ile gezilebilen bir FPS kamerası
+yazacağız. Euler açılarını (yaw, pitch) kullanıp bir yön vektörü üreteceğiz ve
+\code{lookAt} ile view matrisini her karede güncelleyeceğiz.
+
+\begin{lstlisting}
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+enum class Direction { Forward, Backward, Left, Right };
+
+class Camera {
+public:
+    glm::vec3 position;
+    glm::vec3 front  = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up     = glm::vec3(0.0f, 1.0f,  0.0f);
+    float yaw        = -90.0f;   // -90: looks toward -Z at start
+    float pitch      =  0.0f;
+    float speed      =  2.5f;
+    float sensitivity = 0.1f;
+
+    explicit Camera(glm::vec3 startPos) : position(startPos) {}
+
+    glm::mat4 viewMatrix() const {
+        return glm::lookAt(position, position + front, up);
+    }
+
+    // Keyboard: WASD (scaled by deltaTime => FPS-independent)
+    void processKeyboard(Direction dir, float deltaTime) {
+        float velocity = speed * deltaTime;
+        glm::vec3 right = glm::normalize(glm::cross(front, up));
+        if (dir == Direction::Forward)  position += front * velocity;
+        if (dir == Direction::Backward) position -= front * velocity;
+        if (dir == Direction::Left)     position -= right * velocity;
+        if (dir == Direction::Right)    position += right * velocity;
+    }
+
+    // Mouse: update the look direction
+    void processMouse(float xOffset, float yOffset) {
+        yaw   += xOffset * sensitivity;
+        pitch += yOffset * sensitivity;
+        // Clamp the pitch to avoid flipping over
+        if (pitch >  89.0f) pitch =  89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
+        updateFront();
+    }
+
+private:
+    void updateFront() {
+        // Build a direction vector from yaw/pitch (spherical coordinates)
+        glm::vec3 f;
+        f.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        f.y = sin(glm::radians(pitch));
+        f.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        front = glm::normalize(f);
+    }
+};
+\end{lstlisting}
+
+\begin{lstlisting}
+// Usage — in the main loop and callbacks:
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+void processInput(GLFWwindow* window, float deltaTime) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.processKeyboard(Direction::Forward, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.processKeyboard(Direction::Backward, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.processKeyboard(Direction::Left, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.processKeyboard(Direction::Right, deltaTime);
+}
+
+// Mouse callback (store lastX/lastY, skip the very first frame):
+float lastX = 400.0f, lastY = 300.0f;
+bool  firstMouse = true;
+void cursorPosCallback(GLFWwindow* win, double xpos, double ypos) {
+    if (firstMouse) { lastX = xpos; lastY = ypos; firstMouse = false; }
+    float xOffset = xpos - lastX;
+    float yOffset = lastY - ypos;   // reversed: screen Y goes down, camera Y goes up
+    lastX = xpos; lastY = ypos;
+    camera.processMouse(xOffset, yOffset);
+}
+
+// In the draw step: get the view matrix from the camera
+glm::mat4 view = camera.viewMatrix();
+\end{lstlisting}
+
+\ipucu{Bu FPS kamera çapraz çarpımı (sağ yönü bulmak için \code{cross(front, up)}),
+küresel koordinatları (yaw/pitch $\to$ yön) ve \code{lookAt}'ı bir arada kullanır.
+Kısım 2'deki her araç burada iş başında. Zoom için scroll callback'inde FOV'u
+değiştirebilirsin.}
+
+% =====================================================================
+\gsec{Temel Aydınlatma: Phong Modeli}
+% =====================================================================
+
+Işıksız 3B düz görünür. Phong aydınlatma modeli ışığı üç bileşene ayırır ve
+gerçekçi bir hacim hissi verir. Her bileşen Kısım 2'deki vektör işlemlerine
+dayanır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bileşen} & \color{anaMavi}\textbf{Fikir}\\
+\midrule
+Ambient & Ortam ışığı; her yer minimum aydınlık (sabit çarpan).\\
+\rowcolor{acikGri} Diffuse & Yüzeyin ışığa dönüklüğü: $\max(\mathbf{N}\cdot\mathbf{L}, 0)$ (nokta çarpım!).\\
+Specular & Parlak yansıma noktası; bakış ve yansıma yönüne bağlı.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=glslstyle]
+// FRAGMENT SHADER — Phong lighting
+#version 330 core
+in  vec3 Normal;    // surface normal (in world space)
+in  vec3 FragPos;   // fragment's world position
+out vec4 FragColor;
+
+uniform vec3 lightPos;
+uniform vec3 lightColor;
+uniform vec3 objectColor;
+uniform vec3 viewPos;
+
+void main() {
+    // 1) Ambient — constant base light
+    float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength * lightColor;
+
+    // 2) Diffuse — dot product of normal and light direction
+    vec3 N = normalize(Normal);
+    vec3 L = normalize(lightPos - FragPos);
+    float diff = max(dot(N, L), 0.0);
+    vec3 diffuse = diff * lightColor;
+
+    // 3) Specular — how much the reflected ray points at the camera
+    float specularStrength = 0.5;
+    vec3 V = normalize(viewPos - FragPos);
+    vec3 R = reflect(-L, N);
+    float spec = pow(max(dot(V, R), 0.0), 32.0); // 32 = shininess exponent
+    vec3 specular = specularStrength * spec * lightColor;
+
+    // Combine
+    vec3 result = (ambient + diffuse + specular) * objectColor;
+    FragColor = vec4(result, 1.0);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=glslstyle]
+// VERTEX SHADER — forward the normal and world position
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+out vec3 Normal;
+out vec3 FragPos;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+void main() {
+    FragPos = vec3(model * vec4(aPos, 1.0));       // world position
+    // Normal matrix: fixes normals under non-uniform scaling
+    Normal  = mat3(transpose(inverse(model))) * aNormal;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+}
+\end{lstlisting}
+
+\uyari{Normalleri \code{model} matrisiyle doğrudan çarpma! Nesne \emph{eşit olmayan}
+ölçeklenmişse (ör. X'te 2, Y'de 1) normaller yüzeye dik kalmaz. Doğru dönüşüm
+\emph{normal matrisidir}: \code{mat3(transpose(inverse(model)))}. Ayrıca ışık ve
+bakış yönlerinin \textbf{normalize} olduğundan emin ol.}
+
+\bilgi{Diffuse bileşenindeki $\max(\mathbf{N}\cdot\mathbf{L}, 0)$ tam olarak Kısım
+2'de öğrendiğimiz nokta çarpımın $\cos\theta$ anlamıdır: yüzey ışığa ne kadar
+dik dönükse o kadar aydınlık. Grafik matematiği ve kodun burada tam olarak
+buluştuğunu görüyorsun.}
+
+% #####################################################################
+\gpart{5}{Projeler ve İyi Uygulamalar}
+% #####################################################################
+
+% =====================================================================
+\gsec{Soyutlanmış Shader Sınıfı}
+% =====================================================================
+
+Shader derleme kodunu her seferinde yazmak yorucu. Yeniden kullanılabilir bir
+sınıf yazalım: dosyadan okur, derler, hata raporlar ve uniform ayarlamayı
+kolaylaştırır. Bu, gerçek projelerin standart yapısıdır.
+
+\begin{lstlisting}
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
+class Shader {
+public:
+    unsigned int id;
+
+    Shader(const char* vertexPath, const char* fragmentPath) {
+        std::string vertexCode   = readFile(vertexPath);
+        std::string fragmentCode = readFile(fragmentPath);
+        unsigned int vs = compile(GL_VERTEX_SHADER,   vertexCode.c_str(),   "VERTEX");
+        unsigned int fs = compile(GL_FRAGMENT_SHADER, fragmentCode.c_str(), "FRAGMENT");
+
+        id = glCreateProgram();
+        glAttachShader(id, vs);
+        glAttachShader(id, fs);
+        glLinkProgram(id);
+        checkLink(id);
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+    }
+
+    void use() const { glUseProgram(id); }
+
+    // Uniform helpers
+    void setBool (const std::string& name, bool value)  const { glUniform1i(loc(name), (int)value); }
+    void setInt  (const std::string& name, int value)   const { glUniform1i(loc(name), value); }
+    void setFloat(const std::string& name, float value) const { glUniform1f(loc(name), value); }
+    void setVec3 (const std::string& name, const glm::vec3& v) const {
+        glUniform3fv(loc(name), 1, glm::value_ptr(v));
+    }
+    void setMat4 (const std::string& name, const glm::mat4& m) const {
+        glUniformMatrix4fv(loc(name), 1, GL_FALSE, glm::value_ptr(m));
+    }
+
+private:
+    int loc(const std::string& name) const {
+        return glGetUniformLocation(id, name.c_str());
+    }
+
+    static std::string readFile(const char* path) {
+        std::ifstream file(path);
+        if (!file) { std::cerr << "Cannot open file: " << path << "\n"; return ""; }
+        std::stringstream ss; ss << file.rdbuf();
+        return ss.str();
+    }
+
+    static unsigned int compile(GLenum type, const char* src, const char* label) {
+        unsigned int shader = glCreateShader(type);
+        glShaderSource(shader, 1, &src, nullptr);
+        glCompileShader(shader);
+        int success; glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            char log[1024]; glGetShaderInfoLog(shader, 1024, nullptr, log);
+            std::cerr << label << " shader error:\n" << log << "\n";
+        }
+        return shader;
+    }
+
+    static void checkLink(unsigned int program) {
+        int success; glGetProgramiv(program, GL_LINK_STATUS, &success);
+        if (!success) {
+            char log[1024]; glGetProgramInfoLog(program, 1024, nullptr, log);
+            std::cerr << "Program link error:\n" << log << "\n";
+        }
+    }
+};
+\end{lstlisting}
+
+\begin{lstlisting}
+// See how much this simplifies usage:
+Shader shader("shaders/basic.vert", "shaders/basic.frag");
+
+// In the main loop:
+shader.use();
+shader.setMat4("model",      model);
+shader.setMat4("view",       camera.viewMatrix());
+shader.setMat4("projection", projection);
+shader.setVec3("lightColor", glm::vec3(1.0f));
+\end{lstlisting}
+
+\ipucu{Bu Shader sınıfı hemen her OpenGL projesinde bulunur. Aynı mantıkla bir
+\code{Mesh} (VAO/VBO/EBO'yu saran), bir \code{Texture} ve \code{Camera} sınıfı
+yazarak temiz bir mini motor iskeletine ulaşırsın.}
+
+% =====================================================================
+\gsec{Tam Program: Dönen Renkli Küp}
+% =====================================================================
+
+Şimdiye kadar öğrendiğimiz her parçayı birleştiren, kopyalayıp derlenebilir tam
+bir program. GLFW penceresi + GLAD + derinlik testi + MVP + dönen küp.
+
+\begin{lstlisting}
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+
+const char* vertexSrc = R"(
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+out vec3 vColor;
+uniform mat4 mvp;
+void main() {
+    gl_Position = mvp * vec4(aPos, 1.0);
+    vColor = aColor;
+})";
+
+const char* fragmentSrc = R"(
+#version 330 core
+in vec3 vColor;
+out vec4 FragColor;
+void main() { FragColor = vec4(vColor, 1.0); })";
+
+void framebufferSizeCallback(GLFWwindow*, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+int main() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Spinning Cube", nullptr, nullptr);
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    glEnable(GL_DEPTH_TEST);
+
+    // 36 vertices, each face a different color
+    float vertices[] = {
+        // position           // color
+        -0.5f,-0.5f,-0.5f,  1,0,0,   0.5f,-0.5f,-0.5f,  1,0,0,   0.5f, 0.5f,-0.5f,  1,0,0,
+         0.5f, 0.5f,-0.5f,  1,0,0,  -0.5f, 0.5f,-0.5f,  1,0,0,  -0.5f,-0.5f,-0.5f,  1,0,0,
+        -0.5f,-0.5f, 0.5f,  0,1,0,   0.5f,-0.5f, 0.5f,  0,1,0,   0.5f, 0.5f, 0.5f,  0,1,0,
+         0.5f, 0.5f, 0.5f,  0,1,0,  -0.5f, 0.5f, 0.5f,  0,1,0,  -0.5f,-0.5f, 0.5f,  0,1,0,
+        -0.5f, 0.5f, 0.5f,  0,0,1,  -0.5f, 0.5f,-0.5f,  0,0,1,  -0.5f,-0.5f,-0.5f,  0,0,1,
+        -0.5f,-0.5f,-0.5f,  0,0,1,  -0.5f,-0.5f, 0.5f,  0,0,1,  -0.5f, 0.5f, 0.5f,  0,0,1,
+         0.5f, 0.5f, 0.5f,  1,1,0,   0.5f, 0.5f,-0.5f,  1,1,0,   0.5f,-0.5f,-0.5f,  1,1,0,
+         0.5f,-0.5f,-0.5f,  1,1,0,   0.5f,-0.5f, 0.5f,  1,1,0,   0.5f, 0.5f, 0.5f,  1,1,0,
+        -0.5f,-0.5f,-0.5f,  0,1,1,   0.5f,-0.5f,-0.5f,  0,1,1,   0.5f,-0.5f, 0.5f,  0,1,1,
+         0.5f,-0.5f, 0.5f,  0,1,1,  -0.5f,-0.5f, 0.5f,  0,1,1,  -0.5f,-0.5f,-0.5f,  0,1,1,
+        -0.5f, 0.5f,-0.5f,  1,0,1,   0.5f, 0.5f,-0.5f,  1,0,1,   0.5f, 0.5f, 0.5f,  1,0,1,
+         0.5f, 0.5f, 0.5f,  1,0,1,  -0.5f, 0.5f, 0.5f,  1,0,1,  -0.5f, 0.5f,-0.5f,  1,0,1
+    };
+
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO); glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float),
+                          (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Compile shaders inline (use the Shader class in real projects)
+    auto compile = [](GLenum type, const char* src) {
+        unsigned int s = glCreateShader(type);
+        glShaderSource(s, 1, &src, nullptr); glCompileShader(s); return s;
+    };
+    unsigned int program = glCreateProgram();
+    glAttachShader(program, compile(GL_VERTEX_SHADER,   vertexSrc));
+    glAttachShader(program, compile(GL_FRAGMENT_SHADER, fragmentSrc));
+    glLinkProgram(program);
+
+    while (!glfwWindowShouldClose(window)) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+
+        glClearColor(0.08f, 0.08f, 0.10f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f),
+            (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+        glm::mat4 view  = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3));
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+            800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 mvp = projection * view * model;
+
+        glUseProgram(program);
+        glUniformMatrix4fv(glGetUniformLocation(program, "mvp"),
+                           1, GL_FALSE, glm::value_ptr(mvp));
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(program);
+    glfwTerminate();
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Bu programı derleyip çalıştırdığında, koyu bir arka planda her yüzü farklı
+renkte, kendi ekseninde dönen bir küp göreceksin. Buraya kadar öğrendiğin her
+kavram --- pencere, bağlam, VBO/VAO, shader, MVP, derinlik testi --- tek bir
+çalışan örnekte bir araya geliyor.}
+
+% =====================================================================
+\gsec{Kaynak Yönetimi ve Sık Yapılan Hatalar}
+% =====================================================================
+
+\gsub{Kaynakları Temizlemek}
+
+OpenGL nesneleri (VAO, VBO, doku, shader) GPU belleğinde durur; program biterken
+veya nesne gereksizken \textbf{elle silinmelidir}.
+
+\begin{lstlisting}
+glDeleteVertexArrays(1, &VAO);
+glDeleteBuffers(1, &VBO);
+glDeleteBuffers(1, &EBO);
+glDeleteTextures(1, &texture);
+glDeleteProgram(shaderProgram);
+glfwDestroyWindow(window);
+glfwTerminate();
+\end{lstlisting}
+
+\gsub{Hata Ayıklama Kontrol Listesi}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{kirmizi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{kirmizi!12}\color{kirmizi}\textbf{Belirti} & \color{kirmizi}\textbf{Olası neden}\\
+\midrule
+Siyah/boş ekran & Shader derlenmedi; \code{glUseProgram} yok; VAO bağlı değil; near=0.\\
+\rowcolor{acikGri} Segfault (başta) & GLAD yüklenmeden GL çağrısı; bağlam güncel değil.\\
+Nesne bozuk/parçalı & Derinlik tamponu temizlenmiyor; derinlik testi kapalı.\\
+\rowcolor{acikGri} Her şey ters/aynalı & Matris transpoze (GL\_TRUE) veya yanlış çarpım sırası.\\
+Aşırı hızlı/yavaş hareket & Delta time kullanılmıyor.\\
+\rowcolor{acikGri} Doku baş aşağı & \code{stbi\_set\_flip\_vertically\_on\_load} çağrılmadı.\\
+Aydınlatma yanlış & Normaller/yön vektörleri normalize değil; normal matrisi kullanılmadı.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{OpenGL hatalarını yakalamak için \code{glGetError()} kullanabilir ya da
+OpenGL 4.3+'ta \code{glDebugMessageCallback} ile otomatik hata mesajları
+alabilirsin. Geliştirme sırasında bunu açmak, sessiz hataları görünür kılar ve
+saatlerce süren hata avını dakikalara indirir.}
+
+\gsub{Nereden Devam Etmeli?}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Konu} & \color{anaMavi}\textbf{Ne öğrenirsin}\\
+\midrule
+Model yükleme (Assimp) & OBJ/FBX gibi hazır 3B modelleri sahneye almak.\\
+\rowcolor{acikGri} Framebuffer'lar & Ekran-dışı çizim, post-processing (bloom, blur).\\
+Gölge haritaları & Gerçekçi gölgeler (shadow mapping).\\
+\rowcolor{acikGri} Instancing & Binlerce nesneyi tek çağrıda çizmek.\\
+PBR & Fizik tabanlı gerçekçi malzemeler.\\
+\rowcolor{acikGri} Dear ImGui & GLFW/OpenGL üstüne hızlı arayüz (debug paneli).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Bu rehber seni grafiğin \emph{ne} olduğundan \emph{nasıl} yapıldığına
+taşıdı: teori $\to$ matematik $\to$ pencere $\to$ üçgen $\to$ dokulu, aydınlatılmış,
+kameralı 3B sahne. Buradan sonrası pratik: küçük sahneler kur, shader'larla oyna,
+her hatayı bir öğrenme fırsatı gör. İyi çizimler!}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.6pt}}\\[6pt]
+{\color{ortaGri}\small C++ ile GLFW \& OpenGL Rehberi --- Son}
+\end{center}
+
+\end{document}
