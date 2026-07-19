@@ -1186,151 +1186,37 @@ nesne ``geçerli ama belirsiz'' durumdadır; yeniden atamadan içeriğine
 güvenmeyin.}
 
 % =====================================================================
-\gsec{Yıkıcı (Destructor)}
+\gsec{Yıkıcı, Kopya ve Taşıma --- Beş Fonksiyon Bir Arada}
 
-Yıkıcı, bir nesne yok olduğunda \emph{otomatik} çağrılan özel üye
-fonksiyondur. Görevi, nesnenin sahip olduğu kaynakları (öbek belleği,
-dosyalar, kilitler) serbest bırakmaktır. \code{\~SinifAdi()} biçiminde
-yazılır; parametre almaz, değer döndürmez, aşırı yüklenemez.
+Kaynak (öbek belleği, dosya, soket...) yöneten her sınıfın, nesnenin tüm
+\emph{yaşam döngüsünü} kontrol eden \textbf{beş özel üye fonksiyonu} vardır.
+Bunlar ayrı ayrı değil, bir \emph{aile} olarak düşünülmelidir; çünkü hepsi
+aynı kaynağı doğru ele almak zorundadır. Derleyici bu beşini kendisi
+üretebilir, ancak sınıf elle bir kaynağı (\code{new} ile ayrılmış bellek)
+yönetiyorsa, üretilen varsayılanlar \textbf{yanlıştır}: işaretçiyi olduğu
+gibi kopyalarlar (sığ kopya) ve aynı bellek iki kez silinir. Bu yüzden
+beşini de bilinçli tanımlamak gerekir.
 
-\begin{lstlisting}
-#include <iostream>
-#include <cstring>
+\begin{center}
+\begin{tabular}{@{}c>{\raggedright\arraybackslash}p{3.5cm}>{\ttfamily\footnotesize}l>{\raggedright\arraybackslash}p{3.4cm}@{}}
+\toprule
+\# & \textbf{Fonksiyon} & \textrm{\textbf{İmza (T için)}} & \textbf{Ne zaman çağrılır} \\
+\midrule
+1 & Yıkıcı & \textasciitilde{}T() & Nesne yok olduğunda \\
+2 & Kopya yapıcı & T(const T\&) & Yeni nesne, mevcuttan \emph{kopyayla} kurulur \\
+3 & Kopya atama & T\& operator=(const T\&) & Var olan nesneye lvalue atanır \\
+4 & Taşıma yapıcı & T(T\&\&) noexcept & Yeni nesne, rvalue'dan kurulur \\
+5 & Taşıma atama & T\& operator=(T\&\&) noexcept & Var olan nesneye rvalue atanır \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-// Dinamik bir karakter dizisi yoneten basit bir sinif
-class TextHolder {
-    char* data_;
-    std::size_t size_;
-public:
-    // Yapici: kaynak edin (obek bellegi ayIr)
-    TextHolder(const char* s) {
-        size_ = std::strlen(s);
-        data_ = new char[size_ + 1];      // OBEK tahsisi
-        std::strcpy(data_, s);
-        std::cout << "Yapici: \"" << data_ << "\"\n";
-    }
+\gsub{Beşi Bir Arada: Tam Çalışan Örnek}
 
-    // YIKICI: kaynagi serbest birak
-    ~TextHolder() {
-        std::cout << "Yikici: \"" << data_ << "\" siliniyor\n";
-        delete[] data_;                    // OBEK bellegini geri ver
-    }
-
-    const char* get() const { return data_; }
-};
-
-int main() {
-    {
-        TextHolder m("merhaba");
-        std::cout << "Icerik: " << m.get() << "\n";
-    }   // kapsam bitti -> m'nin YIKICISI otomatik cagrIlIr
-    std::cout << "Kapsam disi\n";
-    return 0;
-}
-\end{lstlisting}
-
-\uyari{Bir sınıf \code{new} ile kaynak ayırıyorsa, yıkıcısında mutlaka
-serbest bırakmalıdır. Ayrıca, bir sınıf temel sınıf (base class) olarak
-kullanılacak ve işaretçiyle silinecekse, yıkıcısı \code{virtual}
-olmalıdır; aksi halde türetilmiş sınıfın yıkıcısı çağrılmaz ve kaynak
-sızar: \code{virtual \~Taban() = default;}}
-
-% =====================================================================
-\gsec{Kopya Yapıcı ve Kopya Atama Operatörü}
-
-Yukarıdaki \code{MetinTutucu} sınıfı tehlikeli bir hataya açık: derleyicinin
-\emph{ürettiği} varsayılan kopya, işaretçiyi olduğu gibi kopyalar (sığ kopya,
-shallow copy). Sonuç: iki nesne aynı öbek belleğini gösterir ve ikisi de
-onu silmeye çalışır --- ikili silme ve çökme! Çözüm, \emph{derin kopya}
-(deep copy) yapan kendi kopya işlemlerimizi yazmaktır.
-
-\gsub{Problem: Sığ Kopya}
-
-\begin{lstlisting}
-// Eger kopya yapici yazmazsak, derleyicinin urettigi SIĞ kopya:
-//   veri_ = digeri.veri_;   // AYNI adresi kopyalar!
-//
-// MetinTutucu a("test");
-// MetinTutucu b = a;        // b.veri_ == a.veri_ (AYNI obek!)
-// -> yikicida: once b siler, sonra a AYNI bellegi tekrar siler -> COKME
-\end{lstlisting}
-
-\gsub{Çözüm: Derin Kopya}
-
-\begin{lstlisting}
-#include <iostream>
-#include <cstring>
-
-class TextHolder {
-    char* data_;
-    std::size_t size_;
-public:
-    TextHolder(const char* s)
-        : size_(std::strlen(s)), data_(new char[size_ + 1]) {
-        std::strcpy(data_, s);
-    }
-    ~TextHolder() { delete[] data_; }
-
-    // KOPYA YAPICI: yeni, BAGIMSIZ bir obek tahsis edip icerigi kopyalar
-    TextHolder(const TextHolder& other)
-        : size_(other.size_), data_(new char[other.size_ + 1]) {
-        std::strcpy(data_, other.data_);   // DERIN kopya
-        std::cout << "Kopya yapici\n";
-    }
-
-    // KOPYA ATAMA OPERATORU: mevcut nesneye baska bir nesnenin kopyasInI ata
-    TextHolder& operator=(const TextHolder& other) {
-        std::cout << "Kopya atama\n";
-        if (this == &other) return *this;   // KENDINE atama korumasi
-
-        // 1) Yeni kaynagi once ayIr (istisna guvenligi icin eskiyi silmeden once)
-        char* newData = new char[other.size_ + 1];
-        std::strcpy(newData, other.data_);
-
-        // 2) Eski kaynagi serbest birak
-        delete[] data_;
-
-        // 3) Yeni duruma gec
-        data_ = newData;
-        size_ = other.size_;
-        return *this;                        // zincirleme icin *this don
-    }
-
-    const char* get() const { return data_; }
-};
-
-int main() {
-    TextHolder a("merhaba");
-    TextHolder b = a;          // KOPYA YAPICI (yeni nesne ilklendiriliyor)
-    TextHolder c("gecici");
-    c = a;                      // KOPYA ATAMA (var olan nesneye atanIyor)
-
-    std::cout << a.get() << " " << b.get() << " " << c.get() << "\n";
-    return 0;
-}   // uc bagImsIz obek, uc ayrI silme -> guvenli
-\end{lstlisting}
-
-\bilgi{\textbf{Kopya yapıcı vs kopya atama farkı:} Kopya yapıcı, \emph{yeni}
-bir nesneyi başka bir nesnenin kopyası olarak \emph{ilklendirir}
-(\code{MetinTutucu b = a;}). Kopya atama ise \emph{zaten var olan} bir
-nesneye başka bir nesnenin değerini \emph{atar} (\code{c = a;}). Atama
-operatörü, önce nesnenin eski kaynağını temizlemek zorundadır; yapıcının
-temizleyecek eski kaynağı yoktur.}
-
-\uyari{Kopya atama operatöründe üç şey kritiktir: (1) \textbf{kendine
-atama} kontrolü (\code{if (this == \&digeri)}), (2) eskiyi silmeden önce
-yeniyi ayırarak \textbf{istisna güvenliği}, (3) zincirleme (\code{a = b = c})
-için \code{*this} döndürmek. Bir sonraki bölümde bu üçünü de zarifçe
-çözen ``copy-and-swap'' deyimini göreceğiz.}
-
-% =====================================================================
-\gsec{Taşıma Yapıcı ve Taşıma Atama Operatörü}
-
-Kopyalama, yeni bir öbek ayırıp içeriği baytı baytına kopyalar --- pahalı.
-Ama kaynak nesne zaten geçici (rvalue) ise ve birazdan yok olacaksa, onun
-kaynağını \emph{çalmak} (işaretçiyi devralıp orijinalini boşaltmak) çok
-daha ucuzdur. İşte \textbf{taşıma semantiği} budur. C++11 ile geldi ve
-modern C++'ın performansının temel taşıdır.
+Aşağıdaki \code{TextHolder} sınıfı, öbekte bir karakter dizisi (\code{char*})
+yönetir ve beş özel üye fonksiyonun \emph{tümünü} tanımlar. Her fonksiyon
+hangi işlemin tetiklendiğini ekrana yazar; böylece \code{main} içindeki her
+satırın hangi fonksiyonu çağırdığını çıktıdan net görebilirsiniz.
 
 \begin{lstlisting}
 #include <iostream>
@@ -1338,72 +1224,190 @@ modern C++'ın performansının temel taşıdır.
 #include <utility>
 
 class TextHolder {
-    char* data_;
-    std::size_t size_;
+    std::size_t size_;    // NOT: size_ once bildirilir ki data_'dan ONCE baslasin
+    char* data_;          // sahip olunan obek kaynagi
 public:
-    TextHolder(const char* s)
+    // (0) Normal yapici -- kaynagi EDINIR (RAII)
+    explicit TextHolder(const char* s = "")
         : size_(std::strlen(s)), data_(new char[size_ + 1]) {
         std::strcpy(data_, s);
-    }
-    ~TextHolder() { delete[] data_; }
-
-    // Kopya yapici (derin kopya -- pahalI)
-    TextHolder(const TextHolder& d)
-        : size_(d.size_), data_(new char[d.size_ + 1]) {
-        std::strcpy(data_, d.data_);
-        std::cout << "KOPYA yapici (pahali)\n";
+        std::cout << "[yapici]         \"" << data_ << "\"\n";
     }
 
-    // TASIMA YAPICI: kaynagi CAL, orijinali bosalt (ucuz, noexcept)
-    TextHolder(TextHolder&& d) noexcept
-        : data_(d.data_), size_(d.size_) {   // isaretciyi devral
-        d.data_ = nullptr;                     // orijinali BOSALT
-        d.size_ = 0;
-        std::cout << "TASIMA yapici (ucuz)\n";
+    // (1) YIKICI -- kaynagi SERBEST BIRAKIR
+    ~TextHolder() {
+        std::cout << "[yikici]         \"" << (data_ ? data_ : "(bos)") << "\"\n";
+        delete[] data_;
     }
 
-    // TASIMA ATAMA OPERATORU
-    TextHolder& operator=(TextHolder&& d) noexcept {
-        std::cout << "TASIMA atama\n";
-        if (this == &d) return *this;
-        delete[] data_;          // eski kaynagI birak
-        data_ = d.data_;         // yeni kaynagI CAL
-        size_ = d.size_;
-        d.data_ = nullptr;       // orijinali bosalt (yIkIcIsI guvenli olsun)
-        d.size_ = 0;
+    // (2) KOPYA YAPICI -- yeni, BAGIMSIZ kaynak ayirip icerigi kopyalar (derin kopya)
+    TextHolder(const TextHolder& other)
+        : size_(other.size_), data_(new char[other.size_ + 1]) {
+        std::strcpy(data_, other.data_);
+        std::cout << "[kopya yapici]   \"" << data_ << "\"\n";
+    }
+
+    // (3) KOPYA ATAMA -- var olan nesneye derin kopya atar
+    TextHolder& operator=(const TextHolder& other) {
+        std::cout << "[kopya atama]    \"" << other.data_ << "\"\n";
+        if (this != &other) {                          // kendine-atama korumasi
+            char* fresh = new char[other.size_ + 1];   // 1) once yeniyi ayir
+            std::strcpy(fresh, other.data_);           //    (istisna guvenligi)
+            delete[] data_;                            // 2) sonra eskiyi birak
+            data_ = fresh;                             // 3) yeni duruma gec
+            size_ = other.size_;
+        }
+        return *this;                                  // zincirleme icin (a = b = c)
+    }
+
+    // (4) TASIMA YAPICI -- kaynagi CALAR, orijinali gecerli-bos birakir (noexcept)
+    TextHolder(TextHolder&& other) noexcept
+        : size_(other.size_), data_(other.data_) {     // isaretciyi DEVRAL
+        other.data_ = nullptr;                         // orijinali BOSALT
+        other.size_ = 0;
+        std::cout << "[tasima yapici]  \"" << data_ << "\"\n";
+    }
+
+    // (5) TASIMA ATAMA -- eski kaynagi birak, yeniyi cal (noexcept)
+    TextHolder& operator=(TextHolder&& other) noexcept {
+        std::cout << "[tasima atama]   \"" << (other.data_ ? other.data_ : "") << "\"\n";
+        if (this != &other) {
+            delete[] data_;              // eski kaynagi birak
+            size_ = other.size_;
+            data_ = other.data_;         // yeni kaynagi CAL
+            other.data_ = nullptr;       // orijinali bosalt
+            other.size_ = 0;
+        }
         return *this;
     }
 
     const char* get() const { return data_ ? data_ : "(bos)"; }
 };
 
-TextHolder produce() { return TextHolder("gecici veri"); }
+TextHolder makeTemp() { return TextHolder("gecici"); }   // gecici (rvalue) uretir
 
 int main() {
-    TextHolder a("kaynak");
+    TextHolder a("A");            // (0) yapici
+    TextHolder b = a;             // (2) kopya yapici  -> yeni nesne, a'dan
+    TextHolder c("C");            // (0) yapici
+    c = a;                        // (3) kopya atama   -> c zaten VAR
+    TextHolder d = std::move(a);  // (4) tasima yapici -> a'nin kaynagi calinir
+    TextHolder e("E");            // (0) yapici
+    e = makeTemp();               // (5) tasima atama  -> sagda gecici (rvalue)
 
-    TextHolder b = std::move(a);   // TASIMA yapici: a'nIn kaynagI b'ye gecer
-    std::cout << "a = " << a.get() << ", b = " << b.get() << "\n";
-    // a artik bos, b = "kaynak"
-
-    TextHolder c = produce();         // gecici (rvalue) -> TASIMA yapici
-    c = TextHolder("yeni");        // gecici atanIyor -> TASIMA atama
-
+    std::cout << "d = " << d.get() << ", a = " << a.get() << "\n";
     return 0;
-}
+}   // kapsam sonu: e, d, c, b, a icin (1) yikici -- TERS sirada
 \end{lstlisting}
 
-\ipucu{Taşıma işlemlerini \textbf{her zaman \code{noexcept}} işaretleyin.
-Bunun kritik bir pratik sonucu vardır: \code{std::vector} yeniden boyutlanırken
-elemanlarını taşımak ister, ama yalnızca taşıma yapıcı \code{noexcept}'se
-taşır; değilse güvenlik için \emph{kopyalar}. Yani \code{noexcept} olmayan
-bir taşıma yapıcı, \code{vector} büyüdüğünde sessizce performans kaybına
-yol açar.}
+\ornek[Program Çıktısı]{\ttfamily\small
+[yapici]~~~~~~~~~"A"\\
+{}[kopya yapici]~~~"A"\\
+{}[yapici]~~~~~~~~~"C"\\
+{}[kopya atama]~~~~"A"\\
+{}[tasima yapici]~~"A"\\
+{}[yapici]~~~~~~~~~"E"\\
+{}[yapici]~~~~~~~~~"gecici"~~~~(makeTemp icindeki gecici)\\
+{}[tasima atama]~~~"gecici"\\
+{}[yikici]~~~~~~~~~"(bos)"~~~~~(gecici, tasindiktan sonra bos)\\
+d = A, a = (bos)\\
+{}[yikici]~~~~~~~~~"gecici"~~~(e)\\
+{}[yikici]~~~~~~~~~"A"~~~~~~~~~(d)\\
+{}[yikici]~~~~~~~~~"A"~~~~~~~~~(c)\\
+{}[yikici]~~~~~~~~~"A"~~~~~~~~~(b)\\
+{}[yikici]~~~~~~~~~"(bos)"~~~~~(a, kaynagi calinmisti)}
 
-\bilgi{\textbf{Taşıma sonrası durum:} Taşınan (kaynak) nesne yok edilmez;
-``geçerli ama belirsiz'' durumda kalır. Yıkıcısının güvenle çalışabilmesi
-için onu tutarlı bir boş duruma getirmelisiniz (yukarıda \code{veri\_ = nullptr}).
-Böylece kaynağın yıkıcısı \code{delete[] nullptr} çağırır ki bu güvenlidir.}
+\gsub{1. Yıkıcı (Destructor)}
+
+Yıkıcı, nesne yok olduğunda \emph{otomatik} çağrılır ve nesnenin sahip
+olduğu kaynağı serbest bırakır. \code{\~T()} biçiminde yazılır; parametre
+almaz, değer döndürmez, aşırı yüklenemez. Yukarıda \code{delete[] data\_}
+ile öbek belleğini geri verir. Çıktıda görüldüğü gibi, yerel nesneler
+\emph{kuruluşun tersi sırada} (e, d, c, b, a) yok edilir.
+
+\uyari{Bir sınıf polimorfik kullanılacaksa (taban işaretçisiyle türetilmiş
+nesne tutulup silinecekse), yıkıcısı \code{virtual} olmalıdır ---
+\code{virtual \~Base() = default;}. Aksi halde \code{delete base\_ptr}
+türetilmiş sınıfın yıkıcısını atlar ve kaynak sızar.}
+
+\gsub{2. Kopya Yapıcı (Copy Constructor)}
+
+Kopya yapıcı, \emph{yeni} bir nesneyi var olan başka bir nesnenin kopyası
+olarak \emph{ilklendirir} (\code{TextHolder b = a;}). Kritik nokta:
+\textbf{derin kopya} yapması gerekir --- yeni, bağımsız bir öbek ayırıp
+içeriği oraya kopyalar. Böylece \code{a} ile \code{b} tamamen ayrı
+belleklere sahip olur.
+
+\uyari{\textbf{Sığ kopya tuzağı:} Kopya yapıcı yazmazsanız, derleyici
+işaretçiyi olduğu gibi kopyalayan bir varsayılan üretir --- iki nesne
+\emph{aynı} öbeği gösterir. Yıkıcıda önce biri, sonra diğeri \emph{aynı}
+belleği siler: \textbf{ikili silme} (double free) ve çökme. Derin kopya
+tam olarak bunu önler.}
+
+\ornek[Sığ vs Derin Kopya]{\ttfamily\small
+SIĞ (yanlış):\\
+~~a.data\_ ---.\\
+~~~~~~~~~~~~~~~\textgreater{} [ "A\textbackslash0" ]~~~~(TEK obek, iki sahip!)\\
+~~b.data\_ ---'\\[4pt]
+DERİN (doğru):\\
+~~a.data\_ ---\textgreater{} [ "A\textbackslash0" ]\\
+~~b.data\_ ---\textgreater{} [ "A\textbackslash0" ]~~~(iki AYRI obek)}
+
+\gsub{3. Kopya Atama Operatörü (Copy Assignment)}
+
+Kopya atama, \emph{zaten var olan} bir nesneye başka bir nesnenin değerini
+\emph{atar} (\code{c = a;}). Kopya yapıcıdan farkı: hedef nesnenin
+\emph{eski bir kaynağı vardır} ve önce onu temizlemek gerekir. Doğru bir
+kopya atamada üç kritik nokta:
+
+\begin{enumerate}
+\item \textbf{Kendine atama koruması:} \code{if (this != \&other)} ---
+\code{x = x} durumunda önce kendi kaynağını silip sonra ondan kopyalamaya
+çalışmayı önler.
+\item \textbf{İstisna güvenliği:} Önce yeni belleği ayırın, \emph{sonra}
+eskiyi silin. Ayırma başarısız olursa (istisna), nesne eski geçerli
+durumunda kalır.
+\item \textbf{Zincirleme için \code{*this} döndürün:} \code{a = b = c}
+ifadesinin çalışması için.
+\end{enumerate}
+
+\gsub{4. Taşıma Yapıcı (Move Constructor)}
+
+Kopyalama pahalıdır: yeni öbek ayırıp içeriği baytı baytına kopyalar. Ama
+kaynak nesne zaten \emph{geçici} (rvalue) ise ve birazdan yok olacaksa,
+kaynağını \emph{kopyalamak} yerine \emph{çalmak} çok daha ucuzdur: sadece
+işaretçiyi devralır, orijinali \code{nullptr} yaparsınız. Bu, C++11'in
+taşıma semantiğidir ve modern C++ performansının temelidir.
+\code{TextHolder d = std::move(a);} satırı bunu tetikler --- hiç bellek
+kopyalanmaz, yalnızca işaretçi \code{a}'dan \code{d}'ye geçer.
+
+\ipucu{Taşıma işlemlerini \textbf{her zaman \code{noexcept}} yapın.
+\code{std::vector} yeniden boyutlanırken elemanlarını yalnızca taşıma
+yapıcı \code{noexcept}'se \emph{taşır}; değilse güvenlik için
+\emph{kopyalar}. Yani \code{noexcept} olmayan bir taşıma yapıcı, vector
+büyüdüğünde sessizce performans kaybettirir.}
+
+\gsub{5. Taşıma Atama Operatörü (Move Assignment)}
+
+Taşıma atama, var olan bir nesneye bir rvalue atar (\code{e = makeTemp();}).
+Önce kendi eski kaynağını bırakır, sonra sağdaki geçicinin kaynağını çalar
+ve onu boşaltır. Kopya atamanın ucuz kardeşidir: bellek kopyalamak yerine
+sahiplik devreder.
+
+\bilgi{\textbf{Taşıma sonrası durum:} \code{std::move} bir şeyi
+\emph{taşımaz}; yalnızca nesneyi rvalue'ya çevirerek ``kaynağını
+çalabilirsin'' der. Gerçek taşımayı yukarıdaki fonksiyonlar yapar. Taşınan
+kaynak nesne yok \emph{edilmez}; ``geçerli ama belirsiz'' durumda kalır.
+Onu tutarlı bir boş duruma getirmek (\code{data\_ = nullptr}) şarttır ki
+yıkıcısı \code{delete[] nullptr} (güvenli) çağırsın. Çıktıda \code{a}'nın
+kaynağı \code{d}'ye taşındıktan sonra \code{a.get()} ``(bos)'' döndürür.}
+
+\notk[Hangisi Ne Zaman?]{Bir ifadenin kopya mı taşıma mı tetikleyeceğini
+sağ taraf belirler: sağ taraf bir \textbf{lvalue} (isimli, kalıcı nesne)
+ise \emph{kopya}, bir \textbf{rvalue} (geçici, \code{std::move}'lu) ise
+\emph{taşıma} çağrılır. \code{b = a} kopya, \code{b = std::move(a)} veya
+\code{b = makeTemp()} taşımadır. Hedefin yeni mi (yapıcı) yoksa var olan mı
+(atama) olduğu ise \emph{yapıcı} ile \emph{atama} operatörünü ayırır.}
 
 % =====================================================================
 \gsec{Üç, Beş ve Sıfır Kuralı}
