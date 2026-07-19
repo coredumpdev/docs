@@ -1,0 +1,2581 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{132C4A}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={C++ ile Dear ImGui Rehberi},
+  pdfauthor={Arayuz Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}C++ ile Dear ImGui}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C++) ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+  morekeywords={ImGui,ImVec2,ImVec4,ImGuiIO,ImGuiStyle,ImGuiCol,ImGuiWindowFlags,
+    ImGuiCond,ImDrawList,ImU32,ImFont,ImFontConfig,ImFontAtlas,ImGuiContext,
+    ImGuiTableFlags,ImGuiTreeNodeFlags,ImGuiInputTextFlags,ImGuiComboFlags,
+    ImGuiSelectableFlags,ImGuiTabBarFlags,ImGuiDockNodeFlags,ImGuiConfigFlags,
+    ImGuiViewport,ImGuiInputTextCallbackData,ImGuiKey,ImGuiMouseButton,
+    ImGuiSliderFlags,ImGuiColorEditFlags,ImTextureID,ImGuiListClipper,
+    GLFWwindow,GLuint,uint32_t,int32_t,uint8_t,size_t,nullptr,constexpr,noexcept,
+    override,final,auto,std,string,vector,uint,int64_t}
+}
+\lstset{style=cppstyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1,
+}
+
+% CMake stili
+\lstdefinestyle{cmakestyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{mor}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  backgroundcolor=\color{acikMor!35},
+  frame=single,framesep=6pt,rulecolor=\color{mor!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  morekeywords={cmake_minimum_required,project,add_executable,add_subdirectory,
+    target_link_libraries,target_include_directories,find_package,set,
+    add_library,target_compile_features,FetchContent_Declare,FetchContent_MakeAvailable,
+    include,option,if,endif,PRIVATE,PUBLIC,VERSION,REQUIRED},
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries C++ ile Dear ImGui}\\[10pt]
+{\color{vurguMavi}\LARGE Immediate-Mode GUI ile Araç ve Arayüz Geliştirme Rehberi}\\[8pt]
+{\color{ortaGri}\large Mimariden Widget'lara, Stilden Docking'e, Bol Projeli Kapsamlı Başvuru}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge önce arayüz programlamanın \textbf{iki paradigmasını}
+(immediate-mode ve retained-mode), sonra Dear ImGui'nin \textbf{nasıl çalıştığını}
+(kare döngüsü, ID sistemi, DrawList), ardından \textbf{tüm önemli widget'ları} ve
+en sonda \textbf{sıfırdan yazılmış çok sayıda tam projeyi} adım adım anlatır.
+Tüm kod örnekleri İngilizce isimlendirmeyle, gerçek üretim stiline uygun
+yazılmıştır ve olduğu gibi derlenebilir.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kapsam --- Kısım 1 (Temeller):} ImGui nedir \textbullet\ immediate vs retained
+\textbullet\ mimari \& kare döngüsü \textbullet\ kurulum \& CMake \textbullet\ GLFW+OpenGL3 backend
+\textbullet\ ilk pencere \textbullet\ ana döngü anatomisi \textbullet\ IO \& DeltaTime.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 2 (Widget'lar):} pencereler \& bayraklar \textbullet\ buton/checkbox/radio
+\textbullet\ slider \& drag \textbullet\ InputText \textbullet\ combo \& listbox \textbullet\ renk seçici
+\textbullet\ ağaç \& seçilebilir \textbullet\ tablolar \textbullet\ menü \& tab bar \textbullet\ plot \textbullet\ ID sistemi \& layout.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 3 (İleri):} stil \& tema \textbullet\ font \& Türkçe karakter
+\textbullet\ docking \& viewport \textbullet\ DrawList ile özel çizim \textbullet\ InputText callback
+\textbullet\ klavye/fare \textbullet\ ListClipper ile performans \textbullet\ yerleşik demo.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 4 (Projeler):} yeniden kullanılabilir App iskeleti
+\textbullet\ Yapılacaklar (To-Do) uygulaması \textbullet\ Log konsolu \textbullet\ Canlı sistem monitörü
+\textbullet\ Renk paleti tasarımcısı \textbullet\ Hex/bellek görüntüleyici \textbullet\ Basit çizim tuvali
+\textbullet\ Oyun hata ayıklama HUD'u.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 19 Temmuz 2026}\\[4pt]
+{\color{ortaGri} C++17 \textbullet\ Dear ImGui 1.90+ \textbullet\ GLFW 3.x \textbullet\ OpenGL 3.3 \textbullet\ CMake}
+\vspace*{0.4cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Dear ImGui'nin Temelleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{Dear ImGui Nedir?}
+% =====================================================================
+
+Dear ImGui (kısaca ImGui, ``Immediate Mode Graphical User Interface''),
+C++ ile yazılmış, bağımlılığı olmayan (dependency-free) bir arayüz
+kütüphanesidir. Omar Cornut tarafından geliştirilir. Amacı; oyun motorları,
+grafik uygulamaları, hata ayıklama araçları ve içerik editörleri için
+\textbf{hızlıca üretilebilen, minimum durum (state) tutan} arayüzler
+yaratmaktır. Bugün Unreal Engine'den Blender eklentilerine, NVIDIA
+araçlarından bağımsız oyun stüdyolarına kadar sektörde çok yaygın kullanılır.
+
+ImGui bir \emph{işletim sistemi} arayüzü (Qt, GTK gibi) değildir. Kendine ait
+bir pencereyi işletim sisteminden açmaz; bunun yerine sizin zaten sahip
+olduğunuz bir OpenGL/DirectX/Vulkan bağlamına (context) \textbf{üçgenler
+çizerek} arayüz üretir. Bu yüzden ona genelde bir oyun ya da render döngüsünün
+\emph{içine} yerleştiririz.
+
+\gsub{Neye Yarar, Neye Yaramaz?}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikYesil}\color{yesil}\textbf{İdeal olduğu yerler} & \color{kirmizi}\cellcolor{kirmizi!8}\textbf{Uygun olmadığı yerler}\\
+\midrule
+Oyun içi hata ayıklama panelleri, editörler & Son kullanıcıya sunulan cilalı masaüstü uygulaması (bazen yine de kullanılır)\\
+Grafik/render araçları, shader denemeleri & Mobil dokunmatik odaklı tüketici uygulamaları\\
+Bilimsel görselleştirme, veri denetleyicileri & Karmaşık, tema-ağırlıklı web benzeri UI'lar\\
+Hızlı prototipleme, ``bir slider koyayım'' anları & Erişilebilirlik (a11y) zorunlu kurumsal yazılım\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{ImGui'nin sloganı ``bloat-free''dir. Bir değeri ekrana bağlamak için
+gözlemci (observer), sinyal-slot, XML layout dosyası veya kod üreteci
+\emph{yoktur}. Bir \code{if} bloğu kadar basittir: \code{if (ImGui::Button("Kaydet")) save();}}
+
+\gsub{Kısa Tarihçe ve Ekosistem}
+
+ImGui 2014'te açık kaynak oldu ve MIT lisanslıdır. Etrafında zengin bir
+ekosistem büyüdü:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bileşen} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Çekirdek (\code{imgui.h}) & Tüm widget'lar, düzen, girdi işleme. Platformdan bağımsız.\\
+\rowcolor{acikGri} Backend'ler & \code{imgui\_impl\_glfw}, \code{imgui\_impl\_opengl3}, \code{\_dx11}, \code{\_vulkan}, \code{\_sdl2} vb. Girdiyi ve çizimi platforma bağlar.\\
+ImPlot & Yüksek performanslı bilimsel grafik/çizim eklentisi.\\
+\rowcolor{acikGri} ImGuizmo & 3B sahnede taşıma/döndürme/ölçekleme gizmoları.\\
+imgui-node-editor & Düğüm (node) tabanlı grafik editörleri.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Immediate Mode ve Retained Mode}
+% =====================================================================
+
+ImGui'yi gerçekten anlamanın anahtarı, onun ``immediate mode'' (anlık kip)
+felsefesini kavramaktır. Qt, GTK, HTML/DOM, Android View gibi klasik arayüz
+sistemleri \textbf{retained mode} (kalıcı kip) çalışır. İkisi arasındaki fark,
+kütüphaneyle kurduğunuz ilişkinin tamamını belirler.
+
+\gsub{Retained Mode: Nesneler Kalıcıdır}
+
+Retained mode'da bir düğme oluşturursunuz ve o düğme nesnesi \emph{bellekte
+yaşamaya devam eder}. Ona bir metin verir, bir tıklama olayı bağlar (callback)
+ve sonra unutursunuz. Arayüz ağacı (widget tree) bir veri yapısı olarak
+saklanır; siz onu değiştirdikçe kütüphane ekranı günceller.
+
+\begin{lstlisting}
+// Retained mode (kavramsal, Qt benzeri sozde-kod)
+QPushButton* button = new QPushButton("Kaydet");   // nesne kalici olusturulur
+button->setEnabled(false);                          // durumu kutuphane tutar
+connect(button, &QPushButton::clicked, this, &App::onSave); // olay baglanir
+layout->addWidget(button);                          // agaca eklenir
+// ... buradan sonra 'button' bellekte yasar, olaylari bekler
+\end{lstlisting}
+
+\gsub{Immediate Mode: Her Karede Yeniden Söylersiniz}
+
+ImGui'de düğme diye bir nesne \emph{yoktur}. Her karede (frame),
+``şu anda ekranda bir Kaydet düğmesi olsun'' dersiniz. Fonksiyon o karede
+düğmeyi çizer ve o karede tıklanıp tıklanmadığını \code{bool} olarak
+\emph{hemen} döndürür. Bir sonraki kare, aynı satırı tekrar çağırırsınız.
+
+\begin{lstlisting}
+// Immediate mode (gercek ImGui)
+if (ImGui::Button("Kaydet")) {   // hem cizer hem "bu kare tiklandi mi?" doner
+    save();                       // tiklandiysa hemen burada is yapariz
+}
+// Sonraki kare bu satir yine calisir. Dugme icin saklanan bir nesne YOK.
+\end{lstlisting}
+
+\notk[Zihniyet değişimi]{Immediate mode'da arayüz, uygulama durumunuzun (state)
+her kare yeniden çizilen bir \emph{görüntüsüdür}. ``Düğmeyi devre dışı bırak''
+gibi bir komut yollamaz, sadece ``bu karede düğme devre dışı görünsün''
+dersiniz: \code{ImGui::BeginDisabled(isBusy);} \dots\ \code{ImGui::EndDisabled();}.
+Senkronizasyon problemi ortadan kalkar: gösterdiğiniz şey her zaman
+verinizin o anki hâlidir.}
+
+\gsub{İki Yaklaşımın Karşılaştırması}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Konu} & \color{anaMavi}\textbf{Retained (Qt/HTML)} & \color{anaMavi}\textbf{Immediate (ImGui)}\\
+\midrule
+Durum sahibi & Kütüphane widget ağacını tutar & \textbf{Siz} tutarsınız, UI sadece yansıtır\\
+\rowcolor{acikGri} Olay modeli & Callback / sinyal-slot & Fonksiyon dönüş değeri (\code{bool})\\
+Bellek & Widget başına kalıcı nesne & Kare başına geçici, minimum\\
+\rowcolor{acikGri} Senkronizasyon & UI ile veri ayrışabilir (bug kaynağı) & Ayrışamaz; her kare yeniden okunur\\
+Performans profili & Az widget'ta ucuz & Her kare tüm UI çalışır (çoğu araç için sorun değil)\\
+\rowcolor{acikGri} En iyi olduğu yer & Statik, karmaşık son-kullanıcı UI & Dinamik, sık değişen araç/editör UI\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\uyari{Immediate mode ``her kare tüm arayüzü yeniden inşa ediyorum'' demektir.
+Bu kulağa pahalı gelir ama modern donanımda binlerce widget bile mikrosaniyeler
+sürer, çünkü ImGui yalnızca üçgen listesi üretir. Yine de \emph{ağır hesapları}
+(dosya okuma, ağ) UI kodunun içine koymayın; onları ayrı yapıp sonucu
+gösterin.}
+
+% =====================================================================
+\gsec{ImGui'nin Mimarisi ve Kare Döngüsü}
+% =====================================================================
+
+ImGui üç katmandan oluşur ve bu katmanları ayırt etmek kurulumu anlamayı
+kolaylaştırır. Sizin uygulamanız bu üç katmanı her karede belli bir sırayla
+sürer.
+
+\gsub{Üç Katman}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Katman} & \color{anaMavi}\textbf{Sorumluluk}\\
+\midrule
+1. Çekirdek ImGui & Widget mantığı, düzen, girdi durumu. \code{ImGui::Button}, \code{ImGui::Begin} burada. Çıktısı: bir \textbf{çizim komut listesi} (DrawData).\\
+\rowcolor{acikGri} 2. Platform backend & Klavye, fare, pencere boyutu, zamanı ImGui'ye \emph{besler}. Örn. \code{imgui\_impl\_glfw}.\\
+3. Renderer backend & ImGui'nin ürettiği üçgenleri GPU'ya çizer. Örn. \code{imgui\_impl\_opengl3}.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+ImGui hiçbir zaman doğrudan ekrana çizmez. Bir karenin sonunda,
+\code{ImGui::Render()} çağrısı bir \code{ImDrawData} nesnesi hazırlar: bu,
+``şu köşe tamponunu şu dokuyla, şu kırpma dikdörtgeninde çiz'' diyen komutların
+listesidir. Renderer backend bu listeyi alıp OpenGL çağrılarına çevirir.
+
+\gsub{Bir Karenin Anatomisi}
+
+Her kare tam olarak şu sırayı izler. Bu sırayı bozmak (örneğin
+\code{NewFrame} çağırmadan widget kullanmak) çökmeye yol açar.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}r >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Adım} & \color{anaMavi}\textbf{Yapılan iş}\\
+\midrule
+1 & Platform olaylarını işle (\code{glfwPollEvents}).\\
+\rowcolor{acikGri} 2 & Backend'lerin \code{NewFrame}'i: yeni girdiyi ImGui'ye aktar.\\
+3 & \code{ImGui::NewFrame()}: yeni kareyi başlat.\\
+\rowcolor{acikGri} 4 & \textbf{Sizin UI kodunuz}: \code{Begin/End}, tüm widget çağrıları.\\
+5 & \code{ImGui::Render()}: DrawData'yı üret.\\
+\rowcolor{acikGri} 6 & Ekranı temizle (\code{glClear}).\\
+7 & Renderer backend: DrawData'yı çiz.\\
+\rowcolor{acikGri} 8 & Tamponları takasla (\code{glfwSwapBuffers}).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{4. adım, yani sizin UI kodunuz, tamamen \code{NewFrame} ile
+\code{Render} arasında olmak zorundadır. Bu ikisinin arasına yazdığınız her
+\code{ImGui::} çağrısı o kareye ait UI'yı tanımlar. Dışına yazarsanız ImGui
+``hangi karedeyim?'' diyemez ve assert ile durur.}
+
+
+% =====================================================================
+\gsec{Kurulum ve Proje Yapısı}
+% =====================================================================
+
+ImGui'nin bir ``kur'' komutu yoktur; kaynak dosyaları doğrudan projenize
+eklersiniz. Bu, kütüphanenin felsefesinin bir parçasıdır: derlenmiş bir
+kütüphane (\code{.lib}/\code{.so}) yerine \emph{birkaç .cpp dosyasını} kendi
+projenizle beraber derlersiniz. Bu bölümde GLFW + OpenGL3 backend'i ile
+modern bir CMake projesi kuracağız.
+
+\gsub{Gerekli Dosyalar}
+
+Depodan (\url{https://github.com/ocornut/imgui}) şu dosyalara ihtiyacınız var:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\normalfont\color{anaMavi}\textbf{Dosya} & \color{anaMavi}\textbf{Rol}\\
+\midrule
+imgui.cpp / imgui.h & Çekirdek kütüphane\\
+\rowcolor{acikGri} imgui\_draw.cpp & Çizim komutları ve DrawList\\
+imgui\_tables.cpp & Tablo widget'ları\\
+\rowcolor{acikGri} imgui\_widgets.cpp & Standart widget'lar\\
+imgui\_demo.cpp & Demo penceresi (öğrenmek için altın değerinde)\\
+\rowcolor{acikGri} backends/imgui\_impl\_glfw.cpp & GLFW platform backend\\
+backends/imgui\_impl\_opengl3.cpp & OpenGL3 renderer backend\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{\code{imgui\_demo.cpp} içindeki \code{ImGui::ShowDemoWindow()}, neredeyse
+her widget'ın canlı bir örneğini gösterir. Öğrenirken demo penceresini açın,
+beğendiğiniz widget'ı bulun, sonra \code{imgui\_demo.cpp} içinde o metni aratıp
+kodunu kopyalayın. Bu, ImGui öğrenmenin en hızlı yoludur.}
+
+\gsub{Önerilen Klasör Düzeni}
+
+\begin{lstlisting}[style=shstyle]
+imgui_proje/
+  CMakeLists.txt
+  src/
+    main.cpp
+  external/
+    imgui/            <- ocornut/imgui deposu (git submodule ideal)
+    glfw/             <- glfw/glfw deposu (veya sistemden find_package)
+\end{lstlisting}
+
+\gsub{CMakeLists.txt --- FetchContent ile Otomatik İndirme}
+
+En pratik yöntem, CMake'in \code{FetchContent} modülüyle ImGui ve GLFW'yi
+otomatik indirmektir. Böylece kimse elle dosya kopyalamaz.
+
+\begin{lstlisting}[style=cmakestyle]
+cmake_minimum_required(VERSION 3.16)
+project(imgui_proje LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(FetchContent)
+
+# --- GLFW ---
+FetchContent_Declare(glfw
+  GIT_REPOSITORY https://github.com/glfw/glfw.git
+  GIT_TAG        3.4)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(glfw)
+
+# --- Dear ImGui ---
+FetchContent_Declare(imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG        v1.91.5)
+FetchContent_MakeAvailable(imgui)
+
+# ImGui bir CMake hedefi sunmaz; kaynaklari elle derleriz.
+add_library(imgui STATIC
+  ${imgui_SOURCE_DIR}/imgui.cpp
+  ${imgui_SOURCE_DIR}/imgui_draw.cpp
+  ${imgui_SOURCE_DIR}/imgui_tables.cpp
+  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+  ${imgui_SOURCE_DIR}/imgui_demo.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+
+target_include_directories(imgui PUBLIC
+  ${imgui_SOURCE_DIR}
+  ${imgui_SOURCE_DIR}/backends)
+
+target_link_libraries(imgui PUBLIC glfw)
+
+# --- Uygulamamiz ---
+add_executable(app src/main.cpp)
+target_link_libraries(app PRIVATE imgui)
+
+# OpenGL'i bagla (Linux/macOS/Windows farkli)
+find_package(OpenGL REQUIRED)
+target_link_libraries(app PRIVATE OpenGL::GL)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Derleme
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/app
+\end{lstlisting}
+
+\bilgi{ImGui, OpenGL fonksiyon işaretçilerini yüklemek için varsayılan olarak
+kendi hafif yükleyicisini (\code{imgui\_impl\_opengl3\_loader.h}) kullanır;
+bu yüzden GLAD/GLEW eklemenize gerek yoktur. Kendi çiziminizi (sahne) OpenGL
+ile yapacaksanız yine de bir yükleyici istersiniz, ama sadece ImGui için
+gerekmez.}
+
+% =====================================================================
+\gsec{İlk Program: Boş Bir ImGui Penceresi}
+% =====================================================================
+
+Şimdi en küçük tam programı yazalım. Bu program bir GLFW penceresi açar,
+ImGui'yi başlatır ve içinde tek bir metin gösteren bir ImGui penceresi çizer.
+Bu iskelet, rehberdeki her örneğin temelidir.
+
+\gsub{Tam Kaynak Kod}
+
+\begin{lstlisting}
+// main.cpp -- en kucuk calisan ImGui uygulamasi
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include <GLFW/glfw3.h>
+#include <cstdio>
+
+static void glfw_error_callback(int error, const char* description) {
+    std::fprintf(stderr, "GLFW Hata %d: %s\n", error, description);
+}
+
+int main() {
+    // 1) GLFW'yi baslat
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit()) return 1;
+
+    // OpenGL 3.3 Core baglami iste
+    const char* glsl_version = "#version 330";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(1280, 720,
+                                          "ImGui Ilk Pencere", nullptr, nullptr);
+    if (!window) { glfwTerminate(); return 1; }
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);   // VSync acik
+
+    // 2) ImGui baglamini olustur
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // klavye ile gezinme
+
+    ImGui::StyleColorsDark();   // koyu tema
+
+    // 3) Backend'leri baslat
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // 4) Ana dongu
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
+        // Yeni kareyi baslat
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // ---- BURADAN itibaren bizim UI kodumuz ----
+        ImGui::Begin("Merhaba");
+        ImGui::Text("Merhaba, Dear ImGui!");
+        ImGui::Text("Uygulama %.1f FPS calisiyor", io.Framerate);
+        ImGui::End();
+        // ---- UI kodu bitti ----
+
+        // Kareyi render et
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0.10f, 0.11f, 0.13f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
+
+    // 5) Temizlik
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Satır Satır Ne Oldu?}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bölüm} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+CreateContext & ImGui'nin tüm iç durumunu tutan tekil (singleton) bağlamı yaratır. Her şeyden önce çağrılmalı.\\
+\rowcolor{acikGri} GetIO & Girdi/çıktı yapısı: fare, klavye, ekran boyutu, DeltaTime, framerate buradadır.\\
+Init...ForOpenGL & GLFW backend'i pencereye kancalar; \code{true} argümanı ImGui'nin girdi callback'lerini otomatik kurmasını sağlar.\\
+\rowcolor{acikGri} Begin/End & Bir ImGui penceresi açar ve kapatır. İçindeki widget'lar bu pencereye çizilir.\\
+Render + RenderDrawData & UI'yı üçgen listesine çevirir ve OpenGL ile çizer.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\uyari{\code{ImGui::Begin} her zaman bir \code{ImGui::End} ile eşleşmelidir ---
+\code{Begin} \code{false} dönse bile! Bu, çoğu \code{BeginXXX}/\code{EndXXX}
+çiftinden farklıdır (birçoğunda \code{Begin} false dönerse \code{End}
+çağrılmaz). Pencereler için kural: \code{Begin} ne dönerse dönsün \code{End}
+çağır. Güvenli kalıp: \code{if (ImGui::Begin("X")) \{ ... \} ImGui::End();}}
+
+\gsub{Ana Döngüyü Yeniden Kullanılabilir Yapmak}
+
+Her projede yukarıdaki iskeleti tekrar yazmak istemeyiz. Kısım 4'te bu döngüyü
+bir \code{App} sınıfına saracağız; böylece sadece ``bu karede ne çizilsin''
+sorusuna odaklanabileceğiz. Şimdilik yukarıdaki \code{main.cpp} tüm örnekler
+için yeterli --- sadece \emph{UI kodu} bölümünü değiştireceğiz.
+
+% #####################################################################
+\gpart{2}{Widget'lar ve Düzen}
+% #####################################################################
+
+% =====================================================================
+\gsec{Pencereler ve Pencere Bayrakları}
+% =====================================================================
+
+Her ImGui widget'ı bir pencerenin içinde yaşar. \code{ImGui::Begin("Ad")} bir
+pencere açar; aynı ada sahip \code{Begin} çağrıları \emph{aynı} pencereye yazar.
+Pencerenin başlığı aynı zamanda onun kimliğidir (bkz. ID sistemi).
+
+\gsub{Temel Pencere Kullanımı}
+
+\begin{lstlisting}
+bool show_panel = true;
+
+// 2. argümanla bir kapatma dugmesi (X) ekleyebiliriz:
+if (ImGui::Begin("Ayarlar", &show_panel)) {
+    ImGui::Text("Panel icerigi burada.");
+}
+ImGui::End();
+// show_panel, kullanici X'e basinca false olur -> bir daha cizmezsiniz.
+\end{lstlisting}
+
+\gsub{Sık Kullanılan Pencere Bayrakları}
+
+\code{Begin}'in üçüncü argümanı \code{ImGuiWindowFlags} bit maskesidir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\footnotesize\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\normalfont\color{anaMavi}\textbf{Bayrak} & \color{anaMavi}\textbf{Etki}\\
+\midrule
+NoTitleBar & Başlık çubuğunu gizler\\
+\rowcolor{acikGri} NoResize & Yeniden boyutlandırmayı kapatır\\
+NoMove & Pencere taşınamaz\\
+\rowcolor{acikGri} NoCollapse & Katlama (çift tık) okunu kaldırır\\
+AlwaysAutoResize & Pencere içeriğe göre boyutlanır\\
+\rowcolor{acikGri} NoBackground & Arka planı şeffaf yapar (HUD için ideal)\\
+MenuBar & Pencereye bir menü çubuğu ekler\\
+\rowcolor{acikGri} NoScrollbar & Kaydırma çubuğunu gizler\\
+NoSavedSettings & Konum/boyutu \code{imgui.ini}'ye kaydetmez\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize
+                       | ImGuiWindowFlags_NoCollapse
+                       | ImGuiWindowFlags_AlwaysAutoResize;
+ImGui::Begin("Sabit Panel", nullptr, flags);
+ImGui::Text("Bu pencere boyutlandirilamaz ve katlanamaz.");
+ImGui::End();
+\end{lstlisting}
+
+\gsub{Konum ve Boyut Ayarlama}
+
+Pencere konumu/boyutu \code{imgui.ini}'de saklanır ve kullanıcı taşıyabilir.
+Bir başlangıç değeri vermek için \code{ImGuiCond} kullanırız: \code{\_Once}
+sadece ilk açılışta, \code{\_Always} her karede uygular.
+
+\begin{lstlisting}
+ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_FirstUseEver);
+ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+ImGui::Begin("Konumlu Pencere");
+ImGui::End();
+\end{lstlisting}
+
+\uyari{Konumu \code{ImGuiCond\_Always} ile her karede zorlarsanız kullanıcı
+pencereyi taşıyamaz --- taşısa da bir sonraki karede geri sıçrar. Başlangıç
+konumu için \emph{daima} \code{\_FirstUseEver} ya da \code{\_Once} kullanın.}
+
+% =====================================================================
+\gsec{Temel Girdi Widget'ları}
+% =====================================================================
+
+Bu bölümde en çok kullanılan girdi widget'larını tek tek görelim. Ortak
+desen: widget bir \code{bool} döner (etkileşim oldu mu?) ve bir referans
+aldığı değişkeni \emph{yerinde} günceller.
+
+\gsub{Metin ve Etiketler}
+
+\begin{lstlisting}
+ImGui::Text("Duz metin");
+ImGui::TextColored(ImVec4(1,0.6f,0,1), "Turuncu vurgulu metin");
+ImGui::TextDisabled("Soluk (devre disi gorunumlu) metin");
+ImGui::TextWrapped("Cok uzun bir metin otomatik satir kaydirilir...");
+ImGui::BulletText("Madde imli satir");
+ImGui::LabelText("FPS", "%.1f", 59.9f);   // sag: etiket, sol: deger
+ImGui::SeparatorText("Bolum Basligi");     // ortasinda yazi olan cizgi
+
+// printf tarzi bicimlendirme:
+int score = 42;
+ImGui::Text("Skor: %d", score);
+\end{lstlisting}
+
+\gsub{Butonlar}
+
+\begin{lstlisting}
+if (ImGui::Button("Kaydet")) {
+    // tiklandi
+}
+ImGui::SameLine();                       // sonraki widget ayni satirda
+if (ImGui::Button("Iptal")) { }
+
+ImGui::SmallButton("Kucuk");             // satir ici kucuk dugme
+ImGui::Button("Genis", ImVec2(-FLT_MIN, 0)); // -FLT_MIN: mevcut genisligi doldur
+ImGui::ArrowButton("ok", ImGuiDir_Right); // yon oklu dugme
+
+// Basili tutuldukca tekrar tetiklenen dugme:
+ImGui::PushButtonRepeat(true);
+if (ImGui::Button("++")) counter++;
+ImGui::PopButtonRepeat();
+\end{lstlisting}
+
+\gsub{Checkbox ve Radio}
+
+\begin{lstlisting}
+static bool vsync = true;
+ImGui::Checkbox("VSync acik", &vsync);
+
+static int mode = 0;
+ImGui::RadioButton("Dusuk", &mode, 0); ImGui::SameLine();
+ImGui::RadioButton("Orta",  &mode, 1); ImGui::SameLine();
+ImGui::RadioButton("Yuksek", &mode, 2);
+
+// Bit bayraklari icin CheckboxFlags:
+static int flags = 0;
+ImGui::CheckboxFlags("Bayrak A", &flags, 1 << 0);
+ImGui::CheckboxFlags("Bayrak B", &flags, 1 << 1);
+\end{lstlisting}
+
+\notk[static neden?]{Örneklerde \code{static} kullanmamız, değerin kareler
+arası yaşaması içindir --- immediate mode'da yerel değişken her kare sıfırlanır.
+\textbf{Gerçek uygulamada} bu değerleri \code{static} değil, kendi
+uygulama/durum sınıfınızın üyeleri yapın. \code{static}, sadece tek örnekli
+hızlı denemeler için uygundur.}
+
+\gsub{Slider ve Drag}
+
+Slider bir aralıkta değer seçtirir; Drag ise sınırsız (isteğe bağlı sınırlı)
+değeri fare sürükleyerek değiştirir.
+
+\begin{lstlisting}
+static float volume = 0.5f;
+ImGui::SliderFloat("Ses", &volume, 0.0f, 1.0f);
+
+static int level = 3;
+ImGui::SliderInt("Seviye", &level, 1, 10);
+
+static float pos[3] = {0,0,0};
+ImGui::SliderFloat3("Konum", pos, -10.0f, 10.0f);  // 3 bilesenli
+
+static float speed = 1.0f;
+ImGui::DragFloat("Hiz", &speed, 0.01f /*adim*/, 0.0f, 100.0f);
+
+static int range[2] = {10, 90};
+ImGui::DragIntRange2("Aralik", &range[0], &range[1], 1, 0, 100);
+
+// Bicim ve logaritmik olcek:
+ImGui::SliderFloat("Frekans", &speed, 1.0f, 20000.0f,
+                   "%.0f Hz", ImGuiSliderFlags_Logarithmic);
+\end{lstlisting}
+
+
+\gsub{Metin Girişi (InputText)}
+
+InputText, C-tarzı bir \code{char} tamponuna yazar. \code{std::string} ile
+kullanmak için \code{imgui\_stdlib.h} (misc/cpp klasöründe) eklenir.
+
+\begin{lstlisting}
+static char name[128] = "";
+ImGui::InputText("Isim", name, IM_ARRAYSIZE(name));
+
+static char password[64] = "";
+ImGui::InputText("Sifre", password, IM_ARRAYSIZE(password),
+                 ImGuiInputTextFlags_Password);
+
+static char notes[1024] = "";
+ImGui::InputTextMultiline("Notlar", notes, IM_ARRAYSIZE(notes),
+                          ImVec2(-FLT_MIN, 100));
+
+// Sayisal giris:
+static int age = 25;
+ImGui::InputInt("Yas", &age);
+static float pi = 3.14f;
+ImGui::InputFloat("Pi", &pi, 0.01f, 1.0f, "%.3f");
+\end{lstlisting}
+
+\ipucu{\code{std::string} kullanmak için: \code{\#include "misc/cpp/imgui\_stdlib.h"}
+ekleyin ve \code{std::string s; ImGui::InputText("X", \&s);} yazın. Bu, tampon
+boyutu derdinden kurtarır. Kısım 3'te InputText callback'lerini de göreceğiz.}
+
+\gsub{Combo (Açılır Liste) ve ListBox}
+
+\begin{lstlisting}
+// Basit yol: null ile ayrilmis tek string
+const char* items = "Kirmizi\0Yesil\0Mavi\0\0";
+static int current = 0;
+ImGui::Combo("Renk", &current, items);
+
+// Dizi ile:
+const char* names[] = {"Dusuk", "Orta", "Yuksek", "Ultra"};
+static int quality = 1;
+ImGui::Combo("Kalite", &quality, names, IM_ARRAYSIZE(names));
+
+// Tam kontrol icin BeginCombo/EndCombo:
+static int sel = 0;
+if (ImGui::BeginCombo("Gelismis", names[sel])) {
+    for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
+        bool is_selected = (sel == i);
+        if (ImGui::Selectable(names[i], is_selected)) sel = i;
+        if (is_selected) ImGui::SetItemDefaultFocus();
+    }
+    ImGui::EndCombo();
+}
+
+// ListBox: birden fazla ogeyi ayni anda gorunur kutuda gosterir
+static int lb = 0;
+ImGui::ListBox("Liste", &lb, names, IM_ARRAYSIZE(names), 4 /*gorunur satir*/);
+\end{lstlisting}
+
+\gsub{Renk Seçiciler}
+
+\begin{lstlisting}
+static float color3[3] = {1.0f, 0.5f, 0.2f};
+ImGui::ColorEdit3("Renk (RGB)", color3);
+
+static float color4[4] = {1.0f, 0.5f, 0.2f, 1.0f};
+ImGui::ColorEdit4("Renk (RGBA)", color4);
+
+// Buyuk tekerlekli secici:
+ImGui::ColorPicker4("Secici", color4);
+
+// Sadece renk kutusu (secici acmadan):
+ImGui::ColorButton("onizleme", ImVec4(color4[0],color4[1],color4[2],color4[3]));
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Düzen (Layout) ve Gruplama}
+% =====================================================================
+
+ImGui varsayılan olarak widget'ları alt alta dizer. Yatay düzen, boşluk,
+girinti ve gruplama için özel komutlar vardır.
+
+\gsub{Yatay Düzen ve Boşluk}
+
+\begin{lstlisting}
+ImGui::Text("A"); ImGui::SameLine(); ImGui::Text("B");  // yan yana
+ImGui::SameLine(0, 40);       // aralarinda 40 piksel bosluk
+ImGui::Text("C (40px sonra)");
+
+ImGui::Spacing();             // dikey bosluk
+ImGui::Separator();           // yatay ayrac cizgi
+ImGui::NewLine();             // bos satir
+
+ImGui::Indent();              // girinti ekle
+ImGui::Text("Girintili");
+ImGui::Unindent();            // girintiyi geri al
+
+// Bir sonraki widget'in konumunu elle ayarla:
+ImGui::SetCursorPosX(200);
+ImGui::Text("x=200'de");
+\end{lstlisting}
+
+\gsub{Gruplar ve Dikey Hizalama}
+
+\code{BeginGroup}/\code{EndGroup} bir grup widget'ı tek bir öğe gibi ele alır;
+böylece \code{SameLine} onları bütün olarak yan yana koyabilir.
+
+\begin{lstlisting}
+ImGui::BeginGroup();
+ImGui::Text("Sol sutun");
+ImGui::Button("Dugme 1");
+ImGui::Button("Dugme 2");
+ImGui::EndGroup();
+
+ImGui::SameLine();
+
+ImGui::BeginGroup();
+ImGui::Text("Sag sutun");
+ImGui::Button("Dugme 3");
+ImGui::EndGroup();
+\end{lstlisting}
+
+\gsub{Sütunlar: Table API}
+
+Eski \code{Columns()} API'si yerine artık esnek \textbf{Table API}'si
+önerilir. Basit bir iki sütunlu düzen:
+
+\begin{lstlisting}
+if (ImGui::BeginTable("layout", 2)) {
+    ImGui::TableNextColumn(); ImGui::Text("Etiket 1");
+    ImGui::TableNextColumn(); ImGui::Text("Deger 1");
+    ImGui::TableNextColumn(); ImGui::Text("Etiket 2");
+    ImGui::TableNextColumn(); ImGui::Text("Deger 2");
+    ImGui::EndTable();
+}
+\end{lstlisting}
+
+\gsub{Genişlik Kontrolü ve Öğe Genişliği}
+
+\begin{lstlisting}
+ImGui::PushItemWidth(120);        // sonraki widget'lar 120 px genis
+ImGui::SliderFloat("A", &a, 0, 1);
+ImGui::SliderFloat("B", &b, 0, 1);
+ImGui::PopItemWidth();
+
+ImGui::SetNextItemWidth(-100);    // saga 100 px bosluk birakip doldur
+ImGui::InputText("Ara", buf, 64);
+\end{lstlisting}
+
+\bilgi{Genişlik değerlerinde işaret önemlidir: pozitif değer sabit piksel
+genişliğidir; negatif değer ``sağdan şu kadar boşluk bırak, gerisini doldur''
+demektir. \code{-FLT\_MIN} ise ``tüm kalan genişliği doldur'' için yaygın bir
+kısayoldur.}
+
+% =====================================================================
+\gsec{ID Sistemi: ImGui'nin En Kritik Kavramı}
+% =====================================================================
+
+ImGui her widget'ı bir \textbf{ID} ile takip eder (hangi öğe aktif, hangisine
+tıklandı vb.). ID varsayılan olarak widget'ın \emph{etiketinden} üretilir.
+Bu, yeni başlayanların en sık düştüğü tuzağın kaynağıdır.
+
+\gsub{Problem: Aynı Etiket = Aynı ID}
+
+\begin{lstlisting}
+// HATALI: iki dugme ayni "Sil" etiketine sahip -> ayni ID!
+// ImGui ikisini tek dugme sanar; ikincisi calismayabilir.
+for (int i = 0; i < 3; i++) {
+    if (ImGui::Button("Sil")) { erase(i); }   // <- ID cakismasi
+}
+\end{lstlisting}
+
+\gsub{Çözüm 1: \code{\#\#} ile Gizli ID}
+
+Etikette \code{\#\#} sonrası kısım ekranda \emph{görünmez} ama ID'ye katılır.
+
+\begin{lstlisting}
+for (int i = 0; i < 3; i++) {
+    // Ekranda "Sil" gorunur, ID benzersizdir:
+    char label[32];
+    snprintf(label, sizeof(label), "Sil##%d", i);
+    if (ImGui::Button(label)) { erase(i); }
+}
+\end{lstlisting}
+
+\gsub{Çözüm 2: \code{PushID}/\code{PopID}}
+
+Daha temiz yöntem: döngü gövdesini bir ID kapsamına almak.
+
+\begin{lstlisting}
+for (int i = 0; i < 3; i++) {
+    ImGui::PushID(i);              // bu iterasyona ozgu ID kapsami
+    if (ImGui::Button("Sil")) { erase(i); }   // etiket ayni ama ID benzersiz
+    ImGui::SameLine();
+    ImGui::Text("Oge %d", i);
+    ImGui::PopID();
+}
+\end{lstlisting}
+
+\notk[\code{\#\#} ve \code{\#\#\#} farkı]{\code{"Baslik\#\#gizli"}: görünen
+metin ``Baslik'', ID ise tüm dizeden üretilir. \code{"\#\#\#sabitID"}: görünen
+metin boşalır ve \emph{sadece} \code{\#\#\#} sonrası ID belirler --- bu, etiketi
+her karede değişen (örn. sayaç gösteren) bir pencerenin kimliğini sabit tutmak
+için kullanılır: \code{ImGui::Begin("Skor: 42\#\#\#skorPenceresi");}}
+
+\uyari{ID çakışması sessiz hatalara yol açar: yanlış widget aktifleşir,
+tıklamalar kaybolur, InputText odağı atlar. Bir liste/döngü içinde widget
+üretiyorsanız \textbf{daima} \code{PushID}/\code{PopID} kullanın. Bu, ImGui'de
+en sık karşılaşılan hata sınıfıdır.}
+
+
+% =====================================================================
+\gsec{Kapsayıcı Widget'lar}
+% =====================================================================
+
+Bu widget'lar başka widget'ları içinde barındırır: ağaçlar, seçilebilir
+listeler, menüler, sekmeler ve açılır kutular.
+
+\gsub{Ağaç Düğümleri (TreeNode)}
+
+\begin{lstlisting}
+if (ImGui::TreeNode("Kok")) {
+    ImGui::Text("Kok altindaki icerik");
+    if (ImGui::TreeNode("Alt dal")) {
+        ImGui::BulletText("Yaprak 1");
+        ImGui::BulletText("Yaprak 2");
+        ImGui::TreePop();          // her acilan TreeNode icin bir TreePop
+    }
+    ImGui::TreePop();
+}
+
+// Bayraklarla: varsayilan acik, tiklamayla secim
+ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen
+                         | ImGuiTreeNodeFlags_OpenOnArrow;
+if (ImGui::TreeNodeEx("Gelismis Dal", flags)) {
+    ImGui::Text("...");
+    ImGui::TreePop();
+}
+\end{lstlisting}
+
+\gsub{Seçilebilir Öğeler (Selectable)}
+
+\begin{lstlisting}
+static int selected = -1;
+const char* files[] = {"main.cpp", "app.h", "utils.cpp", "readme.md"};
+for (int i = 0; i < IM_ARRAYSIZE(files); i++) {
+    if (ImGui::Selectable(files[i], selected == i)) {
+        selected = i;              // tiklaninca sec
+    }
+    // Cift tik algila:
+    if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+        open_file(files[i]);
+    }
+}
+\end{lstlisting}
+
+\gsub{CollapsingHeader}
+
+Katlanabilir başlık; ayar panelleri için idealdir. \code{TreePop} gerektirmez.
+
+\begin{lstlisting}
+if (ImGui::CollapsingHeader("Grafik Ayarlari")) {
+    ImGui::Checkbox("VSync", &vsync);
+    ImGui::SliderInt("MSAA", &msaa, 0, 8);
+}
+if (ImGui::CollapsingHeader("Ses Ayarlari",
+                            ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::SliderFloat("Ana Ses", &master, 0, 1);
+}
+\end{lstlisting}
+
+\gsub{Menüler ve Menü Çubuğu}
+
+Pencere menüsü için pencereye \code{ImGuiWindowFlags\_MenuBar}, uygulama
+geneli için \code{BeginMainMenuBar} kullanılır.
+
+\begin{lstlisting}
+// Uygulama ust menusu (tum ekranin ustunde):
+if (ImGui::BeginMainMenuBar()) {
+    if (ImGui::BeginMenu("Dosya")) {
+        if (ImGui::MenuItem("Yeni", "Ctrl+N"))  { new_file(); }
+        if (ImGui::MenuItem("Ac",   "Ctrl+O"))  { open(); }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Cikis", "Alt+F4")) { quit(); }
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Duzen")) {
+        static bool wrap = true;
+        ImGui::MenuItem("Satir kaydir", nullptr, &wrap); // isaretli oge
+        ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+}
+\end{lstlisting}
+
+\gsub{Sekmeler (Tab Bar)}
+
+\begin{lstlisting}
+if (ImGui::BeginTabBar("Sekmeler")) {
+    if (ImGui::BeginTabItem("Genel")) {
+        ImGui::Text("Genel ayarlar");
+        ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Ag")) {
+        ImGui::Text("Ag ayarlari");
+        ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Hakkinda")) {
+        ImGui::Text("Surum 1.0");
+        ImGui::EndTabItem();
+    }
+    ImGui::EndTabBar();
+}
+\end{lstlisting}
+
+\gsub{Açılır Pencereler ve Modal'lar (Popup)}
+
+\begin{lstlisting}
+// Sag tik menusu:
+if (ImGui::Button("Sag-tik menusu ac")) ImGui::OpenPopup("baglam");
+if (ImGui::BeginPopup("baglam")) {
+    if (ImGui::MenuItem("Kopyala")) {}
+    if (ImGui::MenuItem("Yapistir")) {}
+    ImGui::EndPopup();
+}
+
+// Modal onay penceresi:
+if (ImGui::Button("Sil")) ImGui::OpenPopup("Emin misiniz?");
+if (ImGui::BeginPopupModal("Emin misiniz?", nullptr,
+                           ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::Text("Bu islem geri alinamaz.");
+    if (ImGui::Button("Evet", ImVec2(120,0))) {
+        do_delete();
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Hayir", ImVec2(120,0))) ImGui::CloseCurrentPopup();
+    ImGui::EndPopup();
+}
+\end{lstlisting}
+
+\gsub{İpucu Balonları (Tooltip)}
+
+\begin{lstlisting}
+ImGui::Text("Uzerine gel (?)");
+if (ImGui::IsItemHovered()) {
+    ImGui::SetTooltip("Bu bir yardim balonudur.");
+}
+// Zengin icerikli tooltip:
+ImGui::Button("Detay");
+if (ImGui::IsItemHovered()) {
+    ImGui::BeginTooltip();
+    ImGui::Text("Baslik");
+    ImGui::Separator();
+    ImGui::BulletText("Satir 1");
+    ImGui::BulletText("Satir 2");
+    ImGui::EndTooltip();
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Tablolar: Güçlü Veri Gösterimi}
+% =====================================================================
+
+Table API'si ImGui'nin en yeteneklidir: sıralama, yeniden boyutlandırma,
+dondurma (freeze), sütun gizleme ve kaydırma destekler. Elektronik tablo
+benzeri araçların temelidir.
+
+\gsub{Temel Tablo}
+
+\begin{lstlisting}
+ImGuiTableFlags flags = ImGuiTableFlags_Borders
+                      | ImGuiTableFlags_RowBg
+                      | ImGuiTableFlags_Resizable;
+if (ImGui::BeginTable("kisiler", 3, flags)) {
+    // Baslik satiri
+    ImGui::TableSetupColumn("Ad");
+    ImGui::TableSetupColumn("Yas");
+    ImGui::TableSetupColumn("Sehir");
+    ImGui::TableHeadersRow();
+
+    struct Row { const char* ad; int yas; const char* sehir; };
+    Row rows[] = {{"Ada",30,"Izmir"},{"Kerem",25,"Ankara"},{"Zeynep",28,"Bursa"}};
+    for (auto& r : rows) {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("%s", r.ad);
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%d", r.yas);
+        ImGui::TableSetColumnIndex(2); ImGui::Text("%s", r.sehir);
+    }
+    ImGui::EndTable();
+}
+\end{lstlisting}
+
+\gsub{Sıralanabilir ve Dondurulmuş Başlıklı Tablo}
+
+\begin{lstlisting}
+ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
+                      | ImGuiTableFlags_Sortable
+                      | ImGuiTableFlags_ScrollY;
+if (ImGui::BeginTable("veri", 3, flags, ImVec2(0, 200))) {
+    ImGui::TableSetupScrollFreeze(0, 1);   // ilk satiri dondur (kayarken sabit)
+    ImGui::TableSetupColumn("ID",  ImGuiTableColumnFlags_DefaultSort);
+    ImGui::TableSetupColumn("Ad");
+    ImGui::TableSetupColumn("Puan");
+    ImGui::TableHeadersRow();
+
+    // ImGuiTableSortSpecs* specs = ImGui::TableGetSortSpecs();
+    // -> specs->Specs[0].ColumnIndex ve SortDirection ile verinizi siralayin
+
+    for (int i = 0; i < 100; i++) {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn(); ImGui::Text("%d", i);
+        ImGui::TableNextColumn(); ImGui::Text("Oge %d", i);
+        ImGui::TableNextColumn(); ImGui::Text("%d", (i * 37) % 100);
+    }
+    ImGui::EndTable();
+}
+\end{lstlisting}
+
+\ipucu{Çok satırlı tablolarda (binlerce satır) her satırı çizmek yerine
+\code{ImGuiListClipper} kullanın: sadece görünür satırlar çizilir. Kısım 3'te
+detaylandırıyoruz. Table + Clipper birlikte, milyonlarca satırlık veriyi
+akıcı gösterebilir.}
+
+% =====================================================================
+\gsec{Grafikler ve Görselleştirme}
+% =====================================================================
+
+ImGui çekirdeği basit çizgi/histogram grafikleri sunar. Daha ciddi
+görselleştirme için ImPlot eklentisi kullanılır, ama çekirdek araçlar hızlı
+hata ayıklama için yeterlidir.
+
+\gsub{Çizgi ve Histogram}
+
+\begin{lstlisting}
+float samples[90];
+for (int i = 0; i < 90; i++)
+    samples[i] = sinf(i * 0.2f + ImGui::GetTime());
+
+ImGui::PlotLines("Sinus", samples, IM_ARRAYSIZE(samples),
+                 0, "canli", -1.0f, 1.0f, ImVec2(0, 80));
+
+float bars[] = {0.2f, 0.7f, 0.4f, 0.9f, 0.5f, 0.3f};
+ImGui::PlotHistogram("Cubuklar", bars, IM_ARRAYSIZE(bars),
+                     0, nullptr, 0.0f, 1.0f, ImVec2(0, 80));
+\end{lstlisting}
+
+\gsub{İlerleme Çubuğu}
+
+\begin{lstlisting}
+static float progress = 0.0f;
+progress += ImGui::GetIO().DeltaTime * 0.3f;
+if (progress > 1.0f) progress = 0.0f;
+
+ImGui::ProgressBar(progress, ImVec2(-FLT_MIN, 0));
+ImGui::ProgressBar(progress, ImVec2(-FLT_MIN, 0), "Yukleniyor...");
+\end{lstlisting}
+
+\notk[ImPlot ne zaman?]{Kaydırılabilir/yakınlaştırılabilir eksenler, birden
+çok seri, gerçek zamanlı kayan grafik, saçılım (scatter), ısı haritası
+istiyorsanız ImPlot (\url{https://github.com/epezent/implot}) kullanın.
+Çekirdeğin \code{PlotLines}'ı yalnızca ``şu diziye hızlıca bir göz atayım''
+durumları içindir.}
+
+
+% #####################################################################
+\gpart{3}{İleri Konular}
+% #####################################################################
+
+% =====================================================================
+\gsec{Stil ve Tema}
+% =====================================================================
+
+ImGui'nin görünümü \code{ImGuiStyle} yapısı üzerinden tamamen özelleştirilir.
+Renkler, kenar yuvarlaklığı, boşluklar, kenarlık kalınlıkları hepsi buradadır.
+
+\gsub{Hazır Temalar ve Genel Ayarlar}
+
+\begin{lstlisting}
+ImGui::StyleColorsDark();     // koyu (varsayilan)
+ImGui::StyleColorsLight();    // acik
+ImGui::StyleColorsClassic();  // eski klasik
+
+ImGuiStyle& style = ImGui::GetStyle();
+style.WindowRounding    = 6.0f;   // pencere koseleri
+style.FrameRounding     = 4.0f;   // dugme/kutu koseleri
+style.GrabRounding      = 4.0f;   // slider tutamaci
+style.WindowPadding     = ImVec2(10, 10);
+style.ItemSpacing       = ImVec2(8, 6);
+style.ScrollbarSize     = 14.0f;
+style.WindowBorderSize  = 1.0f;
+\end{lstlisting}
+
+\gsub{Renkleri Elle Ayarlamak}
+
+\begin{lstlisting}
+ImVec4* colors = ImGui::GetStyle().Colors;
+colors[ImGuiCol_WindowBg]       = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
+colors[ImGuiCol_Button]         = ImVec4(0.20f, 0.45f, 0.75f, 1.00f);
+colors[ImGuiCol_ButtonHovered]  = ImVec4(0.26f, 0.55f, 0.90f, 1.00f);
+colors[ImGuiCol_ButtonActive]   = ImVec4(0.15f, 0.38f, 0.65f, 1.00f);
+colors[ImGuiCol_Header]         = ImVec4(0.20f, 0.45f, 0.75f, 0.55f);
+colors[ImGuiCol_FrameBg]        = ImVec4(0.16f, 0.16f, 0.20f, 1.00f);
+colors[ImGuiCol_Text]           = ImVec4(0.90f, 0.90f, 0.92f, 1.00f);
+\end{lstlisting}
+
+\gsub{Yerel (Geçici) Stil Değişikliği: Push/Pop}
+
+Belirli bir widget için stili geçici değiştirmek istersek Push/Pop kullanırız.
+\textbf{Her Push bir Pop ile eşleşmelidir}, yoksa stil yığını bozulur.
+
+\begin{lstlisting}
+// Sadece bu dugme kirmizi olsun:
+ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.7f,0.15f,0.15f,1));
+ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f,0.2f,0.2f,1));
+if (ImGui::Button("TEHLIKELI: Sil")) { }
+ImGui::PopStyleColor(2);   // 2 renk push edildi -> 2 pop
+
+// Gecici deger degisikligi:
+ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
+ImGui::Button("Yuvarlak dugme");
+ImGui::PopStyleVar();
+\end{lstlisting}
+
+\uyari{Push/Pop sayıları tutmazsa hata ID sisteminden bile kötüdür: stil yığını
+kareler arası taşar ve tüm arayüz bozulur ya da assert atar. Kural: her
+\code{PushStyleColor(n renk)} için \code{PopStyleColor(n)}. Bir kod yolunda
+\code{return} varsa Pop'u atlamamaya dikkat edin (RAII sarıcı yazmak iyi fikir).}
+
+% =====================================================================
+\gsec{Fontlar ve Türkçe Karakter Desteği}
+% =====================================================================
+
+ImGui'nin varsayılan fontu yalnızca temel ASCII içerir; Türkçe ``ç, ğ, ı, İ,
+ş, ö, ü'' karakterleri görünmez. Bunu çözmek için bir TTF font yükleyip doğru
+\emph{glyph aralığını} belirtmeliyiz.
+
+\gsub{Türkçe Fontu Yükleme}
+
+\begin{lstlisting}
+ImGuiIO& io = ImGui::GetIO();
+
+// Turkce dahil Latin karakterleri iceren glyph araligi:
+static const ImWchar ranges[] = {
+    0x0020, 0x00FF,   // Temel Latin + Latin-1 (aksanli harfler)
+    0x0100, 0x017F,   // Latin Extended-A (s-cedilla, g-breve: s, g)
+    0,
+};
+ImFontConfig cfg;
+cfg.OversampleH = 2;
+cfg.OversampleV = 1;
+
+io.Fonts->AddFontFromFileTTF(
+    "fonts/DejaVuSans.ttf", 18.0f, &cfg, ranges);
+
+// Font atlasi backend baslatilmadan ONCE olusturulmali; genelde
+// ImGui_ImplOpenGL3_Init otomatik yapar. Elle: io.Fonts->Build();
+\end{lstlisting}
+
+\bilgi{Türkçe için kritik karakterler: \code{ğ (U+011F)}, \code{Ğ (U+011E)},
+\code{ş (U+015F)}, \code{Ş (U+015E)}, \code{ı (U+0131)}, \code{İ (U+0130)}.
+Bunlar Latin Extended-A (0x0100--0x017F) aralığındadır. \code{ç, ö, ü} ise
+Latin-1'de (0x00FF'e kadar) yer alır. İkisini de eklemezseniz kelimeler
+eksik görünür. Kod dosyanız da UTF-8 kaydedilmeli.}
+
+\gsub{Birden Fazla Font ve Simge Fontları}
+
+\begin{lstlisting}
+ImFont* font_default = io.Fonts->AddFontDefault();
+ImFont* font_big = io.Fonts->AddFontFromFileTTF("fonts/Roboto.ttf", 32.0f);
+
+// Kullanirken:
+ImGui::PushFont(font_big);
+ImGui::Text("BUYUK BASLIK");
+ImGui::PopFont();
+
+// Ikon fontlarini (FontAwesome) metin fontuyla birlestirmek:
+ImFontConfig icons_cfg;
+icons_cfg.MergeMode = true;   // onceki fontun uzerine birlestir
+static const ImWchar icon_ranges[] = { 0xf000, 0xf3ff, 0 };
+io.Fonts->AddFontFromFileTTF("fonts/fa-solid.ttf", 16.0f,
+                             &icons_cfg, icon_ranges);
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Docking ve Çoklu Viewport}
+% =====================================================================
+
+Docking, pencereleri birbirine ve ana pencerenin kenarlarına yapıştırma
+özelliğidir --- IDE benzeri düzenler yaratır. Viewport ise ImGui pencerelerini
+işletim sistemi penceresi olarak ana pencerenin \emph{dışına} taşımaya izin
+verir. İkisi de ImGui'nin \code{docking} dalında bulunur.
+
+\gsub{Docking'i Etkinleştirme}
+
+\begin{lstlisting}
+ImGuiIO& io = ImGui::GetIO();
+io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;        // docking
+io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;      // dis pencereler
+
+// Viewport acikken render dongusunun sonuna eklenir:
+ImGui::Render();
+// ... normal cizim ...
+if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    GLFWwindow* backup = glfwGetCurrentContext();
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+    glfwMakeContextCurrent(backup);
+}
+\end{lstlisting}
+
+\gsub{Ana DockSpace Oluşturma}
+
+Tüm ekranı kaplayan, diğer pencerelerin yapışacağı bir dock alanı:
+
+\begin{lstlisting}
+void DrawDockSpace() {
+    ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(vp->WorkPos);
+    ImGui::SetNextWindowSize(vp->WorkSize);
+    ImGui::SetNextWindowViewport(vp->ID);
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar
+        | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
+        | ImGuiWindowFlags_MenuBar;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("DockSpaceRoot", nullptr, flags);
+    ImGui::PopStyleVar(2);
+
+    ImGuiID dock_id = ImGui::GetID("MainDockSpace");
+    ImGui::DockSpace(dock_id, ImVec2(0, 0), ImGuiDockNodeFlags_None);
+
+    ImGui::End();
+}
+\end{lstlisting}
+
+\notk[docking dalı]{Docking ve viewport, ImGui'nin \code{docking} branch'inde
+yer alır (ana \code{master}'da değil). FetchContent kullanıyorsanız
+\code{GIT\_TAG}'i \code{docking} yapın veya docking özellikli bir sürüm etiketi
+seçin. API'ler kararlıdır ve üretimde yaygın kullanılır.}
+
+
+% =====================================================================
+\gsec{DrawList ile Özel Çizim}
+% =====================================================================
+
+Widget'lar yetmediğinde \code{ImDrawList} ile doğrudan çizgi, dikdörtgen,
+daire, metin ve dolgu çizebilirsiniz. Bu, özel grafikler, düğüm editörleri,
+oyun mini haritaları ve tuval uygulamalarının temelidir.
+
+\gsub{DrawList'e Erişim}
+
+\begin{lstlisting}
+// Mevcut pencerenin cizim listesi (widget'larin arkasi/onu):
+ImDrawList* dl = ImGui::GetWindowDrawList();
+
+// Tum ekranin ustune cizmek icin (overlay):
+ImDrawList* fg = ImGui::GetForegroundDrawList();
+ImDrawList* bg = ImGui::GetBackgroundDrawList();
+\end{lstlisting}
+
+\gsub{Temel Şekiller}
+
+Koordinatlar \textbf{ekran uzayındadır} (pencere değil). Genelde bir taban
+nokta alıp ona göre çizeriz.
+
+\begin{lstlisting}
+ImVec2 p = ImGui::GetCursorScreenPos();   // cizim baslangici (ekran uzayi)
+ImU32 white = IM_COL32(255,255,255,255);
+ImU32 blue  = IM_COL32( 60,140,230,255);
+
+dl->AddLine(p, ImVec2(p.x+100, p.y+50), white, 2.0f);
+dl->AddRect(ImVec2(p.x, p.y), ImVec2(p.x+80, p.y+80), white, 4.0f, 0, 1.5f);
+dl->AddRectFilled(ImVec2(p.x+90,p.y), ImVec2(p.x+170,p.y+80), blue, 4.0f);
+dl->AddCircle(ImVec2(p.x+220,p.y+40), 40, white, 32, 2.0f);
+dl->AddCircleFilled(ImVec2(p.x+320,p.y+40), 40, blue, 32);
+dl->AddTriangleFilled(ImVec2(p.x,p.y+120), ImVec2(p.x+60,p.y+120),
+                      ImVec2(p.x+30,p.y+90), white);
+dl->AddText(ImVec2(p.x, p.y+140), white, "DrawList metni");
+dl->AddBezierCubic(p, ImVec2(p.x+50,p.y-40), ImVec2(p.x+100,p.y+80),
+                   ImVec2(p.x+150,p.y), blue, 2.0f);
+
+// Cizdigimiz alanin yer kaplamasi icin bir kukla oge birak:
+ImGui::Dummy(ImVec2(360, 180));
+\end{lstlisting}
+
+\gsub{Etkileşimli Tuval Deseni}
+
+Çizim alanını tıklanabilir yapmak için görünmez bir buton (\code{InvisibleButton})
+kullanılır; sonra fare konumunu alıp çizeriz.
+
+\begin{lstlisting}
+ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();
+ImVec2 canvas_sz = ImGui::GetContentRegionAvail();
+ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x,
+                          canvas_p0.y + canvas_sz.y);
+
+ImDrawList* dl = ImGui::GetWindowDrawList();
+dl->AddRectFilled(canvas_p0, canvas_p1, IM_COL32(30,30,35,255));
+
+ImGui::InvisibleButton("canvas", canvas_sz);
+bool hovered = ImGui::IsItemHovered();
+bool active  = ImGui::IsItemActive();
+
+if (active) {
+    ImVec2 m = ImGui::GetIO().MousePos;
+    dl->AddCircleFilled(m, 5, IM_COL32(255,180,0,255));
+}
+\end{lstlisting}
+
+\ipucu{DrawList'e çizerken \code{PushClipRect}/\code{PopClipRect} ile çizimi
+bir dikdörtgene sınırlayabilirsiniz --- tuval dışına taşmayı engeller.
+Ayrıca \code{dl->ChannelsSplit}/\code{ChannelsMerge} ile çizim katmanlarını
+(örneğin düğümlerin arkasındaki bağlantı çizgileri) yönetebilirsiniz.}
+
+% =====================================================================
+\gsec{InputText Geri Çağırmaları (Callback)}
+% =====================================================================
+
+InputText'in davranışını, bir callback vererek özelleştirebiliriz: otomatik
+tamamlama, geçmiş (history), karakter filtreleme veya her değişimde tetikleme.
+
+\gsub{Callback Bayrakları ve İskelet}
+
+\begin{lstlisting}
+struct InputState { std::vector<std::string> history; int pos = -1; };
+
+int TextCallback(ImGuiInputTextCallbackData* data) {
+    InputState* st = (InputState*)data->UserData;
+    switch (data->EventFlag) {
+    case ImGuiInputTextFlags_CallbackCompletion:
+        // TAB'a basildi: otomatik tamamlama yap
+        data->InsertChars(data->CursorPos, "_tamamlandi");
+        break;
+    case ImGuiInputTextFlags_CallbackHistory:
+        // Yukari/asagi ok: gecmiste gez
+        if (data->EventKey == ImGuiKey_UpArrow && st->pos + 1 < (int)st->history.size()) {
+            st->pos++;
+            data->DeleteChars(0, data->BufTextLen);
+            data->InsertChars(0, st->history[st->pos].c_str());
+        }
+        break;
+    case ImGuiInputTextFlags_CallbackCharFilter:
+        // Sadece rakam kabul et:
+        if (data->EventChar < '0' || data->EventChar > '9') return 1; // reddet
+        break;
+    }
+    return 0;
+}
+
+// Kullanim:
+static char buf[256] = "";
+static InputState state;
+ImGuiInputTextFlags flags = ImGuiInputTextFlags_CallbackCompletion
+                          | ImGuiInputTextFlags_CallbackHistory
+                          | ImGuiInputTextFlags_EnterReturnsTrue;
+if (ImGui::InputText("Komut", buf, sizeof(buf), flags, TextCallback, &state)) {
+    // Enter'a basildi
+    state.history.insert(state.history.begin(), buf);
+    state.pos = -1;
+    buf[0] = '\0';
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Klavye, Fare ve Öğe Durumu Sorgulama}
+% =====================================================================
+
+ImGui, en son çizilen öğe hakkında zengin sorgu fonksiyonları sunar. Bunlar
+etkileşimli arayüzlerin kalbidir.
+
+\gsub{Öğe Durumu Fonksiyonları}
+
+\begin{lstlisting}
+ImGui::Button("Test");
+// Bir onceki widget hakkinda:
+bool hovered  = ImGui::IsItemHovered();   // fare uzerinde mi
+bool clicked  = ImGui::IsItemClicked();   // bu kare tiklandi mi
+bool active   = ImGui::IsItemActive();    // basili tutuluyor mu
+bool focused  = ImGui::IsItemFocused();   // klavye odaginda mi
+bool edited   = ImGui::IsItemEdited();    // degeri bu kare degisti mi
+ImVec2 rmin   = ImGui::GetItemRectMin();  // ogenin sinirlari
+ImVec2 rmax   = ImGui::GetItemRectMax();
+
+// Pencere hakkinda:
+bool win_hovered = ImGui::IsWindowHovered();
+bool win_focused = ImGui::IsWindowFocused();
+\end{lstlisting}
+
+\gsub{Doğrudan Klavye ve Fare}
+
+\begin{lstlisting}
+ImGuiIO& io = ImGui::GetIO();
+
+// Fare:
+ImVec2 mouse = io.MousePos;
+bool left_down = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+bool right_click = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+float wheel = io.MouseWheel;               // scroll miktari
+ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+
+// Klavye (yeni API):
+if (ImGui::IsKeyPressed(ImGuiKey_Space)) { jump(); }
+if (ImGui::IsKeyDown(ImGuiKey_W)) { move_forward(); }
+if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S)) { save(); }
+\end{lstlisting}
+
+\uyari{Oyun/uygulama girdisiyle ImGui girdisi çakışabilir. \code{io.WantCaptureMouse}
+ve \code{io.WantCaptureKeyboard} bayraklarını kontrol edin: bunlar \code{true}
+iken girdi ImGui'ye aittir (örn. kullanıcı bir InputText'e yazıyor), oyununuz
+o girdiyi \emph{yok saymalıdır}. Aksi hâlde metin yazarken karakter hareket eder.}
+
+% =====================================================================
+\gsec{Performans: ListClipper ve İpuçları}
+% =====================================================================
+
+Immediate mode her kare tüm UI'yı çalıştırır. Çoğu araç için bu sorunsuzdur,
+ama binlerce satırlık listelerde görünmeyen öğeleri çizmek israftır.
+\code{ImGuiListClipper} yalnızca görünür aralığı çizer.
+
+\gsub{ListClipper Kullanımı}
+
+\begin{lstlisting}
+// 1.000.000 satirlik liste -- yalnizca gorunenler cizilir
+ImGuiListClipper clipper;
+clipper.Begin(1000000);
+while (clipper.Step()) {
+    for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+        ImGui::Text("Satir %d: veri...", i);
+    }
+}
+\end{lstlisting}
+
+\gsub{Genel Performans İpuçları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{İpucu} & \color{anaMavi}\textbf{Neden}\\
+\midrule
+Ağır işi UI'dan ayır & Dosya/ağ/hesap işini UI kodunda yapma; sonucu göster.\\
+\rowcolor{acikGri} ListClipper kullan & Uzun listelerde görünmeyeni çizme.\\
+Gereksiz \code{sprintf} azalt & Her karede binlerce format çağrısı birikir.\\
+\rowcolor{acikGri} Kapalı pencereyi erken çık & \code{if(!Begin(...))\{End();return;\}} ile içeriği atla.\\
+Clip'i backend'e bırak & ImGui zaten görünmeyen pencereyi çizmez.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{ImGui'nin kendisi neredeyse hiç yavaşlamaz --- darboğaz genelde
+\emph{sizin} UI kodunuzun her kare yaptığı gereksiz hesaplardır. Şüpheye
+düşerseniz \code{ImGui::ShowMetricsWindow()} penceresini açın: kaç vertex, kaç
+pencere, kaç çizim çağrısı ürettiğinizi canlı gösterir.}
+
+\gsub{Yerleşik Demo ve Yardımcı Pencereler}
+
+\begin{lstlisting}
+static bool show_demo = true;
+if (show_demo) ImGui::ShowDemoWindow(&show_demo);  // her seyi gosteren demo
+ImGui::ShowMetricsWindow(nullptr);                 // performans/ic durum
+ImGui::ShowStyleEditor();                          // canli stil duzenleyici
+ImGui::ShowUserGuide();                            // kisayol rehberi
+\end{lstlisting}
+
+\ipucu{\code{ShowDemoWindow} bir öğrenme aracından çok daha fazlasıdır: yeni
+bir widget'ı nasıl kullanacağınızı unuttuğunuzda demo penceresini açın, ilgili
+bölümü bulun ve sağ üstteki menüden ``item picker'' ile o widget'ın
+\code{imgui\_demo.cpp}'deki kaynak satırına gidin.}
+
+
+% #####################################################################
+\gpart{4}{Projeler}
+% #####################################################################
+
+Bu kısımda öğrendiğimiz her şeyi \textbf{tam, çalışan projelere} dönüştürüyoruz.
+Önce tüm projelerin paylaşacağı yeniden kullanılabilir bir uygulama iskeleti
+kuruyoruz; sonra her proje yalnızca bir ``çiz'' fonksiyonu yazarak bu iskelete
+bağlanıyor. Projeler basitten karmaşığa doğru sıralanmıştır.
+
+% =====================================================================
+\gsec{Proje 0: Yeniden Kullanılabilir Uygulama İskeleti}
+% =====================================================================
+
+Kısım 1'deki \code{main.cpp}'yi her seferinde tekrar yazmamak için pencere
+kurulumunu, ana döngüyü ve temizliği bir sınıfa saralım. Bundan sonraki tüm
+projeler sadece \code{OnFrame()} fonksiyonunu doldurur.
+
+\gsub{app.h --- İskelet}
+
+\begin{lstlisting}
+// app.h -- tum projelerin ortak temeli
+#pragma once
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include <GLFW/glfw3.h>
+#include <functional>
+#include <cstdio>
+
+class App {
+public:
+    App(const char* title, int w = 1280, int h = 720) {
+        glfwSetErrorCallback([](int e, const char* d){
+            std::fprintf(stderr, "GLFW %d: %s\n", e, d); });
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        window_ = glfwCreateWindow(w, h, title, nullptr, nullptr);
+        glfwMakeContextCurrent(window_);
+        glfwSwapInterval(1);
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        ImGui::StyleColorsDark();
+        ImGui_ImplGlfw_InitForOpenGL(window_, true);
+        ImGui_ImplOpenGL3_Init("#version 330");
+    }
+
+    ~App() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        glfwDestroyWindow(window_);
+        glfwTerminate();
+    }
+
+    // Her kare cagirilacak cizim fonksiyonunu alir ve dongusu surer.
+    void Run(const std::function<void()>& on_frame) {
+        while (!glfwWindowShouldClose(window_)) {
+            glfwPollEvents();
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            on_frame();                       // <-- projenin UI kodu
+
+            ImGui::Render();
+            int dw, dh;
+            glfwGetFramebufferSize(window_, &dw, &dh);
+            glViewport(0, 0, dw, dh);
+            glClearColor(0.09f, 0.10f, 0.12f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(window_);
+        }
+    }
+
+private:
+    GLFWwindow* window_ = nullptr;
+};
+\end{lstlisting}
+
+\gsub{Kullanım Kalıbı}
+
+Bundan sonra her proje bu iki satırla başlar; biz sadece köşeli parantezin
+içini doldururuz:
+
+\begin{lstlisting}
+#include "app.h"
+int main() {
+    App app("Proje Adi");
+    app.Run([&]() {
+        // ... bu projenin her kare cizilen UI kodu ...
+    });
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Proje 1: Yapılacaklar (To-Do) Uygulaması}
+% =====================================================================
+
+İlk projemiz klasik bir ``yapılacaklar listesi''. Ekleme, tamamlama olarak
+işaretleme, silme ve filtreleme yapar. Immediate mode'un veri-yansıtma
+felsefesini net gösterir: UI, \code{tasks} vektörünün her karede çizilen
+görüntüsüdür.
+
+\gsub{Tam Kaynak}
+
+\begin{lstlisting}
+#include "app.h"
+#include <vector>
+#include <string>
+
+struct Task {
+    std::string text;
+    bool done = false;
+};
+
+int main() {
+    App app("Yapilacaklar");
+    std::vector<Task> tasks;
+    char input[256] = "";
+    int filter = 0;   // 0: tumu, 1: aktif, 2: tamamlanan
+
+    app.Run([&]() {
+        ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size, ImGuiCond_Once);
+        ImGui::Begin("Gorevlerim", nullptr, ImGuiWindowFlags_NoResize
+                     | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+        // --- Ekleme satiri ---
+        ImGui::SetNextItemWidth(-100);
+        bool enter = ImGui::InputText("##yeni", input, sizeof(input),
+                                      ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::SameLine();
+        bool add = ImGui::Button("Ekle", ImVec2(-FLT_MIN, 0));
+        if ((enter || add) && input[0] != '\0') {
+            tasks.push_back({input, false});
+            input[0] = '\0';
+        }
+
+        // --- Filtre ---
+        ImGui::RadioButton("Tumu", &filter, 0);   ImGui::SameLine();
+        ImGui::RadioButton("Aktif", &filter, 1);  ImGui::SameLine();
+        ImGui::RadioButton("Biten", &filter, 2);
+        ImGui::Separator();
+
+        // --- Liste ---
+        int to_delete = -1;
+        for (int i = 0; i < (int)tasks.size(); i++) {
+            Task& t = tasks[i];
+            if (filter == 1 && t.done) continue;
+            if (filter == 2 && !t.done) continue;
+
+            ImGui::PushID(i);                      // benzersiz ID!
+            ImGui::Checkbox("##done", &t.done);
+            ImGui::SameLine();
+            if (t.done) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f,0.5f,0.5f,1));
+                ImGui::Text("%s", t.text.c_str());
+                ImGui::PopStyleColor();
+            } else {
+                ImGui::Text("%s", t.text.c_str());
+            }
+            ImGui::SameLine(ImGui::GetWindowWidth() - 50);
+            if (ImGui::SmallButton("Sil")) to_delete = i;
+            ImGui::PopID();
+        }
+        if (to_delete >= 0) tasks.erase(tasks.begin() + to_delete);
+
+        // --- Ozet ---
+        int done = 0; for (auto& t : tasks) if (t.done) done++;
+        ImGui::Separator();
+        ImGui::Text("Toplam: %d  |  Biten: %d  |  Kalan: %d",
+                    (int)tasks.size(), done, (int)tasks.size() - done);
+
+        ImGui::End();
+    });
+}
+\end{lstlisting}
+
+\notk[Neyi öğrendik?]{Silmeyi döngü \emph{içinde} yapmayıp \code{to\_delete}
+değişkenine erteledik --- çünkü çizim sürerken vektörü değiştirmek indeksleri
+bozar. Bu, immediate mode listelerinde standart bir kalıptır: ``döngüde niyeti
+kaydet, döngüden sonra uygula''. Ayrıca her satırda \code{PushID(i)} ile ID
+çakışmasını önledik.}
+
+
+% =====================================================================
+\gsec{Proje 2: Renkli Log Konsolu}
+% =====================================================================
+
+Hemen her araçta bir log/konsol penceresi gerekir. Bu proje; seviyeye göre
+renklendirme, metin filtresi, otomatik aşağı kaydırma ve komut girişi olan
+yeniden kullanılabilir bir konsol sınıfı sunar.
+
+\gsub{Tam Kaynak}
+
+\begin{lstlisting}
+#include "app.h"
+#include <vector>
+#include <string>
+#include <cstdarg>
+
+enum LogLevel { LOG_INFO, LOG_WARN, LOG_ERROR };
+
+struct Console {
+    struct Line { LogLevel level; std::string text; };
+    std::vector<Line> lines;
+    char input[256] = "";
+    ImGuiTextFilter filter;
+    bool auto_scroll = true;
+    bool show_info = true, show_warn = true, show_error = true;
+
+    void Add(LogLevel lv, const char* fmt, ...) {
+        char buf[1024];
+        va_list args; va_start(args, fmt);
+        vsnprintf(buf, sizeof(buf), fmt, args);
+        va_end(args);
+        lines.push_back({lv, buf});
+    }
+
+    void Draw(const char* title) {
+        ImGui::Begin(title);
+
+        // Ust arac cubugu
+        if (ImGui::Button("Temizle")) lines.clear();
+        ImGui::SameLine(); ImGui::Checkbox("Info", &show_info);
+        ImGui::SameLine(); ImGui::Checkbox("Uyari", &show_warn);
+        ImGui::SameLine(); ImGui::Checkbox("Hata", &show_error);
+        ImGui::SameLine(); ImGui::Checkbox("Oto-kaydir", &auto_scroll);
+        filter.Draw("Filtre", 180);
+        ImGui::Separator();
+
+        // Kaydirilabilir log alani (giris satirina yer birak)
+        float footer = ImGui::GetFrameHeightWithSpacing();
+        ImGui::BeginChild("scroll", ImVec2(0, -footer), false,
+                          ImGuiWindowFlags_HorizontalScrollbar);
+        for (auto& ln : lines) {
+            if (ln.level == LOG_INFO  && !show_info)  continue;
+            if (ln.level == LOG_WARN  && !show_warn)  continue;
+            if (ln.level == LOG_ERROR && !show_error) continue;
+            if (!filter.PassFilter(ln.text.c_str())) continue;
+
+            ImVec4 col(0.85f,0.85f,0.85f,1);
+            if (ln.level == LOG_WARN)  col = ImVec4(1.0f,0.8f,0.2f,1);
+            if (ln.level == LOG_ERROR) col = ImVec4(1.0f,0.4f,0.4f,1);
+            ImGui::PushStyleColor(ImGuiCol_Text, col);
+            ImGui::TextUnformatted(ln.text.c_str());
+            ImGui::PopStyleColor();
+        }
+        if (auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            ImGui::SetScrollHereY(1.0f);
+        ImGui::EndChild();
+
+        ImGui::Separator();
+        // Komut girisi
+        ImGui::SetNextItemWidth(-60);
+        bool run = ImGui::InputText("##cmd", input, sizeof(input),
+                                    ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::SameLine();
+        run |= ImGui::Button("Gonder");
+        if (run && input[0]) {
+            Add(LOG_INFO, "> %s", input);
+            input[0] = '\0';
+            ImGui::SetKeyboardFocusHere(-1);   // odagi girise geri ver
+        }
+        ImGui::End();
+    }
+};
+
+int main() {
+    App app("Log Konsolu");
+    Console console;
+    console.Add(LOG_INFO,  "Sistem baslatildi.");
+    console.Add(LOG_WARN,  "Yapilandirma dosyasi bulunamadi, varsayilan kullaniliyor.");
+    console.Add(LOG_ERROR, "Sunucuya baglanilamadi (port 8080).");
+
+    float timer = 0;
+    app.Run([&]() {
+        // Her saniye otomatik bir log ekle (demo)
+        timer += ImGui::GetIO().DeltaTime;
+        if (timer > 1.0f) {
+            timer = 0;
+            console.Add(LOG_INFO, "Kalp atisi: t=%.1f", ImGui::GetTime());
+        }
+        console.Draw("Konsol");
+    });
+}
+\end{lstlisting}
+
+\bilgi{\code{ImGuiTextFilter}, ImGui'nin yerleşik filtre yardımcısıdır:
+``\code{hata,-baglanti}'' gibi ifadeleri anlar (``hata içeren ama baglanti
+içermeyen''). \code{filter.Draw()} bir arama kutusu çizer,
+\code{filter.PassFilter(metin)} her satır için testi yapar. Konsollar,
+listeler ve tablolarda çok işe yarar.}
+
+% =====================================================================
+\gsec{Proje 3: Canlı Sistem Monitörü}
+% =====================================================================
+
+Bu proje kayan (scrolling) grafikler çizer: sahte CPU/RAM değerlerini bir
+halka tampona (ring buffer) yazıp \code{PlotLines} ile gösterir. Gerçek bir
+uygulamada bu verileri işletim sisteminden okurdunuz; burada mantığa
+odaklanıyoruz.
+
+\gsub{Kayan Tampon (Scrolling Buffer)}
+
+\begin{lstlisting}
+#include "app.h"
+#include <cmath>
+
+struct ScrollBuffer {
+    static const int SIZE = 120;
+    float data[SIZE] = {};
+    int offset = 0;
+
+    void Push(float v) { data[offset] = v; offset = (offset + 1) % SIZE; }
+    float Max() const {
+        float m = 0; for (float v : data) if (v > m) m = v; return m;
+    }
+    float Last() const { return data[(offset - 1 + SIZE) % SIZE]; }
+};
+
+int main() {
+    App app("Sistem Monitoru");
+    ScrollBuffer cpu, ram;
+    float t = 0;
+
+    app.Run([&]() {
+        // Sahte veri uret
+        t += ImGui::GetIO().DeltaTime;
+        cpu.Push(50 + 40 * sinf(t * 1.5f) + 10 * sinf(t * 7.0f));
+        ram.Push(60 + 20 * sinf(t * 0.4f));
+
+        ImGui::Begin("Kaynak Kullanimi");
+
+        // --- CPU ---
+        ImGui::Text("CPU:  %.1f%%", cpu.Last());
+        ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.2f,0.8f,0.4f,1));
+        ImGui::PlotLines("##cpu", cpu.data, ScrollBuffer::SIZE, cpu.offset,
+                         nullptr, 0.0f, 100.0f, ImVec2(-FLT_MIN, 80));
+        ImGui::PopStyleColor();
+
+        // --- RAM ---
+        ImGui::Text("RAM:  %.1f%%", ram.Last());
+        ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.3f,0.6f,1.0f,1));
+        ImGui::PlotLines("##ram", ram.data, ScrollBuffer::SIZE, ram.offset,
+                         nullptr, 0.0f, 100.0f, ImVec2(-FLT_MIN, 80));
+        ImGui::PopStyleColor();
+
+        ImGui::Separator();
+        // Ozet tablo
+        if (ImGui::BeginTable("ozet", 3, ImGuiTableFlags_Borders)) {
+            ImGui::TableSetupColumn("Metrik");
+            ImGui::TableSetupColumn("Anlik");
+            ImGui::TableSetupColumn("Tepe");
+            ImGui::TableHeadersRow();
+            const char* names[] = {"CPU", "RAM"};
+            ScrollBuffer* bufs[] = {&cpu, &ram};
+            for (int i = 0; i < 2; i++) {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn(); ImGui::Text("%s", names[i]);
+                ImGui::TableNextColumn(); ImGui::Text("%.1f%%", bufs[i]->Last());
+                ImGui::TableNextColumn(); ImGui::Text("%.1f%%", bufs[i]->Max());
+            }
+            ImGui::EndTable();
+        }
+        ImGui::Text("FPS: %.0f (%.2f ms)", ImGui::GetIO().Framerate,
+                    1000.0f / ImGui::GetIO().Framerate);
+        ImGui::End();
+    });
+}
+\end{lstlisting}
+
+\notk[Halka tampon]{\code{PlotLines}'ın \code{values\_offset} parametresi tam da
+bir halka tampon için tasarlanmıştır: son yazılan konumu verirsiniz, ImGui
+diziyi o noktadan itibaren dairesel okur; böylece grafik soldan sağa akar ve
+en eski örnek düşer. Kaydırmalı grafiklerin en verimli yöntemidir --- her kare
+diziyi kaydırmanıza gerek kalmaz.}
+
+
+% =====================================================================
+\gsec{Proje 4: Renk Paleti Tasarımcısı}
+% =====================================================================
+
+Renk seçicilerini, DrawList çizimini ve panoya kopyalamayı birleştiren bir
+araç. Kullanıcı bir renk seçer, palete ekler, paleti kutucuklar hâlinde görür
+ve seçilen rengin hex kodunu kopyalar.
+
+\gsub{Tam Kaynak}
+
+\begin{lstlisting}
+#include "app.h"
+#include <vector>
+
+static ImU32 ToU32(const float c[4]) {
+    return IM_COL32((int)(c[0]*255), (int)(c[1]*255),
+                    (int)(c[2]*255), (int)(c[3]*255));
+}
+
+int main() {
+    App app("Palet Tasarimcisi");
+    float current[4] = {0.85f, 0.35f, 0.25f, 1.0f};
+    std::vector<ImVec4> palette;
+
+    app.Run([&]() {
+        ImGui::Begin("Palet");
+
+        // Buyuk secici
+        ImGui::ColorPicker4("##picker", current,
+            ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayHex);
+
+        // Hex kodu ve panoya kopyala
+        int r = (int)(current[0]*255), g = (int)(current[1]*255),
+            b = (int)(current[2]*255);
+        char hex[16]; snprintf(hex, sizeof(hex), "#%02X%02X%02X", r, g, b);
+        ImGui::Text("Hex: %s", hex);
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Kopyala")) ImGui::SetClipboardText(hex);
+
+        if (ImGui::Button("Palete Ekle")) {
+            palette.push_back(ImVec4(current[0], current[1], current[2], 1));
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Paleti Temizle")) palette.clear();
+
+        ImGui::Separator();
+        ImGui::Text("Palet (%d renk) -- tiklayinca sec, sag-tik sil:",
+                    (int)palette.size());
+
+        // Kutucuklari DrawList ile ciz, satir basina 8 tane
+        ImVec2 start = ImGui::GetCursorScreenPos();
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        const float box = 36, gap = 6;
+        const int per_row = 8;
+        int remove = -1;
+        for (int i = 0; i < (int)palette.size(); i++) {
+            int col = i % per_row, row = i / per_row;
+            ImVec2 p0(start.x + col*(box+gap), start.y + row*(box+gap));
+            ImVec2 p1(p0.x + box, p0.y + box);
+
+            float c[4] = {palette[i].x, palette[i].y, palette[i].z, 1};
+            dl->AddRectFilled(p0, p1, ToU32(c), 4.0f);
+            dl->AddRect(p0, p1, IM_COL32(255,255,255,60), 4.0f);
+
+            // Tiklanabilir alan
+            ImGui::SetCursorScreenPos(p0);
+            ImGui::PushID(i);
+            ImGui::InvisibleButton("sw", ImVec2(box, box));
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                current[0]=palette[i].x; current[1]=palette[i].y;
+                current[2]=palette[i].z;
+            }
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) remove = i;
+            ImGui::PopID();
+        }
+        if (remove >= 0) palette.erase(palette.begin() + remove);
+
+        // Kutucuk alani icin yer ac
+        int rows = ((int)palette.size() + per_row - 1) / per_row;
+        ImGui::SetCursorScreenPos(start);
+        ImGui::Dummy(ImVec2(per_row*(box+gap), rows*(box+gap) + 4));
+
+        ImGui::End();
+    });
+}
+\end{lstlisting}
+
+\ipucu{\code{ImGui::SetClipboardText} ve \code{GetClipboardText} platformdan
+bağımsız pano erişimi sağlar --- backend bunu işletim sistemine bağlar. Araç
+geliştirirken ``hex kodu kopyala'', ``JSON'u kopyala'' gibi küçük kolaylıklar
+kullanıcıyı çok mutlu eder.}
+
+% =====================================================================
+\gsec{Proje 5: Hex / Bellek Görüntüleyici}
+% =====================================================================
+
+Ters mühendislik ve dosya araçlarının klasiği: bir bayt tamponunu onaltılık
+(hex) ve ASCII olarak yan yana gösteren görüntüleyici. \code{ImGuiListClipper}
+sayesinde megabaytlarca veriyi akıcı gösterir --- yalnızca görünen satırlar
+çizilir.
+
+\gsub{Tam Kaynak}
+
+\begin{lstlisting}
+#include "app.h"
+#include <vector>
+#include <cstdint>
+
+int main() {
+    App app("Hex Goruntuleyici");
+
+    // Ornek veri: 256 KB rastgele-benzeri desen
+    std::vector<uint8_t> mem(256 * 1024);
+    for (size_t i = 0; i < mem.size(); i++)
+        mem[i] = (uint8_t)((i * 37 + (i >> 4)) & 0xFF);
+
+    const int cols = 16;   // satir basina bayt
+
+    app.Run([&]() {
+        ImGui::Begin("Bellek");
+        ImGui::Text("Boyut: %zu bayt (%.1f KB)", mem.size(), mem.size()/1024.0f);
+        ImGui::Separator();
+
+        int total_rows = (int)((mem.size() + cols - 1) / cols);
+
+        ImGui::BeginChild("hexscroll", ImVec2(0,0), false,
+                          ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::PushFont(nullptr);  // esit genislikli font ideal olurdu
+
+        ImGuiListClipper clipper;
+        clipper.Begin(total_rows);
+        while (clipper.Step()) {
+            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
+                size_t base = (size_t)row * cols;
+
+                // Adres
+                ImGui::Text("%08zX: ", base);
+                ImGui::SameLine();
+
+                // Hex sutunlari
+                char hexpart[64] = "";
+                for (int c = 0; c < cols; c++) {
+                    char b[4];
+                    if (base + c < mem.size())
+                        snprintf(b, sizeof(b), "%02X ", mem[base + c]);
+                    else
+                        snprintf(b, sizeof(b), "   ");
+                    strcat(hexpart, b);
+                }
+                ImGui::TextUnformatted(hexpart);
+                ImGui::SameLine();
+
+                // ASCII sutunu
+                char ascii[32] = " |";
+                int len = 2;
+                for (int c = 0; c < cols && base + c < mem.size(); c++) {
+                    uint8_t ch = mem[base + c];
+                    ascii[len++] = (ch >= 32 && ch < 127) ? (char)ch : '.';
+                }
+                ascii[len++] = '|'; ascii[len] = '\0';
+                ImGui::TextUnformatted(ascii);
+            }
+        }
+        ImGui::PopFont();
+        ImGui::EndChild();
+        ImGui::End();
+    });
+}
+\end{lstlisting}
+
+\bilgi{Buradaki püf nokta \code{ImGuiListClipper}'dır: 16.384 satırın (256 KB /
+16) tamamını çizmeye çalışsaydık her kare 16 binden fazla \code{Text} çağrısı
+yapardık. Clipper ile yalnızca ekrandaki $\sim$40 satır çizilir; kaydırma çubuğu
+yine de tüm veriyi doğru temsil eder. Bu, ImGui'de büyük veri göstermenin
+altın kuralıdır.}
+
+\uyari{Gerçek bir hex editöründe \emph{eşit genişlikli} (monospace) font
+şarttır, yoksa sütunlar hizalanmaz. Kısım 3'teki font yükleme yöntemiyle bir
+monospace TTF (örn. DejaVu Sans Mono) yükleyip \code{PushFont} ile bu pencerede
+kullanın.}
+
+
+% =====================================================================
+\gsec{Proje 6: Basit Çizim Tuvali}
+% =====================================================================
+
+DrawList ve fare etkileşimini birleştiren bir vektör çizim uygulaması.
+Kullanıcı fareyle serbest çizgiler çizer (stroke), rengi ve kalınlığı seçer,
+son çizgiyi geri alır ve tuvali temizler. Grafik editörlerinin çekirdek
+mantığını gösterir.
+
+\gsub{Tam Kaynak}
+
+\begin{lstlisting}
+#include "app.h"
+#include <vector>
+
+struct Stroke {
+    std::vector<ImVec2> points;   // tuval-yerel koordinatlar
+    ImU32 color;
+    float thickness;
+};
+
+int main() {
+    App app("Cizim Tuvali");
+    std::vector<Stroke> strokes;
+    float draw_col[4] = {1.0f, 0.8f, 0.2f, 1.0f};
+    float thickness = 3.0f;
+    bool drawing = false;
+
+    app.Run([&]() {
+        ImGui::Begin("Tuval");
+
+        // Arac cubugu
+        ImGui::ColorEdit3("Renk", draw_col, ImGuiColorEditFlags_NoInputs);
+        ImGui::SameLine(); ImGui::SetNextItemWidth(120);
+        ImGui::SliderFloat("Kalinlik", &thickness, 1.0f, 20.0f);
+        ImGui::SameLine();
+        if (ImGui::Button("Geri Al") && !strokes.empty()) strokes.pop_back();
+        ImGui::SameLine();
+        if (ImGui::Button("Temizle")) strokes.clear();
+
+        // Tuval alani
+        ImVec2 p0 = ImGui::GetCursorScreenPos();
+        ImVec2 sz = ImGui::GetContentRegionAvail();
+        if (sz.x < 50) sz.x = 50; if (sz.y < 50) sz.y = 50;
+        ImVec2 p1(p0.x + sz.x, p0.y + sz.y);
+
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        dl->AddRectFilled(p0, p1, IM_COL32(25,25,30,255));
+        dl->AddRect(p0, p1, IM_COL32(120,120,130,255));
+
+        // Etkilesim
+        ImGui::InvisibleButton("tuval", sz,
+            ImGuiButtonFlags_MouseButtonLeft);
+        ImVec2 mouse = ImGui::GetIO().MousePos;
+        ImVec2 local(mouse.x - p0.x, mouse.y - p0.y);   // tuval-yerel
+
+        ImU32 col = IM_COL32((int)(draw_col[0]*255), (int)(draw_col[1]*255),
+                             (int)(draw_col[2]*255), 255);
+
+        if (ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+            if (!drawing) {
+                strokes.push_back({{}, col, thickness});   // yeni stroke basla
+                drawing = true;
+            }
+            // Ayni noktayi tekrar eklememek icin kucuk esik
+            auto& pts = strokes.back().points;
+            if (pts.empty() ||
+                fabsf(pts.back().x-local.x)+fabsf(pts.back().y-local.y) > 2.0f)
+                pts.push_back(local);
+        } else {
+            drawing = false;
+        }
+
+        // Cizimi kirp ve ciz (tuval disina tasmasin)
+        dl->PushClipRect(p0, p1, true);
+        for (auto& s : strokes) {
+            for (size_t i = 1; i < s.points.size(); i++) {
+                ImVec2 a(p0.x + s.points[i-1].x, p0.y + s.points[i-1].y);
+                ImVec2 b(p0.x + s.points[i].x,   p0.y + s.points[i].y);
+                dl->AddLine(a, b, s.color, s.thickness);
+            }
+        }
+        dl->PopClipRect();
+
+        ImGui::End();
+    });
+}
+\end{lstlisting}
+
+\notk[Yerel vs ekran koordinatı]{Noktaları \emph{tuval-yerel} olarak sakladık
+(tuvalin sol-üstüne göre), çizerken \code{p0}'ı ekleyerek ekran uzayına
+çevirdik. Böylece pencere taşınırsa çizim onunla birlikte gelir --- ekran
+koordinatı saklasaydık pencere hareket edince çizim yerinde kalırdı. Bu
+ayrım, tüm tuval/harita/node editörlerinde temel bir tasarım kararıdır.}
+
+% =====================================================================
+\gsec{Proje 7: Oyun Hata Ayıklama HUD'u}
+% =====================================================================
+
+Son projemiz, ImGui'nin en yaygın kullanım alanını temsil eder: bir oyun/render
+döngüsünün üzerine bindirilen hata ayıklama arayüzü. Şeffaf bir üst-katman
+(overlay), gerçek zamanlı ayar panelleri ve bir varlık (entity) denetleyicisi
+içerir. Burada ``oyun'' sahte bir simülasyondur; önemli olan HUD kalıplarıdır.
+
+\gsub{Tam Kaynak}
+
+\begin{lstlisting}
+#include "app.h"
+#include <vector>
+#include <cmath>
+
+struct Entity {
+    char name[32];
+    float x, y;
+    float vx, vy;
+    bool alive = true;
+};
+
+int main() {
+    App app("Oyun Debug HUD");
+
+    // Sahte oyun durumu
+    std::vector<Entity> entities;
+    for (int i = 0; i < 6; i++) {
+        Entity e; snprintf(e.name, sizeof(e.name), "Dusman_%d", i);
+        e.x = 100 + i*90; e.y = 200;
+        e.vx = cosf(i)*60; e.vy = sinf(i)*60;
+        entities.push_back(e);
+    }
+    int selected = -1;
+    bool paused = false;
+    float sim_speed = 1.0f;
+    bool show_overlay = true, show_inspector = true;
+
+    app.Run([&]() {
+        ImGuiIO& io = ImGui::GetIO();
+        float dt = paused ? 0.0f : io.DeltaTime * sim_speed;
+
+        // --- "Oyun" mantigi ---
+        for (auto& e : entities) {
+            if (!e.alive) continue;
+            e.x += e.vx * dt; e.y += e.vy * dt;
+            if (e.x < 0 || e.x > 1280) e.vx = -e.vx;
+            if (e.y < 0 || e.y > 720)  e.vy = -e.vy;
+        }
+
+        // --- Varliklari dogrudan ekrana ciz (arka-plan DrawList) ---
+        ImDrawList* bg = ImGui::GetBackgroundDrawList();
+        for (int i = 0; i < (int)entities.size(); i++) {
+            Entity& e = entities[i];
+            if (!e.alive) continue;
+            ImU32 col = (i == selected) ? IM_COL32(255,220,0,255)
+                                        : IM_COL32(220,80,80,255);
+            bg->AddCircleFilled(ImVec2(e.x, e.y), 14, col);
+            bg->AddText(ImVec2(e.x-14, e.y+16), IM_COL32(255,255,255,200), e.name);
+        }
+
+        // --- 1) Ust menu ---
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Debug")) {
+                ImGui::MenuItem("FPS Overlay", nullptr, &show_overlay);
+                ImGui::MenuItem("Inspector",   nullptr, &show_inspector);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        // --- 2) Seffaf FPS overlay (sag ust kose) ---
+        if (show_overlay) {
+            ImGuiViewport* vp = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(
+                ImVec2(vp->WorkPos.x + vp->WorkSize.x - 10, vp->WorkPos.y + 10),
+                ImGuiCond_Always, ImVec2(1, 0));   // sag-ust hizala
+            ImGui::SetNextWindowBgAlpha(0.35f);
+            ImGuiWindowFlags f = ImGuiWindowFlags_NoDecoration
+                | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings
+                | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_AlwaysAutoResize;
+            ImGui::Begin("overlay", nullptr, f);
+            ImGui::Text("FPS: %.0f  (%.2f ms)", io.Framerate, 1000.0f/io.Framerate);
+            int alive = 0; for (auto& e : entities) if (e.alive) alive++;
+            ImGui::Text("Canli varlik: %d / %d", alive, (int)entities.size());
+            ImGui::Text("Durum: %s", paused ? "DURAKLADI" : "CALISIYOR");
+            ImGui::End();
+        }
+
+        // --- 3) Kontrol paneli ---
+        ImGui::Begin("Simulasyon");
+        if (ImGui::Button(paused ? "Devam" : "Duraklat")) paused = !paused;
+        ImGui::SameLine();
+        if (ImGui::Button("Sifirla")) for (auto& e : entities) e.alive = true;
+        ImGui::SliderFloat("Sim Hizi", &sim_speed, 0.0f, 3.0f);
+        ImGui::End();
+
+        // --- 4) Varlik denetleyicisi (inspector) ---
+        if (show_inspector) {
+            ImGui::Begin("Inspector");
+            if (ImGui::BeginTable("ent", 4, ImGuiTableFlags_Borders
+                                  | ImGuiTableFlags_RowBg)) {
+                ImGui::TableSetupColumn("Ad");
+                ImGui::TableSetupColumn("Konum");
+                ImGui::TableSetupColumn("Hiz");
+                ImGui::TableSetupColumn("Islem");
+                ImGui::TableHeadersRow();
+                for (int i = 0; i < (int)entities.size(); i++) {
+                    Entity& e = entities[i];
+                    ImGui::TableNextRow();
+                    ImGui::PushID(i);
+                    ImGui::TableNextColumn();
+                    if (ImGui::Selectable(e.name, selected == i,
+                            ImGuiSelectableFlags_SpanAllColumns))
+                        selected = i;
+                    ImGui::TableNextColumn(); ImGui::Text("%.0f, %.0f", e.x, e.y);
+                    ImGui::TableNextColumn(); ImGui::Text("%.0f, %.0f", e.vx, e.vy);
+                    ImGui::TableNextColumn();
+                    if (ImGui::SmallButton(e.alive ? "Oldur" : "Diri"))
+                        e.alive = !e.alive;
+                    ImGui::PopID();
+                }
+                ImGui::EndTable();
+            }
+            // Secili varligin detayli duzenlemesi
+            if (selected >= 0 && selected < (int)entities.size()) {
+                ImGui::SeparatorText("Secili Varlik");
+                Entity& e = entities[selected];
+                ImGui::InputText("Ad", e.name, sizeof(e.name));
+                ImGui::DragFloat2("Konum", &e.x, 1.0f);
+                ImGui::DragFloat2("Hiz", &e.vx, 1.0f);
+            }
+            ImGui::End();
+        }
+    });
+}
+\end{lstlisting}
+
+\bilgi{Bu proje, ImGui'nin oyun geliştirmedeki ``süper gücünü'' özetler:
+\code{GetBackgroundDrawList()} ile oyun dünyasının \emph{üzerine} çizip
+(varlık etiketleri, çarpışma kutuları, yol bulma ızgaraları), aynı anda
+yüzen panellerle canlı ayar yapabilirsiniz. \code{selected} indeksiyle
+tablodaki seçim ile dünyadaki vurgulama otomatik senkron kalır --- çünkü ikisi
+de \emph{aynı} veriyi her kare yeniden okur. Retained mode'da bu senkronu elle
+sağlamak zorunda kalırdınız.}
+
+
+% #####################################################################
+\gpart{5}{Başvuru ve Kapanış}
+% #####################################################################
+
+% =====================================================================
+\gsec{Hızlı Başvuru (Cheat Sheet)}
+% =====================================================================
+
+\gsub{Sık Kullanılan Çağrılar}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\footnotesize\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\normalfont\color{anaMavi}\textbf{Çağrı} & \color{anaMavi}\textbf{İş}\\
+\midrule
+Begin/End & Pencere aç/kapat (End daima çağrılır)\\
+\rowcolor{acikGri} Text / TextColored & Metin göster\\
+Button & Düğme; tıklandıysa \code{true}\\
+\rowcolor{acikGri} Checkbox / RadioButton & İki/çok durumlu seçim\\
+SliderFloat / DragFloat & Sayısal değer ayarla\\
+\rowcolor{acikGri} InputText & Metin girişi\\
+Combo / ListBox & Açılır/liste seçimi\\
+\rowcolor{acikGri} ColorEdit4 & Renk seç\\
+SameLine & Sonraki widget yan yana\\
+\rowcolor{acikGri} Separator / Spacing & Ayraç / boşluk\\
+PushID / PopID & Benzersiz ID kapsamı\\
+\rowcolor{acikGri} BeginTable / EndTable & Tablo\\
+BeginChild / EndChild & Kaydırılabilir alt bölge\\
+\rowcolor{acikGri} IsItemHovered / Clicked & Son öğe durumu\\
+GetWindowDrawList & Özel çizim (DrawList)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Eşleşmesi Zorunlu Çiftler}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Kural} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+\code{Begin}$\leftrightarrow$\code{End} & Pencere: \code{End} her zaman (Begin false olsa da).\\
+\rowcolor{acikGri} \code{BeginChild}$\leftrightarrow$\code{EndChild} & Child için de End her zaman.\\
+\code{TreeNode}$\rightarrow$\code{TreePop} & Yalnızca TreeNode \code{true} dönerse.\\
+\rowcolor{acikGri} \code{BeginTable}$\rightarrow$\code{EndTable} & Yalnızca Begin \code{true} dönerse.\\
+\code{Push*}$\leftrightarrow$\code{Pop*} & Push sayısı = Pop sayısı (ID, StyleColor, StyleVar).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Sık Yapılan Hatalar ve Çözümleri}
+% =====================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.42\textwidth} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{kirmizi!12}\color{kirmizi}\textbf{Belirti} & \color{kirmizi}\textbf{Neden / Çözüm}\\
+\midrule
+Döngüdeki düğmeler yanlış çalışıyor & ID çakışması. \code{PushID(i)}/\code{PopID()} kullan.\\
+\rowcolor{acikGri} Değer bir kare sonra sıçrıyor & Değeri \code{static} yaptın ama iki yerde çizdin; tek kaynağa bağla.\\
+Assert: ``mismatched Begin/End'' & \code{End}'i atladın ya da yanlış eşledin. Çiftleri kontrol et.\\
+\rowcolor{acikGri} Türkçe harfler kutu/boş çıkıyor & Font glyph aralığına Latin Extended-A ekle, UTF-8 kaydet.\\
+Pencere taşınamıyor & Konumu \code{ImGuiCond\_Always} ile zorluyorsun; \code{\_FirstUseEver} kullan.\\
+\rowcolor{acikGri} Metin yazarken oyun hareket ediyor & \code{io.WantCaptureKeyboard} kontrol edilmedi.\\
+Uzun liste FPS düşürüyor & \code{ImGuiListClipper} kullan.\\
+\rowcolor{acikGri} Stil tüm UI'da bozuldu & \code{PushStyleColor/Var} sayısı Pop ile eşleşmiyor.\\
+Ekranda hiçbir şey yok & \code{NewFrame}/\code{Render} sırası veya \code{RenderDrawData} eksik.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Sonraki Adımlar}
+% =====================================================================
+
+Bu rehber Dear ImGui'nin çekirdeğini ve en yaygın kullanım kalıplarını
+kapsadı. Buradan sonra derinleşmek için:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Konu / Araç} & \color{anaMavi}\textbf{Ne için}\\
+\midrule
+\code{imgui\_demo.cpp} & En iyi öğretmen: her widget'ın canlı örneği ve kaynağı.\\
+\rowcolor{acikGri} ImPlot & Ciddi bilimsel/gerçek zamanlı grafikler.\\
+ImGuizmo & 3B sahnede taşı/döndür/ölçekle gizmoları.\\
+\rowcolor{acikGri} imgui-node-editor & Düğüm tabanlı editörler (shader graph vb.).\\
+Docking branch & IDE benzeri çoklu-pencere düzenleri.\\
+\rowcolor{acikGri} Custom backend & Kendi motorunuza (DX12/Vulkan/Metal) entegre etme.\\
+\code{imgui\_stdlib.h} & \code{std::string} ile InputText.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\bilgi{ImGui öğrenmenin en hızlı yolu \textbf{yazmaktır}. Bir yan projenizi
+açın, üstüne bir \code{ImGui::Begin("Debug")} penceresi koyun ve o projeye
+özgü değerleri (pozisyonlar, sayaçlar, bayraklar) canlı gösterip ayarlamaya
+başlayın. Bir kez bu alışkanlığı edindiğinizde, ImGui'siz geliştirme yapmak
+zor gelecek. İyi çalışmalar!}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.8pt}}\\[6pt]
+{\color{ortaGri}\small C++ ile Dear ImGui Rehberi --- Son}\\[2pt]
+{\color{ortaGri}\footnotesize Dear ImGui 1.90+ \textbullet\ GLFW 3.x \textbullet\ OpenGL 3.3 \textbullet\ C++17}
+\end{center}
+
+\end{document}
