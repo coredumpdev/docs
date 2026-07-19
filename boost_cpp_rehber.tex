@@ -1,0 +1,2221 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{132C4A}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={Boost C++ Kütüphaneleri Kapsamlı Rehber},
+  pdfauthor={C++ Kütüphaneleri Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}Boost C++ Kütüphaneleri}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C++) ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+  morekeywords={size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,
+    int32_t,int64_t,nullptr,constexpr,noexcept,override,final,auto,
+    vector,string,pair,map,set,unordered_map,unordered_set,priority_queue,
+    queue,stack,deque,array,list,tuple,optional,shared_ptr,unique_ptr,
+    template,typename,class,public,private,protected,virtual,namespace,
+    using,std,boost,co_await,co_return,co_yield,concept,requires,
+    move,make_pair,make_shared,make_unique,decltype}
+}
+\lstset{style=cppstyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\newcommand{\bigO}[1]{\ensuremath{\mathcal{O}(#1)}}
+% Matematik sembollerini metin modunda da güvenli kıl
+\let\svtimes\times   \renewcommand{\times}{\ensuremath{\svtimes}}
+\let\svcdot\cdot     \renewcommand{\cdot}{\ensuremath{\svcdot}}
+\let\svto\to         \renewcommand{\to}{\ensuremath{\svto}}
+\let\svle\le         \renewcommand{\le}{\ensuremath{\svle}}
+\let\svge\ge         \renewcommand{\ge}{\ensuremath{\svge}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries Boost C++ Kütüphaneleri}\\[10pt]
+{\color{vurguMavi}\LARGE Kapsamlı Uygulamalı Rehber}\\[8pt]
+{\color{ortaGri}\large Modern C++ için Endüstri Standardı Kütüphane Koleksiyonu}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge, Boost kütüphanelerini modern C++ (C++17/20) ile,
+her konuyu \textbf{derlenebilir kod örnekleriyle}, mimari açıklamalarla
+ve pratik kullanım desenleriyle adım adım anlatır. Akıllı işaretçilerden
+Boost.Asio ile ağ programlamaya, metaprogramlamadan graf algoritmalarına
+kadar en çok kullanılan Boost bileşenlerini kapsar.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.8cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kapsam --- Kısım 1 (Temeller):} Boost felsefesi \textbullet\ kurulum
+\textbullet\ b2 \& CMake entegrasyonu \textbullet\ header-only vs derlenmiş.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 2 (Bellek \& Yardımcılar):} akıllı işaretçiler
+\textbullet\ Optional \textbullet\ Variant \textbullet\ Any \textbullet\ lexical\_cast
+\textbullet\ Format \textbullet\ String Algo \textbullet\ Tokenizer.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 3 (Konteynerler):} Container \textbullet\ MultiIndex
+\textbullet\ Bimap \textbullet\ CircularBuffer \textbullet\ Intrusive
+\textbullet\ DynamicBitset.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 4 (Eşzamanlılık \& Ağ):} Thread \textbullet\ Atomic
+\textbullet\ Lockfree \textbullet\ \textbf{Asio (detaylı)} \textbullet\ Fiber.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 5 (Metin \& Veri):} Regex \textbullet\ Spirit
+\textbullet\ PropertyTree \textbullet\ JSON \textbullet\ Serialization.\vspace{4pt}
+
+\textbf{Kapsam --- Kısım 6 (Sistem, Matematik \& Graf):} Filesystem
+\textbullet\ DateTime \textbullet\ ProgramOptions \textbullet\ Interprocess
+\textbullet\ Math \textbullet\ Multiprecision \textbullet\ Graph (BGL).\vspace{4pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 19 Temmuz 2026}\\[4pt]
+{\color{ortaGri} Boost 1.85+ \textbullet\ C++17 / C++20 \textbullet\ g++ / clang++}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Temeller, Felsefe ve Kurulum}
+% #####################################################################
+
+% =====================================================================
+\gsec{Boost Nedir ve Neden Kullanılır?}
+
+Boost, C++ dünyasının en etkili ve en saygın açık kaynak kütüphane
+koleksiyonudur. 1998'de, C++ standart komitesinin (ISO WG21) bazı üyeleri
+tarafından, standarda aday olabilecek yüksek kaliteli kütüphaneleri
+geliştirmek ve olgunlaştırmak amacıyla kuruldu. Bugün 160'tan fazla
+bağımsız kütüphaneden oluşan devasa bir ekosistemdir.
+
+Boost'un C++ standardı üzerindeki etkisi tarihseldir: bugün standart
+kütüphanenin (\code{std}) ayrılmaz parçaları olan pek çok bileşen önce
+Boost'ta doğdu, yıllarca gerçek projelerde denendi ve olgunlaştıktan sonra
+standarda alındı.
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.2cm} c@{}}
+\toprule
+\textbf{Boost Kütüphanesi} & \textbf{Standart Karşılığı} & \textbf{Sürüm} \\
+\midrule
+\code{boost::shared\_ptr} & \code{std::shared\_ptr} & C++11 \\
+\code{boost::function} & \code{std::function} & C++11 \\
+\code{boost::bind} & \code{std::bind} / lambdalar & C++11 \\
+\code{boost::array} & \code{std::array} & C++11 \\
+\code{boost::thread} & \code{std::thread} & C++11 \\
+\code{boost::optional} & \code{std::optional} & C++17 \\
+\code{boost::variant} & \code{std::variant} & C++17 \\
+\code{boost::any} & \code{std::any} & C++17 \\
+\code{boost::filesystem} & \code{std::filesystem} & C++17 \\
+\code{boost::string\_view} & \code{std::string\_view} & C++17 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bilgi{Boost'u öğrenmek, aslında C++'ın \emph{geleceğini} öğrenmektir.
+Bugün Boost'ta kullandığınız birçok kütüphane, birkaç yıl sonra standardın
+parçası olabilir. Ayrıca standardın henüz kapsamadığı devasa bir alan
+(Asio, Spirit, Graph, Multiprecision, Geometry...) yalnızca Boost'ta mevcuttur.}
+
+\gsub{Boost'u Ne Zaman Kullanmalı, Ne Zaman Kullanmamalı?}
+
+\textbf{Kullanın:} Standart kütüphanenin karşılamadığı bir ihtiyaç varsa
+(ağ, ayrıştırma, çok yüksek hassasiyetli aritmetik, graf algoritmaları,
+tarih/saat işlemleri), yeni bir standart özelliği eski bir derleyicide
+kullanmanız gerekiyorsa (C++17 \code{optional}'ı C++14 projesinde), veya
+savaşta denenmiş, iyi test edilmiş bir çözüm istiyorsanız.
+
+\textbf{Dikkatli olun:} Standart karşılığı zaten varsa ve C++17+ hedefliyorsanız,
+önce \code{std} sürümünü tercih edin. Boost bağımlılığı derleme süresini
+uzatır, ikili boyutu artırır ve dağıtımı zorlaştırabilir. Ayrıca bazı Boost
+kütüphaneleri ağır şablon (template) metaprogramlama içerir ve derleme
+hatalarını okumak zor olabilir.
+
+\uyari{Boost \emph{tek bir kütüphane değildir}; birbirinden bağımsız
+onlarca kütüphanenin şemsiye adıdır. ``Boost'u projeme ekledim'' demek
+genellikle yanlıştır; ``Boost.Asio ve Boost.System'i ekledim'' demek doğrudur.
+İhtiyacınız olan alt kütüphaneleri seçerek bağlayın.}
+
+\gsub{Header-Only ve Derlenmiş Kütüphaneler}
+
+Boost kütüphaneleri iki gruba ayrılır ve bu ayrım kurulum/derleme açısından
+kritiktir:
+
+\begin{itemize}
+\item \textbf{Header-only (yalnızca başlık):} Tüm kodu başlık dosyalarında
+bulunur. \code{\#include} etmeniz yeterlidir, ayrıca bağlamanız (link)
+gerekmez. Çoğunluk buradadır: Optional, Variant, MPL, Hana, Spirit,
+Lexical\_cast, Format, TypeTraits, Bind, Function, Signals2 (kısmen)...
+
+\item \textbf{Derlenmiş (compiled/separately built):} Önceden derlenmiş
+bir \code{.a}/\code{.so} kütüphaneye bağlanmayı gerektirir. Bunlar: System,
+Filesystem, Thread, Regex, ProgramOptions, DateTime (kısmen), Serialization,
+Log, Chrono, Context, Coroutine, IOStreams, Locale, Test (kısmen).
+\end{itemize}
+
+\ipucu{Bir kütüphanenin bağlanma gerektirip gerektirmediğini bilmiyorsanız,
+Boost dokümantasyonundaki her kütüphanenin ``Getting Started'' sayfasına
+bakın. Genel kural: dosya sistemi, iş parçacığı, ağ, günlükleme gibi
+\emph{işletim sistemiyle etkileşen} kütüphaneler genelde derlenmiştir.}
+
+% =====================================================================
+\gsec{Kurulum ve Yapılandırma}
+
+\gsub{Paket Yöneticisiyle Kurulum (En Kolay Yol)}
+
+Çoğu Linux dağıtımında Boost paketlenmiştir. Geliştirme başlıkları için
+\code{-dev} paketini kurmanız gerekir:
+
+\begin{lstlisting}[style=shstyle]
+# Debian / Ubuntu
+sudo apt update
+sudo apt install libboost-all-dev
+
+# Fedora
+sudo dnf install boost-devel
+
+# Arch Linux / CachyOS
+sudo pacman -S boost
+
+# macOS (Homebrew)
+brew install boost
+
+# Sürümü doğrulama
+dpkg -s libboost-dev | grep Version   # Debian ailesi
+cat /usr/include/boost/version.hpp | grep BOOST_LIB_VERSION
+\end{lstlisting}
+
+\gsub{Kaynaktan Derleme (b2 / Boost.Build)}
+
+En güncel sürümü veya özel yapılandırma istiyorsanız kaynaktan derleyin.
+Boost, \code{b2} (eski adıyla \code{bjam}) adında kendi derleme sistemini
+kullanır:
+
+\begin{lstlisting}[style=shstyle]
+# 1) Kaynağı indir ve aç
+wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.gz
+tar xzf boost_1_85_0.tar.gz
+cd boost_1_85_0
+
+# 2) b2 aracını hazırla (bootstrap)
+./bootstrap.sh --prefix=/usr/local --with-toolset=gcc
+
+# 3) Derle ve kur (sadece ihtiyacınız olan kütüphaneleri seçebilirsiniz)
+./b2 --with-system --with-filesystem --with-thread \
+     variant=release link=shared,static \
+     threading=multi cxxstd=17 -j$(nproc)
+
+sudo ./b2 install       # başlıkları ve kütüphaneleri /usr/local'a kur
+
+# TÜM kütüphaneleri derlemek isterseniz --with-* bayraklarını kaldırın
+./b2 -j$(nproc) cxxstd=17
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{b2 seçeneği} & \textbf{Anlamı} \\
+\midrule
+\code{variant=release} & Optimizasyonlu (\code{-O2 -DNDEBUG}) sürüm \\
+\code{variant=debug} & Hata ayıklama sembolleriyle \\
+\code{link=static} & Statik kütüphane (\code{.a}) üret \\
+\code{link=shared} & Paylaşımlı kütüphane (\code{.so}) üret \\
+\code{threading=multi} & İş parçacığı güvenli sürüm \\
+\code{cxxstd=17} & C++17 standardıyla derle \\
+\code{-j\$(nproc)} & Tüm çekirdekleri kullan (paralel) \\
+\code{--with-X} & Yalnızca X kütüphanesini derle \\
+\code{--build-dir=/tmp/b} & Ara çıktı dizini \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\gsub{Elle Derleme: g++ Komut Satırı}
+
+Header-only bir kütüphane kullanıyorsanız, tek yapmanız gereken başlık
+yolunu vermektir:
+
+\begin{lstlisting}[style=shstyle]
+# Header-only (ör. Boost.Optional) -- bağlama YOK
+g++ -std=c++17 -I/usr/local/include main.cpp -o program
+
+# Derlenmiş kütüphane (ör. Filesystem + System) -- bağlama VAR
+g++ -std=c++17 main.cpp -o program \
+    -lboost_filesystem -lboost_system
+
+# Özel kurulum yolu belirtme (kaynaktan derlediyseniz)
+g++ -std=c++17 -I/usr/local/include main.cpp -o program \
+    -L/usr/local/lib -lboost_filesystem -lboost_system \
+    -Wl,-rpath,/usr/local/lib
+\end{lstlisting}
+
+\uyari{Bağlama sırası önemlidir: \code{-lboost\_filesystem} kütüphanesi
+\code{-lboost\_system}'e bağımlıdır. GNU ld ile bağımlı kütüphaneyi
+\emph{sonra} yazın: önce \code{filesystem}, sonra \code{system}. Yeni
+Boost sürümlerinde Filesystem artık System'e derleme zamanı bağımlı
+olmayabilir, ancak eski sürümlerde bu sıralama derleme hatalarını çözer.}
+
+\gsub{CMake ile Boost Kullanımı (Önerilen Yöntem)}
+
+Gerçek projelerde Boost'u CMake üzerinden bulmak en temiz yaklaşımdır.
+\code{find\_package(Boost ...)} komutu bileşenleri bulur ve modern hedef
+tabanlı (target-based) bağlama sağlar:
+
+\begin{lstlisting}[style=shstyle]
+cmake_minimum_required(VERSION 3.16)
+project(BoostOrnek LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# İhtiyacınız olan bileşenleri açıkça listeleyin.
+# Header-only kütüphaneler COMPONENTS listesine YAZILMAZ.
+find_package(Boost 1.75 REQUIRED COMPONENTS
+    filesystem
+    system
+    program_options
+)
+
+add_executable(program main.cpp)
+
+# Modern (target tabanlı) bağlama -- tercih edilen yol:
+target_link_libraries(program PRIVATE
+    Boost::filesystem
+    Boost::system
+    Boost::program_options
+)
+
+# Header-only bir kütüphane (ör. Boost.Optional) kullanıyorsanız,
+# başlık yolları için genel Boost hedefini bağlayın:
+target_link_libraries(program PRIVATE Boost::headers)
+\end{lstlisting}
+
+\ipucu{Boost'u CMake'in \code{FetchContent}'i ile de otomatik indirtip
+derletebilirsiniz; ancak Boost çok büyük olduğu için bu, ilk derlemeyi
+ciddi biçimde uzatır. Büyük projelerde sistem paketini veya önceden
+derlenmiş bir Boost'u tercih edin. \code{Boost::headers} hedefi, yalnızca
+başlık yolu gereken header-only kütüphaneler için idealdir.}
+
+\gsub{İlk Boost Programı}
+
+Boost'un doğru kurulduğunu doğrulayan minimal bir program yazalım.
+Boost.Version ile sürümü, Boost.Lexical\_cast ile bir tür dönüşümünü test edelim:
+
+\begin{lstlisting}
+#include <boost/version.hpp>
+#include <boost/lexical_cast.hpp>
+#include <iostream>
+#include <string>
+
+int main() {
+    // BOOST_VERSION: örn. 108500 => 1.85.0
+    std::cout << "Boost surumu: "
+              << BOOST_VERSION / 100000 << "."       // ana
+              << BOOST_VERSION / 100 % 1000 << "."    // ara
+              << BOOST_VERSION % 100 << "\n";         // yama
+
+    // lexical_cast: string <-> sayi guvenli donusum
+    int value = boost::lexical_cast<int>("42");
+    std::string text = boost::lexical_cast<std::string>(3.14159);
+
+    std::cout << "int:    " << value << "\n";
+    std::cout << "string: " << text << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# lexical_cast header-only oldugu icin bağlama gerekmez
+g++ -std=c++17 first_program.cpp -o first_program
+./first_program
+# Cikti:
+#   Boost surumu: 1.85.0
+#   int:    42
+#   string: 3.14159
+\end{lstlisting}
+
+% #####################################################################
+\gpart{2}{Bellek Yönetimi ve Yardımcı Kütüphaneler}
+% #####################################################################
+
+% =====================================================================
+\gsec{Akıllı İşaretçiler (Boost.SmartPtr)}
+
+Boost.SmartPtr, C++'ta otomatik bellek yönetiminin öncüsüdür.
+\code{std::shared\_ptr} ve \code{std::unique\_ptr} bu kütüphaneden doğdu.
+Bugün C++11+ kullanıyorsanız çoğu durumda \code{std} sürümlerini tercih
+edersiniz; ancak Boost hâlâ standartta \emph{olmayan} önemli akıllı
+işaretçi türleri sunar.
+
+\gsub{Standartta Bulunmayan Boost Akıllı İşaretçileri}
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{8.4cm}@{}}
+\toprule
+\textbf{İşaretçi} & \textbf{Kullanım Amacı} \\
+\midrule
+\code{scoped\_ptr} & Tek sahiplik, taşınamaz (move edilemez). Basit RAII;
+\code{unique\_ptr}'ın kısıtlı ama açık niyetli atası. \\
+\code{intrusive\_ptr} & Referans sayacı \emph{nesnenin içinde} tutulur.
+Bellek dostu; harici kontrol bloğu yoktur. \\
+\code{local\_shared\_ptr} & Tek iş parçacıklı \code{shared\_ptr}; atomik
+olmayan sayaç kullanır, daha hızlıdır. \\
+\code{shared\_array} & Dizi için \code{shared\_ptr} (C++17 öncesi
+\code{shared\_ptr<T[]>} yokken kritikti). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\gsub{intrusive\_ptr: Gömülü Referans Sayacı}
+
+\code{intrusive\_ptr}, referans sayacını kontrol nesnesinde değil, işaret
+ettiği nesnenin \emph{kendi içinde} tutar. Bu, her nesne için ayrı bir
+kontrol bloğu tahsis etmeyi önler; çok sayıda küçük nesne yönetiyorsanız
+belleği ve önbellek yerelliğini iyileştirir. Karşılığında, nesnenizin
+sayaç ve \code{intrusive\_ptr\_add\_ref} / \code{intrusive\_ptr\_release}
+fonksiyonlarını sağlaması gerekir.
+
+\begin{lstlisting}
+#include <boost/intrusive_ptr.hpp>
+#include <atomic>
+#include <iostream>
+
+// Referans sayaci taban sinifi -- nesneye "gomulu" sayac
+class RefCounted {
+public:
+    RefCounted() : ref_count_(0) {}
+    virtual ~RefCounted() = default;
+
+    friend void intrusive_ptr_add_ref(RefCounted* p) noexcept {
+        p->ref_count_.fetch_add(1, std::memory_order_relaxed);
+    }
+    friend void intrusive_ptr_release(RefCounted* p) noexcept {
+        // release-acquire ile guvenli silme
+        if (p->ref_count_.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+            delete p;   // son referans dustu
+        }
+    }
+private:
+    mutable std::atomic<int> ref_count_;
+};
+
+class Node : public RefCounted {
+public:
+    explicit Node(int v) : value(v) {
+        std::cout << "Dugum(" << value << ") olusturuldu\n";
+    }
+    ~Node() override {
+        std::cout << "Dugum(" << value << ") yok edildi\n";
+    }
+    int value;
+};
+
+int main() {
+    // Sayac gomulu oldugu icin harici kontrol blogu YOK
+    boost::intrusive_ptr<Node> a(new Node(10));
+    {
+        boost::intrusive_ptr<Node> b = a;   // sayac: 2
+        std::cout << "b->deger = " << b->value << "\n";
+    }   // b yok oldu -> sayac: 1 (nesne yasar)
+
+    std::cout << "a hala gecerli: " << a->value << "\n";
+    return 0;
+}   // a yok oldu -> sayac: 0 -> "Dugum(10) yok edildi"
+\end{lstlisting}
+
+\bilgi{\code{intrusive\_ptr} özellikle oyun motorlarında, referans sayımlı
+COM benzeri API'lerde ve milyonlarca küçük nesneli grafik/sahne
+ağaçlarında tercih edilir. \code{shared\_ptr}'ın nesne başına ayrı kontrol
+bloğu tahsisi bu senaryolarda ciddi ek yük getirir.}
+
+\gsub{Boost.Pool: Havuz Tabanlı Bellek Ayırma}
+
+Boost.Pool, aynı boyutta çok sayıda küçük nesneyi hızlıca tahsis/serbest
+bırakmak için tasarlanmış bir bellek havuzudur. \code{new}/\code{delete}'in
+her çağrıda işletim sistemine gitme maliyetini ortadan kaldırır.
+
+\begin{lstlisting}
+#include <boost/pool/object_pool.hpp>
+#include <iostream>
+
+struct Particle {
+    float x, y, z;
+    float speed;
+    Particle(float px, float py, float pz)
+        : x(px), y(py), z(pz), speed(0.f) {}
+};
+
+int main() {
+    // object_pool: nesneleri havuzdan hizlica al/ver
+    boost::object_pool<Particle> pool;
+
+    // construct() bellegi havuzdan alir ve yapicIyi cagirir
+    Particle* p1 = pool.construct(1.f, 2.f, 3.f);
+    Particle* p2 = pool.construct(4.f, 5.f, 6.f);
+
+    std::cout << "p1: " << p1->x << "," << p1->y << "\n";
+
+    pool.destroy(p1);   // yikici cagrIlIr, bellek havuzda kalIr (yeniden kullanIlIr)
+    // p2 icin destroy cagirmasak bile havuz yok olurken temizlenir
+    return 0;
+}   // havuz yok olurken kalan tum nesneler otomatik temizlenir
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Boost.Optional: Değeri Olmayabilen Nesneler}
+
+\code{boost::optional<T>}, bir değerin ``var veya yok'' durumunu tip güvenli
+biçimde ifade eder. C++17'de \code{std::optional} olarak standartlaştı, ancak
+Boost sürümü daha eski derleyicilerde çalışır ve bazı ek özelliklere sahiptir
+(örn. referansları sarmalayabilme).
+
+\begin{lstlisting}
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>   // operator<< destegi
+#include <iostream>
+#include <string>
+#include <map>
+
+// Bir haritada anahtar bulunmayabilir -> optional ile ifade et
+boost::optional<std::string> find(const std::map<int,std::string>& m, int key) {
+    auto it = m.find(key);
+    if (it == m.end())
+        return boost::none;      // deger yok
+    return it->second;           // deger var
+}
+
+int main() {
+    std::map<int,std::string> dictionary = {{1,"bir"}, {2,"iki"}};
+
+    boost::optional<std::string> r1 = find(dictionary, 1);
+    boost::optional<std::string> r2 = find(dictionary, 99);
+
+    if (r1)                                   // bool baglamI: deger var mI?
+        std::cout << "Bulundu: " << *r1 << "\n";
+
+    // value_or: yoksa varsayilan don
+    std::cout << "99 -> " << r2.value_or("(yok)") << "\n";
+
+    // get_value_or ve emplace
+    boost::optional<int> number;
+    std::cout << "Baslangic: " << number.get_value_or(-1) << "\n";
+    number.emplace(42);                       // yerinde olustur
+    std::cout << "Sonra: " << *number << "\n";
+
+    // Boost'a ozgu: referans sarmalama (std::optional yapamaz)
+    int x = 100;
+    boost::optional<int&> ref = x;
+    *ref = 200;                               // x'i degistirir
+    std::cout << "x = " << x << "\n";         // 200
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{boost::optional<T\&>} (referansa optional) standartta yoktur;
+bu Boost'a özgü güçlü bir özelliktir. ``Belki bir nesneye başvuru'' ifade
+etmek için ham işaretçiye (\code{T*}) alternatif, daha okunur bir yol sunar.}
+
+\uyari{Bir \code{optional}'ı değeri yokken \code{*opt} veya \code{opt.value()}
+ile açmak (dereference) tanımsız davranıştır (Boost) / istisna fırlatır
+(std, \code{value()}). Her zaman önce \code{if (opt)} ile kontrol edin veya
+\code{value\_or} kullanın.}
+
+% =====================================================================
+\gsec{Boost.Variant ve Variant2: Tip Güvenli Birleşimler}
+
+\code{boost::variant}, birden fazla tipten \emph{tam olarak birini} tutabilen,
+tip güvenli bir birleşim (union) sağlar. C++17'de \code{std::variant} oldu.
+Boost ayrıca daha modern, istisna güvenli \code{boost::variant2::variant}
+sunar (asla ``valueless'' duruma düşmez).
+
+\begin{lstlisting}
+#include <boost/variant.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+
+// Variant birden fazla tipten birini tutar
+using Value = boost::variant<int, double, std::string>;
+
+// Ziyaretci (visitor): her tip icin ayri davranis
+struct PrintVisitor : public boost::static_visitor<void> {
+    void operator()(int i) const {
+        std::cout << "int: " << i << "\n";
+    }
+    void operator()(double d) const {
+        std::cout << "double: " << d << "\n";
+    }
+    void operator()(const std::string& s) const {
+        std::cout << "string: \"" << s << "\"\n";
+    }
+};
+
+int main() {
+    std::vector<Value> values = { 42, 3.14, std::string("merhaba") };
+
+    // apply_visitor: aktif tipe gore dogru operator()'u cagirir
+    for (const auto& d : values)
+        boost::apply_visitor(PrintVisitor{}, d);
+
+    // which(): aktif tipin indeksi (0-tabanli)
+    Value d = std::string("test");
+    std::cout << "Aktif indeks: " << d.which() << "\n";   // 2
+
+    // get<T>: dogru tipse deger, degilse istisna
+    try {
+        int i = boost::get<int>(d);   // d string tutuyor -> hata
+        (void)i;
+    } catch (const boost::bad_get& e) {
+        std::cout << "Yanlis tip: " << e.what() << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Variant, \emph{toplam tipler} (sum types) veya \emph{ayrık birleşimler}
+(discriminated unions) için idealdir: bir JSON değeri (sayı/metin/dizi/nesne),
+bir AST düğümü, veya bir durum makinesinin durumları. Ziyaretçi deseni,
+her yeni tip eklendiğinde derleyicinin sizi eksik durumları ele almaya
+zorlaması sayesinde çok güvenlidir.}
+
+\notk[Modern Alternatif]{Yeni kod yazıyorsanız ve istisna güvenliği
+kritikse, \code{boost::variant2} veya \code{std::variant} tercih edin.
+Klasik \code{boost::variant}, bir atama sırasında istisna olursa nadiren
+``valueless by exception'' duruma düşebilir; \code{variant2} bunu
+tasarımıyla engeller.}
+
+% =====================================================================
+\gsec{Boost.Any: Herhangi Bir Tipi Tutmak}
+
+\code{boost::any}, \emph{herhangi} bir tipteki tek bir değeri tip-silinmiş
+(type-erased) biçimde tutar. Variant'tan farkı: önceden tip listesi
+belirtmezsiniz. C++17'de \code{std::any} oldu.
+
+\begin{lstlisting}
+#include <boost/any.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+
+int main() {
+    // Ayni kapta farkli tipler (heterojen)
+    std::vector<boost::any> container;
+    container.push_back(42);
+    container.push_back(std::string("metin"));
+    container.push_back(3.14);
+
+    for (const auto& a : container) {
+        // any_cast<T>: dogru tipse deger, degilse bad_any_cast
+        if (a.type() == typeid(int))
+            std::cout << "int: " << boost::any_cast<int>(a) << "\n";
+        else if (a.type() == typeid(std::string))
+            std::cout << "string: " << boost::any_cast<std::string>(a) << "\n";
+        else if (a.type() == typeid(double))
+            std::cout << "double: " << boost::any_cast<double>(a) << "\n";
+    }
+
+    // Isaretci ile guvenli cast: yanlissa nullptr (istisna atmaz)
+    boost::any a = 100;
+    if (int* p = boost::any_cast<int>(&a))
+        std::cout << "Isaretci cast: " << *p << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{\code{any}, tip güvenliğini çalışma zamanına erteler ve her erişimde
+tip kontrolü gerektirir; ayrıca küçük olmayan nesneler için yığın (heap)
+tahsisi yapabilir. Tipler önceden biliniyorsa \code{variant} neredeyse her
+zaman daha hızlı ve güvenlidir. \code{any}'yi yalnızca gerçekten
+\emph{açık uçlu} tip kümeleri için kullanın (örn. eklenti sistemleri).}
+
+% =====================================================================
+\gsec{Metin İşleme Yardımcıları}
+
+\gsub{Boost.Lexical\_cast: Basit Tip Dönüşümleri}
+
+\code{lexical\_cast}, metin ile sayısal tipler arasında \code{<<}/\code{>>}
+akış operatörlerini kullanarak dönüşüm yapar. \code{std::to\_string} veya
+\code{std::stoi}'den daha genel; herhangi bir akış-uyumlu tip için çalışır.
+
+\begin{lstlisting}
+#include <boost/lexical_cast.hpp>
+#include <iostream>
+#include <string>
+
+int main() {
+    // string -> sayi
+    int    i = boost::lexical_cast<int>("123");
+    double d = boost::lexical_cast<double>("3.14");
+
+    // sayi -> string
+    std::string s = boost::lexical_cast<std::string>(2026);
+
+    std::cout << i << " " << d << " " << s << "\n";
+
+    // Hatali girdi -> bad_lexical_cast istisnasi
+    try {
+        int error = boost::lexical_cast<int>("abc");
+        (void)error;
+    } catch (const boost::bad_lexical_cast& e) {
+        std::cout << "Donusum hatasi: " << e.what() << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Boost.Format: Tip Güvenli printf}
+
+\code{boost::format}, \code{printf}'in tip güvenli ve genişletilebilir
+alternatifidir. \code{\%} operatörüyle argümanları besler; yanlış tip
+sorunlarını ve bellek taşmalarını önler.
+
+\begin{lstlisting}
+#include <boost/format.hpp>
+#include <iostream>
+#include <string>
+
+int main() {
+    // %1%, %2% ... konumsal argumanlar
+    std::string s = (boost::format("%1% + %2% = %3%") % 2 % 3 % 5).str();
+    std::cout << s << "\n";                       // 2 + 3 = 5
+
+    // printf tarzi bicimlendirme belirteclerI
+    std::cout << boost::format("Pi ~ %.4f\n") % 3.14159265;
+    std::cout << boost::format("Hex: %1$#x, Onluk: %1$d\n") % 255;
+
+    // Alan genisligi ve hizalama
+    std::cout << boost::format("|%1$10s|%2$-10s|\n") % "sag" % "sol";
+
+    // Ayni argumani tekrar kullanma (%1% birden fazla kez)
+    std::cout << boost::format("%1%^2 = %2%\n") % 7 % (7*7);
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{\code{boost::format}, konumsal argümanları (\code{\%1\%}) desteklediği
+için \emph{yerelleştirmede} (i18n) çok kullanışlıdır: farklı dillerde
+kelime sırası değiştiğinde biçim dizesini değiştirmeniz yeterlidir,
+kod aynı kalır.}
+
+\gsub{Boost.String\_algo: Metin Algoritmaları}
+
+Boost.String\_algo, standart kütüphanede eksik olan onlarca metin işleme
+fonksiyonu sunar: büyük/küçük harf, kırpma (trim), bölme (split),
+birleştirme (join), değiştirme (replace), arama.
+
+\begin{lstlisting}
+#include <boost/algorithm/string.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+
+int main() {
+    namespace ba = boost::algorithm;
+
+    std::string s = "  Merhaba, Dunya  ";
+
+    // Kirpma (bosluklari kaldir) -- yerinde (in-place)
+    std::string t = s;
+    ba::trim(t);
+    std::cout << "[" << t << "]\n";               // [Merhaba, Dunya]
+
+    // Buyuk/kucuk harf
+    std::cout << ba::to_upper_copy(t) << "\n";    // MERHABA, DUNYA
+    std::cout << ba::to_lower_copy(t) << "\n";    // merhaba, dunya
+
+    // Bolme (split) -> vektore
+    std::vector<std::string> parts;
+    std::string csv = "elma,armut,kiraz,uzum";
+    ba::split(parts, csv, ba::is_any_of(","));
+    for (const auto& p : parts) std::cout << "- " << p << "\n";
+
+    // Birlestirme (join)
+    std::cout << ba::join(parts, " | ") << "\n";
+
+    // Degistirme
+    std::string text = "kedi kedi kedi";
+    ba::replace_all(text, "kedi", "kopek");
+    std::cout << text << "\n";                      // kopek kopek kopek
+
+    // Baslangic/bitis/icerik kontrolu (buyuk-kucuk duyarsIz)
+    std::cout << std::boolalpha
+              << ba::istarts_with("Merhaba", "MER") << " "
+              << ba::contains("Merhaba", "rha") << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Boost.Tokenizer: Esnek Belirteçleme}
+
+\code{boost::tokenizer}, bir dizeyi belirteçlere (token) ayırmanın esnek
+bir yolunu sunar; farklı ayırıcı stratejileri (karakter, escape'li, CSV)
+takılabilir.
+
+\begin{lstlisting}
+#include <boost/tokenizer.hpp>
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string s = "bir,iki;uc dort";
+
+    // Birden fazla ayirici karakter
+    boost::char_separator<char> separator(",; ");
+    boost::tokenizer<boost::char_separator<char>> tok(s, separator);
+
+    for (const auto& t : tok)
+        std::cout << "[" << t << "]";
+    std::cout << "\n";        // [bir][iki][uc][dort]
+
+    // CSV ayirici: tirnak ve escape'leri dogru isler
+    std::string csv = "\"Ali, Veli\",42,\"istanbul\"";
+    boost::tokenizer<boost::escaped_list_separator<char>> csvtok(csv);
+    for (const auto& field : csvtok)
+        std::cout << "Alan: " << field << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+% #####################################################################
+\gpart{3}{Konteynerler ve Veri Yapıları}
+% #####################################################################
+
+% =====================================================================
+\gsec{Boost.Container: Gelişmiş Konteynerler}
+
+Boost.Container, standart konteynerlerin geliştirilmiş sürümlerini ve
+standartta bulunmayan yeni konteynerler sunar. Öne çıkanlar:
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{8.2cm}@{}}
+\toprule
+\textbf{Konteyner} & \textbf{Özelliği} \\
+\midrule
+\code{flat\_map} / \code{flat\_set} & Sıralı vektör tabanlı; daha iyi önbellek
+yerelliği, daha az bellek. Arama \bigO{\log n}, ekleme \bigO{n}. \\
+\code{small\_vector} & Küçük boyutlar için yığın (stack) üzerinde depolama;
+tahsisi geciktirir. \\
+\code{static\_vector} & Sabit kapasiteli, hiç yığın tahsisi yapmayan vektör. \\
+\code{stable\_vector} & Elemanlara işaretçi/iteratör kararlılığı garanti eder. \\
+\code{devector} & Çift uçtan büyüyebilen vektör (deque + vector melezi). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}
+#include <boost/container/flat_map.hpp>
+#include <boost/container/small_vector.hpp>
+#include <boost/container/static_vector.hpp>
+#include <iostream>
+
+int main() {
+    namespace bc = boost::container;
+
+    // flat_map: sirali vektor tabanli map. Az eleman + cok arama icin ideal.
+    bc::flat_map<int, std::string> fm;
+    fm[3] = "uc"; fm[1] = "bir"; fm[2] = "iki";
+    for (const auto& [k, v] : fm)          // otomatik sirali: 1,2,3
+        std::cout << k << "=" << v << " ";
+    std::cout << "\n";
+
+    // small_vector<T, N>: ilk N eleman stack'te, tasma olursa heap'e gecer
+    bc::small_vector<int, 4> sv;
+    sv.push_back(1); sv.push_back(2);      // heap tahsisi YOK (4'e kadar)
+    std::cout << "small_vector boyut: " << sv.size() << "\n";
+
+    // static_vector<T, N>: kapasite sabit N, ASLA heap kullanmaz
+    bc::static_vector<int, 3> stv;
+    stv.push_back(10); stv.push_back(20); stv.push_back(30);
+    // stv.push_back(40);  // -> kapasite asIldI, tanImsIz/istisna
+    std::cout << "static_vector kapasite: " << stv.capacity() << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{flat\_map}, \code{std::map}'e göre çok daha iyi önbellek
+davranışı sergiler çünkü elemanlar bellekte bitişiktir. Okuma ağırlıklı,
+nadiren değişen sözlükler için idealdir. Ancak sık ekleme/silme yaparsanız
+her işlem \bigO{n} eleman kaydırdığından \code{std::map} daha iyidir.
+C++23'te \code{std::flat\_map} olarak standarda girmiştir.}
+
+% =====================================================================
+\gsec{Boost.MultiIndex: Çok İndeksli Konteynerler}
+
+Boost.MultiIndex, tek bir eleman kümesine \emph{aynı anda birden fazla
+farklı indeksle} erişmenizi sağlar; tıpkı bir veritabanı tablosunun birden
+fazla indeksi olması gibi. Bir çalışan listesini hem ID'ye, hem isme, hem
+de maaşa göre sıralı tutmak isterseniz, veriyi kopyalamadan tek yapıda
+yönetirsiniz.
+
+\begin{lstlisting}
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <iostream>
+#include <string>
+
+struct Employee {
+    int id;
+    std::string name;
+    double salary;
+    Employee(int i, std::string n, double m)
+        : id(i), name(std::move(n)), salary(m) {}
+};
+
+// Indeksleri isimlendirmek icin etiketler
+struct byId {};
+struct byName {};
+struct bySalary {};
+
+namespace bmi = boost::multi_index;
+
+// Uc farkli indeksli konteyner tanImI
+using EmployeeTable = bmi::multi_index_container<
+    Employee,
+    bmi::indexed_by<
+        // 1) ID'ye gore essiz (unique) sirali indeks
+        bmi::ordered_unique<
+            bmi::tag<byId>,
+            bmi::member<Employee, int, &Employee::id>>,
+        // 2) Isme gore (tekrar edebilir) sirali indeks
+        bmi::ordered_non_unique<
+            bmi::tag<byName>,
+            bmi::member<Employee, std::string, &Employee::name>>,
+        // 3) Maasa gore sirali indeks
+        bmi::ordered_non_unique<
+            bmi::tag<bySalary>,
+            bmi::member<Employee, double, &Employee::salary>>
+    >
+>;
+
+int main() {
+    EmployeeTable table;
+    table.insert(Employee(3, "Ayse",  8500));
+    table.insert(Employee(1, "Mehmet", 7200));
+    table.insert(Employee(2, "Zeynep", 9100));
+
+    // ID'ye gore sirali gezinme
+    std::cout << "== ID sirasi ==\n";
+    for (const auto& c : table.get<byId>())
+        std::cout << c.id << " " << c.name << " " << c.salary << "\n";
+
+    // Isme gore arama
+    auto& nameIdx = table.get<byName>();
+    auto it = nameIdx.find("Zeynep");
+    if (it != nameIdx.end())
+        std::cout << "\nZeynep'in maasi: " << it->salary << "\n";
+
+    // Maasa gore sirali (en dusukten en yuksege)
+    std::cout << "\n== Maas sirasi ==\n";
+    for (const auto& c : table.get<bySalary>())
+        std::cout << c.salary << " -> " << c.name << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{MultiIndex, bellekteki verileri bir mini-veritabanı gibi yönetmek
+istediğinizde muhteşemdir: LRU önbellekleri, oyun varlık yöneticileri,
+ağ bağlantı tabloları. \code{ordered}, \code{hashed}, \code{sequenced}
+ve \code{random\_access} indeks türlerini karıştırabilirsiniz. Tek bir
+elemanı güncellemek tüm indeksleri otomatik tutarlı tutar.}
+
+% =====================================================================
+\gsec{Boost.Bimap: Çift Yönlü Haritalar}
+
+\code{boost::bimap}, hem anahtardan değere hem de değerden anahtara
+\bigO{\log n} erişim sağlayan çift yönlü bir haritadır. Normal
+\code{std::map} yalnızca tek yönde arama yaparken, bimap her iki yönü de
+indeksler.
+
+\begin{lstlisting}
+#include <boost/bimap.hpp>
+#include <iostream>
+#include <string>
+
+int main() {
+    // Ulke <-> baskent iki yonlu esleme
+    using Bimap = boost::bimap<std::string, std::string>;
+    Bimap b;
+
+    b.insert({"Turkiye", "Ankara"});
+    b.insert({"Fransa",  "Paris"});
+    b.insert({"Japonya", "Tokyo"});
+
+    // Sol -> sag (ulke -> baskent)
+    std::cout << "Turkiye'nin baskenti: "
+              << b.left.at("Turkiye") << "\n";
+
+    // Sag -> sol (baskent -> ulke)
+    std::cout << "Paris hangi ulkede: "
+              << b.right.at("Paris") << "\n";
+
+    // Tum eslemeleri gezme
+    for (const auto& c : b.left)
+        std::cout << c.first << " <-> " << c.second << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{Bimap, iki değer arasında birebir (one-to-one) ilişki olduğunda
+idealdir: kullanıcı adı $\leftrightarrow$ ID, sembol $\leftrightarrow$ kod,
+enum $\leftrightarrow$ metin. İki ayrı \code{std::map} tutup senkron kalmaya
+çalışmaktan çok daha güvenlidir.}
+
+% =====================================================================
+\gsec{Boost.CircularBuffer: Dairesel Tampon}
+
+\code{boost::circular\_buffer}, sabit kapasiteli, dolduğunda en eski
+elemanların üzerine yazan bir tampondur. Sabit boyutlu kayan pencereler,
+son N olayı tutma, ses/sinyal tamponları için idealdir.
+
+\begin{lstlisting}
+#include <boost/circular_buffer.hpp>
+#include <iostream>
+
+int main() {
+    // Kapasite 3'lük dairesel tampon
+    boost::circular_buffer<int> cb(3);
+
+    cb.push_back(1);
+    cb.push_back(2);
+    cb.push_back(3);
+    std::cout << "Dolu mu? " << std::boolalpha << cb.full() << "\n"; // true
+
+    // Kapasite dolu; yeni eleman EN ESKIyi (1) atar
+    cb.push_back(4);        // [2, 3, 4]
+    cb.push_back(5);        // [3, 4, 5]
+
+    std::cout << "Icerik: ";
+    for (int x : cb) std::cout << x << " ";      // 3 4 5
+    std::cout << "\n";
+
+    std::cout << "En eski: " << cb.front()       // 3
+              << ", en yeni: " << cb.back() << "\n";  // 5
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Boost.DynamicBitset: Dinamik Bit Kümeleri}
+
+\code{std::bitset} derleme zamanında sabit boyutludur; \code{boost::dynamic\_bitset}
+ise çalışma zamanında boyutlandırılabilir. Bit maskeleri, kümeler, elek
+algoritmaları için idealdir.
+
+\begin{lstlisting}
+#include <boost/dynamic_bitset.hpp>
+#include <iostream>
+
+int main() {
+    // Calisma zamanInda 16 bitlik kume
+    boost::dynamic_bitset<> bits(16);
+
+    bits.set(2);          // 2. biti 1 yap
+    bits.set(5);
+    bits.set(8);
+
+    std::cout << "Bitler: " << bits << "\n";        // ...0100100100
+    std::cout << "Kac bit 1: " << bits.count() << "\n";  // 3
+    std::cout << "Boyut: " << bits.size() << "\n";       // 16
+
+    // Bitsel operatorler
+    boost::dynamic_bitset<> mask(16);
+    mask.set(2); mask.set(3);
+    auto intersection = bits & mask;    // AND
+    std::cout << "Kesisim sayisi: " << intersection.count() << "\n";  // 1 (bit 2)
+
+    // Ilk 1 olan biti bul, sonrakileri gez
+    for (size_t i = bits.find_first();
+         i != boost::dynamic_bitset<>::npos;
+         i = bits.find_next(i)) {
+        std::cout << "Set bit @ " << i << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+% #####################################################################
+\gpart{4}{Eşzamanlılık ve Ağ Programlama}
+% #####################################################################
+
+% =====================================================================
+\gsec{Boost.Thread: İş Parçacığı Yönetimi}
+
+Boost.Thread, \code{std::thread}'in atasıdır ve standartta \emph{hâlâ
+bulunmayan} bazı özellikler sunar: \code{shared\_mutex}'in daha zengin
+sürümleri, kesintiye uğratılabilir (interruptible) iş parçacıkları,
+\code{thread\_group}, ve gelişmiş \code{future}/\code{promise} desteği
+(örn. \code{when\_all}, \code{then} zincirlemesi).
+
+\begin{lstlisting}
+#include <boost/thread.hpp>
+#include <boost/thread/future.hpp>
+#include <iostream>
+#include <vector>
+
+int compute(int x) {
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+    return x * x;
+}
+
+int main() {
+    // 1) Temel is parcacigi
+    boost::thread t([]{
+        std::cout << "Is parcacigindan merhaba\n";
+    });
+    t.join();
+
+    // 2) thread_group: birden fazla is parcacigini birlikte yonet
+    boost::thread_group group;
+    for (int i = 0; i < 4; ++i)
+        group.create_thread([i]{
+            std::cout << "Isci " << i << " calisiyor\n";
+        });
+    group.join_all();     // hepsini bekle
+
+    // 3) future/promise ile asenkron sonuc
+    boost::future<int> f = boost::async(boost::launch::async, compute, 7);
+    std::cout << "7^2 = " << f.get() << "\n";      // 49
+
+    // 4) .then() ile surekli zincirleme (Boost'a ozgu, std'de yok)
+    boost::future<int> chain =
+        boost::async([]{ return 10; })
+            .then([](boost::future<int> prev){
+                return prev.get() * 2;             // 20
+            });
+    std::cout << "Zincir sonucu: " << chain.get() << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Boost.Thread'in \code{.then()}, \code{when\_all}, \code{when\_any}
+sürekli zincirleme (continuation) özellikleri için \code{BOOST\_THREAD\_PROVIDES\_FUTURE\_CONTINUATION}
+gibi makrolar veya doğru derleme bayrakları gerekebilir. std::future bu
+özelliklere sahip değildir; bu yüzden asenkron zincirleme istiyorsanız
+Boost.Thread hâlâ değerlidir.}
+
+\gsub{Karşılıklı Dışlama ve Kilitler}
+
+\begin{lstlisting}
+#include <boost/thread.hpp>
+#include <iostream>
+
+class SafeCounter {
+    mutable boost::shared_mutex mtx_;   // okuyucu-yazici kilidi
+    int value_ = 0;
+public:
+    void increment() {
+        // Yazma: ozel (exclusive) kilit
+        boost::unique_lock<boost::shared_mutex> lk(mtx_);
+        ++value_;
+    }
+    int read() const {
+        // Okuma: paylasimli (shared) kilit -- coklu okuyucu ayni anda
+        boost::shared_lock<boost::shared_mutex> lk(mtx_);
+        return value_;
+    }
+};
+
+int main() {
+    SafeCounter counter;
+    boost::thread_group group;
+    for (int i = 0; i < 10; ++i)
+        group.create_thread([&]{
+            for (int j = 0; j < 1000; ++j) counter.increment();
+        });
+    group.join_all();
+    std::cout << "Toplam: " << counter.read() << "\n";   // 10000
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Boost.Asio: Asenkron Giriş/Çıkış ve Ağ}
+
+Boost.Asio, C++'ta ağ ve düşük seviye asenkron G/Ç programlamanın
+\emph{fiili standardıdır}. TCP/UDP soketleri, zamanlayıcılar, seri portlar,
+ve platformdan bağımsız bir olay döngüsü (event loop) sunar. C++
+Networking TS'nin temelidir. Asio'nun merkezinde \code{io\_context} (olay
+döngüsü) bulunur; tüm asenkron işlemler ona kayıtlanır.
+
+\gsub{Temel Kavramlar: io\_context ve Zamanlayıcılar}
+
+\begin{lstlisting}
+#include <boost/asio.hpp>
+#include <iostream>
+
+int main() {
+    boost::asio::io_context io;
+
+    // Asenkron zamanlayici: 2 saniye sonra tetiklenir
+    boost::asio::steady_timer timer(io, boost::asio::chrono::seconds(2));
+
+    timer.async_wait([](const boost::system::error_code& ec){
+        if (!ec) std::cout << "2 saniye gecti!\n";
+    });
+
+    std::cout << "Bekleniyor...\n";
+    io.run();   // olay dongusu: kayitli tum isler bitene kadar calisir
+    std::cout << "io_context bitti\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{io\_context.run()} çağrısı, kayıtlı asenkron iş kalmayana
+kadar bloke olur ve bu sırada tamamlanan işlerin geri çağırma (callback)
+fonksiyonlarını çalıştırır. Asio'nun gücü, \emph{tek bir iş parçacığında}
+binlerce eşzamanlı bağlantıyı yönetebilmesidir (proaktör deseni). Ağır yük
+için \code{io.run()}'ı birden fazla iş parçacığında çağırarak ölçekleyebilirsiniz.}
+
+\gsub{Asenkron TCP Yankı (Echo) Sunucusu}
+
+Aşağıda, gelen her bağlantıyı kabul edip aldığı veriyi geri yollayan
+tam bir asenkron TCP sunucusu bulunmaktadır. Bu, Asio'nun gerçek gücünü
+gösteren kanonik örnektir.
+
+\begin{lstlisting}
+#include <boost/asio.hpp>
+#include <iostream>
+#include <memory>
+
+using boost::asio::ip::tcp;
+
+// Her baglanti icin bir oturum. shared_ptr ile omru yonetilir:
+// asenkron isler tamamlanana kadar nesne yasar (enable_shared_from_this).
+class Session : public std::enable_shared_from_this<Session> {
+public:
+    explicit Session(tcp::socket socket) : socket_(std::move(socket)) {}
+
+    void start() { read(); }
+
+private:
+    void read() {
+        auto self = shared_from_this();   // omru uzat
+        socket_.async_read_some(
+            boost::asio::buffer(buffer_),
+            [this, self](boost::system::error_code ec, std::size_t n) {
+                if (!ec) {
+                    write(n);             // okunan veriyi geri yaz
+                }
+                // ec varsa oturum sessizce sonlanir (self referansi dusunce silinir)
+            });
+    }
+
+    void write(std::size_t length) {
+        auto self = shared_from_this();
+        boost::asio::async_write(
+            socket_,
+            boost::asio::buffer(buffer_, length),
+            [this, self](boost::system::error_code ec, std::size_t) {
+                if (!ec) read();          // yazma bitti, tekrar oku (dongu)
+            });
+    }
+
+    tcp::socket socket_;
+    char buffer_[1024];
+};
+
+// Yeni baglantIlari kabul eden sunucu
+class Server {
+public:
+    Server(boost::asio::io_context& io, unsigned short port)
+        : acceptor_(io, tcp::endpoint(tcp::v4(), port)) {
+        doAccept();
+    }
+
+private:
+    void doAccept() {
+        acceptor_.async_accept(
+            [this](boost::system::error_code ec, tcp::socket socket) {
+                if (!ec) {
+                    std::cout << "Yeni baglanti: "
+                              << socket.remote_endpoint() << "\n";
+                    std::make_shared<Session>(std::move(socket))->start();
+                }
+                doAccept();  // bir sonraki baglantIyI kabul etmeye devam et
+            });
+    }
+    tcp::acceptor acceptor_;
+};
+
+int main() {
+    try {
+        boost::asio::io_context io;
+        Server server(io, 12345);
+        std::cout << "Yanki sunucusu 12345 portunda dinliyor...\n";
+        io.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Hata: " << e.what() << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Derleme (Asio, System kutuphanesine baglanir)
+g++ -std=c++17 echo_server.cpp -o echo_server -lboost_system -lpthread
+./echo_server &
+# Baska bir terminalde test:
+echo "merhaba asio" | nc localhost 12345
+# Cikti: merhaba asio  (sunucu geri yansitir)
+\end{lstlisting}
+
+\uyari{Asio ile asenkron programlamada \code{shared\_from\_this} deseni
+kritiktir: bir asenkron işlem devam ederken nesnenin (oturumun) yok
+edilmemesini garanti eder. Geri çağırma lambdasına \code{self} kopyalayarak
+referans sayacını yüksek tutarsınız; işlem bitince \code{self} kapsam
+dışına çıkar ve nesne uygun şekilde temizlenir. Bu deseni atlarsanız
+sarkan işaretçi (dangling pointer) ve çökme yaşarsınız.}
+
+\gsub{Asenkron TCP İstemcisi}
+
+\begin{lstlisting}
+#include <boost/asio.hpp>
+#include <iostream>
+#include <string>
+
+using boost::asio::ip::tcp;
+
+int main() {
+    try {
+        boost::asio::io_context io;
+
+        // Sunucu adresini coz (resolve)
+        tcp::resolver resolver(io);
+        auto endpoints = resolver.resolve("localhost", "12345");
+
+        // Baglan (senkron -- basitlik icin)
+        tcp::socket socket(io);
+        boost::asio::connect(socket, endpoints);
+
+        // Veri gonder
+        std::string message = "Merhaba sunucu!";
+        boost::asio::write(socket, boost::asio::buffer(message));
+
+        // Yaniti oku
+        char response[128];
+        std::size_t n = socket.read_some(boost::asio::buffer(response));
+        std::cout << "Sunucudan: " << std::string(response, n) << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Istemci hatasi: " << e.what() << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Modern Yaklaşım: Coroutine'lerle Asio (C++20)}
+
+Asio, C++20 coroutine'leriyle birlikte kullanıldığında asenkron kodu
+\emph{senkron kod kadar okunur} hale getirir. \code{co\_await} ile geri
+çağırma cehennemi (callback hell) tamamen ortadan kalkar.
+
+\begin{lstlisting}
+#include <boost/asio.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <iostream>
+
+using boost::asio::ip::tcp;
+using boost::asio::awaitable;
+using boost::asio::use_awaitable;
+namespace this_coro = boost::asio::this_coro;
+
+// Coroutine tabanli yanki oturumu -- geri caGirma yok, duz akIs!
+awaitable<void> echo(tcp::socket socket) {
+    char data[1024];
+    try {
+        for (;;) {
+            // co_await: asenkron ama senkron gorunumlu
+            std::size_t n = co_await socket.async_read_some(
+                boost::asio::buffer(data), use_awaitable);
+            co_await boost::asio::async_write(
+                socket, boost::asio::buffer(data, n), use_awaitable);
+        }
+    } catch (const std::exception& e) {
+        std::cout << "Oturum bitti: " << e.what() << "\n";
+    }
+}
+
+awaitable<void> listener() {
+    auto exec = co_await this_coro::executor;
+    tcp::acceptor acceptor(exec, {tcp::v4(), 12345});
+    for (;;) {
+        tcp::socket socket = co_await acceptor.async_accept(use_awaitable);
+        // Her baglanti icin ayri bir coroutine baslat
+        boost::asio::co_spawn(exec, echo(std::move(socket)),
+                              boost::asio::detached);
+    }
+}
+
+int main() {
+    boost::asio::io_context io;
+    boost::asio::co_spawn(io, listener(), boost::asio::detached);
+    std::cout << "Coroutine yanki sunucusu 12345'te...\n";
+    io.run();
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# C++20 ve coroutine destegi gerekir
+g++ -std=c++20 -fcoroutines coro_echo.cpp -o coro_echo \
+    -lboost_system -lpthread
+\end{lstlisting}
+
+\ipucu{Coroutine tabanlı Asio, modern C++ ağ programlamasının geleceğidir.
+Yukarıdaki kod, önceki geri çağırmalı yankı sunucusuyla aynı işi yapar ama
+akış çok daha nettir: \code{co\_await} her satırda ``burada asenkron bekle,
+sonra devam et'' anlamına gelir. Hata yönetimi de normal \code{try/catch}
+ile yapılır. Yeni Asio projelerine coroutine'lerle başlamanızı öneririm.}
+
+% =====================================================================
+\gsec{Boost.Atomic ve Boost.Lockfree}
+
+\code{boost::lockfree}, kilit kullanmadan (lock-free) çalışan eşzamanlı veri
+yapıları sunar: \code{queue}, \code{stack}, \code{spsc\_queue}. Yüksek
+performanslı, düşük gecikmeli sistemlerde (finans, oyun, ses) kilitlerin
+getirdiği bekleme ve öncelik tersine dönmesi (priority inversion)
+sorunlarından kaçınmak için kullanılır.
+
+\begin{lstlisting}
+#include <boost/lockfree/queue.hpp>
+#include <boost/thread.hpp>
+#include <atomic>
+#include <iostream>
+
+int main() {
+    // Kilitsiz kuyruk: coklu uretici/tuketici guvenli
+    boost::lockfree::queue<int> queue(128);
+    std::atomic<bool> done{false};
+    std::atomic<long> total{0};
+
+    // Uretici: 0..9999 arasi degerleri kuyruga koyar
+    boost::thread producer([&]{
+        for (int i = 0; i < 10000; ++i)
+            while (!queue.push(i)) {}    // kuyruk doluysa tekrar dene
+        done = true;
+    });
+
+    // Tuketici: kuyruktan cekip toplar
+    boost::thread consumer([&]{
+        int value;
+        while (!done || !queue.empty()) {
+            while (queue.pop(value))
+                total += value;
+        }
+    });
+
+    producer.join();
+    consumer.join();
+    std::cout << "Toplam: " << total << "\n";   // 49995000
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++17 lockfree.cpp -o lockfree -lboost_thread -lboost_system -lpthread
+\end{lstlisting}
+
+\notk[SPSC Kuyruğu]{Tek üretici–tek tüketici (single producer, single
+consumer) senaryonuz varsa \code{boost::lockfree::spsc\_queue} çok daha
+hızlıdır; genel \code{queue}'nun CAS (compare-and-swap) döngülerine gerek
+duymaz. Ses işleme ve gerçek zamanlı hatlarda tercih edilir.}
+
+% #####################################################################
+\gpart{5}{Metin Ayrıştırma ve Veri İşleme}
+% #####################################################################
+
+% =====================================================================
+\gsec{Boost.Regex: Düzenli İfadeler}
+
+Boost.Regex, \code{std::regex}'in atasıdır. Bugün \code{std::regex} standartta
+olsa da, Boost.Regex genellikle \emph{daha hızlıdır}, Perl uyumluluğu daha
+iyidir ve Unicode (ICU ile) desteği daha güçlüdür.
+
+\begin{lstlisting}
+#include <boost/regex.hpp>
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string text = "iletisim: ali@example.com ve veli@test.org";
+
+    // E-posta yakalayan duzenli ifade
+    boost::regex email(R"((\w+)@(\w+\.\w+))");
+
+    // Tum eslesmeleri gez
+    boost::sregex_iterator it(text.begin(), text.end(), email);
+    boost::sregex_iterator end;
+    for (; it != end; ++it) {
+        boost::smatch e = *it;
+        std::cout << "Tam: " << e[0]        // ali@example.com
+                  << " | kullanici: " << e[1]  // ali
+                  << " | alan: " << e[2] << "\n";  // example.com
+    }
+
+    // Degistirme (replace) -- geri referans ile
+    std::string masked = boost::regex_replace(
+        text, email, "[gizli]@$2");
+    std::cout << masked << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++17 regex_example.cpp -o regex_example -lboost_regex
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Boost.PropertyTree: JSON, XML, INI Ayrıştırma}
+
+\code{boost::property\_tree}, hiyerarşik yapılandırma verilerini (JSON, XML,
+INI, INFO) tek bir ağaç yapısında tutar ve bu formatlar arasında dönüşüm
+yapar. Basit yapılandırma dosyaları için hızlı bir çözümdür.
+
+\begin{lstlisting}
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <iostream>
+#include <sstream>
+
+namespace pt = boost::property_tree;
+
+int main() {
+    // JSON'dan bir property tree olustur
+    std::string json = R"({
+        "sunucu": {
+            "host": "localhost",
+            "port": 8080,
+            "aktif": true
+        },
+        "kullanicilar": ["ali", "veli", "ayse"]
+    })";
+
+    pt::ptree tree;
+    std::istringstream input(json);
+    pt::read_json(input, tree);
+
+    // Deger okuma (nokta ile yol belirtme)
+    std::string host = tree.get<std::string>("sunucu.host");
+    int port = tree.get<int>("sunucu.port");
+    bool active = tree.get<bool>("sunucu.aktif");
+    std::cout << host << ":" << port
+              << " (aktif=" << std::boolalpha << active << ")\n";
+
+    // Varsayilanli okuma (anahtar yoksa)
+    int timeout = tree.get<int>("sunucu.timeout", 30);
+    std::cout << "Zaman asimi: " << timeout << "\n";  // 30 (yok, varsayIlan)
+
+    // Dizi (array) gezme
+    std::cout << "Kullanicilar: ";
+    for (const auto& [key, value] : tree.get_child("kullanicilar"))
+        std::cout << value.get_value<std::string>() << " ";
+    std::cout << "\n";
+
+    // Degistir ve tekrar JSON yaz
+    tree.put("sunucu.port", 9090);
+    pt::write_json(std::cout, tree);
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{\code{property\_tree} her değeri dahili olarak \emph{metin} olarak
+saklar; bu yüzden JSON'un sayı, boolean ve dizi türlerini tam olarak
+korumaz (örneğin diziler garip biçimde temsil edilir). Ciddi JSON işleri
+için bir sonraki bölümdeki \code{boost::json}'u kullanın. PropertyTree'yi
+basit INI/config dosyaları ve formatlar arası hızlı dönüşüm için saklayın.}
+
+% =====================================================================
+\gsec{Boost.JSON: Modern JSON İşleme}
+
+Boost.JSON (Boost 1.75+), yüksek performanslı, standartlara uygun,
+\emph{gerçek} bir JSON kütüphanesidir. PropertyTree'nin aksine JSON tiplerini
+tam korur (sayı, string, bool, null, dizi, nesne) ve çok hızlıdır.
+
+\begin{lstlisting}
+#include <boost/json.hpp>
+#include <iostream>
+#include <string>
+
+namespace json = boost::json;
+
+int main() {
+    // 1) Metinden ayristirma (parse)
+    std::string text = R"({
+        "isim": "Ada",
+        "yas": 36,
+        "diller": ["C++", "Python"],
+        "aktif": true
+    })";
+
+    json::value v = json::parse(text);
+    json::object& obj = v.as_object();
+
+    std::cout << "Isim: " << obj["isim"].as_string() << "\n";
+    std::cout << "Yas: "  << obj["yas"].as_int64() << "\n";
+    std::cout << "Aktif: " << std::boolalpha << obj["aktif"].as_bool() << "\n";
+
+    // Dizi gezme
+    std::cout << "Diller: ";
+    for (const auto& d : obj["diller"].as_array())
+        std::cout << d.as_string() << " ";
+    std::cout << "\n";
+
+    // 2) Programatik olarak JSON insa etme
+    json::object output;
+    output["urun"]  = "Klavye";
+    output["fiyat"] = 450.0;
+    output["stok"]  = true;
+    json::array tags = {"mekanik", "rgb"};
+    output["etiketler"] = tags;
+
+    // 3) Metne serilestirme (serialize)
+    std::cout << "Uretilen JSON:\n" << json::serialize(output) << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++17 json_example.cpp -o json_example -lboost_json
+\end{lstlisting}
+
+\ipucu{Boost.JSON, \code{value\_to<T>} ve \code{value\_from<T>} ile kendi
+C++ tiplerinizi doğrudan JSON'a/JSON'dan dönüştürebilir (kullanıcı tanımlı
+dönüşümlerle). Ayrıca akış (streaming) ayrıştırıcısı sayesinde belleğe
+sığmayan devasa JSON dosyalarını parça parça işleyebilir. Yeni projelerde
+JSON için PropertyTree yerine Boost.JSON'u tercih edin.}
+
+% =====================================================================
+\gsec{Boost.Spirit: Ayrıştırıcı Üreteci}
+
+Boost.Spirit, doğrudan C++ içinde, EBNF'ye benzer bir sözdizimiyle
+ayrıştırıcı (parser) yazmanızı sağlayan güçlü bir kütüphanedir. Dilbilgisi
+kurallarını C++ ifadeleri olarak yazarsınız; Spirit bunları derleme
+zamanında bir ayrıştırıcıya dönüştürür. Küçük diller (DSL), yapılandırma
+formatları ve protokol ayrıştırma için idealdir.
+
+\begin{lstlisting}
+#include <boost/spirit/home/x3.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+
+namespace x3 = boost::spirit::x3;
+
+int main() {
+    // Virgulle ayrilmis sayilari ayristir: "1.5, 2.0, 3.14"
+    std::string input = "1.5, 2.0, 3.14, 42";
+    std::vector<double> numbers;
+
+    auto first = input.begin();
+    auto end = input.end();
+
+    // Dilbilgisi: double (% ile ayrilmis) -- bosluklari atla
+    bool success = x3::phrase_parse(
+        first, end,
+        x3::double_ % ',',   // ',' ile ayrilmis double listesi
+        x3::space,           // atlanacak bosluk kurali
+        numbers              // sonuc buraya toplanIr (attribute)
+    );
+
+    if (success && first == end) {
+        std::cout << "Ayristirildi (" << numbers.size() << " sayi): ";
+        double sum = 0;
+        for (double s : numbers) { std::cout << s << " "; sum += s; }
+        std::cout << "\nToplam: " << sum << "\n";
+    } else {
+        std::cout << "Ayristirma basarisiz\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{Spirit X3 (yukarıdaki modern sürüm) header-only'dir ve derleme
+zamanında çalışır. \code{x3::double\_ \% ','} ifadesi, ``virgülle ayrılmış
+bir veya daha fazla double'' anlamına gelir. Spirit çok güçlüdür ama ağır
+şablon kullanımı nedeniyle derleme süresi ve hata mesajları zorlayıcı
+olabilir. Karmaşık dilbilgileri için harika, ama basit ayrıştırmalar için
+\code{std::from\_chars} veya Tokenizer yeterli olabilir.}
+
+% #####################################################################
+\gpart{6}{Sistem, Matematik ve Graflar}
+% #####################################################################
+
+% =====================================================================
+\gsec{Boost.Filesystem: Dosya Sistemi İşlemleri}
+
+Boost.Filesystem, \code{std::filesystem}'in (C++17) atasıdır. Dosya ve dizin
+işlemlerini platformdan bağımsız biçimde yapar: yol manipülasyonu, gezinme,
+oluşturma/silme, boyut/zaman sorgulama.
+
+\begin{lstlisting}
+#include <boost/filesystem.hpp>
+#include <iostream>
+
+namespace fs = boost::filesystem;
+
+int main() {
+    fs::path p = "/tmp/boost_test";
+
+    // Dizin olustur
+    fs::create_directories(p / "alt/dizin");
+
+    // Yol manipulasyonu
+    fs::path file = p / "veri.txt";
+    std::cout << "Ust dizin: " << file.parent_path() << "\n";
+    std::cout << "Dosya adi: " << file.filename() << "\n";
+    std::cout << "Uzanti: "    << file.extension() << "\n";
+
+    // Varlik ve tur kontrolu
+    std::cout << "Var mi? " << std::boolalpha << fs::exists(p) << "\n";
+    std::cout << "Dizin mi? " << fs::is_directory(p) << "\n";
+
+    // Dizini ozyinelemeli (recursive) gez
+    std::cout << "\nIcerik:\n";
+    for (const auto& entry : fs::recursive_directory_iterator(p))
+        std::cout << "  " << entry.path()
+                  << (fs::is_directory(entry) ? " [dizin]" : " [dosya]") << "\n";
+
+    // Temizlik
+    std::uintmax_t removed = fs::remove_all(p);
+    std::cout << "\n" << removed << " oge silindi\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++17 fs_example.cpp -o fs_example -lboost_filesystem -lboost_system
+\end{lstlisting}
+
+\ipucu{C++17 hedefliyorsanız, çoğu durumda \code{std::filesystem} yeterlidir
+ve bağımlılık gerektirmez. Boost.Filesystem'i, C++14/eski derleyici
+desteklemeniz gerekiyorsa veya \code{std}'de henüz olmayan bazı ek
+yardımcılara (örn. \code{unique\_path}, ek durum sorguları) ihtiyaç
+duyuyorsanız tercih edin. API'ler neredeyse birebir aynı olduğundan geçiş
+kolaydır.}
+
+% =====================================================================
+\gsec{Boost.DateTime ve Boost.Chrono}
+
+Boost.DateTime, tarih ve saat işlemleri için zengin bir kütüphanedir:
+takvim tarihleri, zaman aralıkları (duration), zaman dilimleri ve
+biçimlendirme. \code{std::chrono}'nun (C++11/20) sunmadığı takvim ve zaman
+dilimi özellikleri için hâlâ değerlidir.
+
+\begin{lstlisting}
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <iostream>
+
+int main() {
+    namespace greg = boost::gregorian;
+    namespace pt   = boost::posix_time;
+
+    // Tarih olusturma
+    greg::date today(2026, greg::Jul, 19);
+    greg::date newYear(2026, greg::Jan, 1);
+
+    std::cout << "Bugun: " << today << "\n";
+    std::cout << "Haftanin gunu: " << today.day_of_week() << "\n";
+    std::cout << "Yilin kacinci gunu: " << today.day_of_year() << "\n";
+
+    // Tarih aritmetigi
+    greg::date_duration diff = today - newYear;
+    std::cout << "Yilbasindan bu yana: " << diff.days() << " gun\n";
+
+    greg::date future = today + greg::days(100);
+    std::cout << "100 gun sonra: " << future << "\n";
+
+    // Zaman (posix_time)
+    pt::ptime now(today, pt::hours(14) + pt::minutes(30));
+    std::cout << "Zaman damgasi: " << now << "\n";
+
+    pt::time_duration duration = pt::hours(2) + pt::minutes(45) + pt::seconds(30);
+    std::cout << "Sure: " << duration
+              << " = " << duration.total_seconds() << " saniye\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++17 datetime_example.cpp -o datetime_example -lboost_date_time
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Boost.ProgramOptions: Komut Satırı Ayrıştırma}
+
+Boost.ProgramOptions, komut satırı argümanlarını, ortam değişkenlerini ve
+yapılandırma dosyalarını profesyonelce ayrıştırır. Otomatik yardım metni,
+tip dönüşümü, varsayılan değerler ve doğrulama sağlar.
+
+\begin{lstlisting}
+#include <boost/program_options.hpp>
+#include <iostream>
+#include <string>
+
+namespace po = boost::program_options;
+
+int main(int argc, char* argv[]) {
+    // Secenekleri tanImla
+    po::options_description desc("Kullanim");
+    desc.add_options()
+        ("help,h", "Bu yardim metnini goster")
+        ("isim,n", po::value<std::string>()->default_value("Dunya"),
+                   "Selamlanacak isim")
+        ("tekrar,t", po::value<int>()->default_value(1),
+                     "Kac kez tekrarlansin")
+        ("sesli,v", po::bool_switch(), "Ayrintili cikti");
+
+    // Ayristir
+    po::variables_map vm;
+    try {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+    } catch (const po::error& e) {
+        std::cerr << "Hata: " << e.what() << "\n";
+        return 1;
+    }
+
+    // --help verildiyse yardimi goster ve cik
+    if (vm.count("help")) {
+        std::cout << desc << "\n";
+        return 0;
+    }
+
+    // Degerleri kullan
+    std::string name = vm["isim"].as<std::string>();
+    int repeat = vm["tekrar"].as<int>();
+    bool verbose = vm["sesli"].as<bool>();
+
+    if (verbose) std::cout << "[ayrintili mod acik]\n";
+    for (int i = 0; i < repeat; ++i)
+        std::cout << "Merhaba, " << name << "!\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++17 opts.cpp -o opts -lboost_program_options
+./opts --isim Ada --tekrar 3 -v
+# [ayrintili mod acik]
+# Merhaba, Ada!
+# Merhaba, Ada!
+# Merhaba, Ada!
+./opts --help        # Otomatik uretilen yardim metnini gosterir
+\end{lstlisting}
+
+\ipucu{ProgramOptions ile aynı seçenekleri hem komut satırından hem de bir
+\code{.cfg} dosyasından okuyabilirsiniz (\code{parse\_config\_file}).
+Komut satırı, config dosyasını geçersiz kılacak şekilde katmanlayabilirsiniz;
+bu, gerçek uygulamalarda standart bir yapılandırma stratejisidir.}
+
+% =====================================================================
+\gsec{Boost.Interprocess: Süreçler Arası İletişim}
+
+Boost.Interprocess, süreçler arası iletişim (IPC) için paylaşımlı bellek,
+bellek eşlemeli dosyalar, mesaj kuyrukları ve süreçler arası senkronizasyon
+ilkelleri sunar. Aynı makinedeki farklı süreçlerin veri paylaşması gereken
+yüksek performanslı senaryolarda kullanılır.
+
+\begin{lstlisting}
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <iostream>
+
+namespace ip = boost::interprocess;
+
+int main() {
+    // Onceki calismalardan kalmis olabilecek segmenti temizle
+    ip::shared_memory_object::remove("BoostShm");
+
+    // 64 KB'lik yonetilen paylasimli bellek segmenti olustur
+    ip::managed_shared_memory segment(
+        ip::create_only, "BoostShm", 65536);
+
+    // Paylasimli bellekte bir int dizisi olustur ("Sayilar" adiyla)
+    int* array = segment.construct<int>("Sayilar")[10](0);
+    for (int i = 0; i < 10; ++i) array[i] = i * i;
+
+    std::cout << "Paylasimli bellege yazildi.\n";
+
+    // Baska bir surec ayni segmenti su sekilde acardi:
+    //   managed_shared_memory seg(open_only, "BoostShm");
+    //   auto res = seg.find<int>("Sayilar");
+    //   int* dizi = res.first;  size_t n = res.second;
+
+    // Ayni surec icinde bulup okuyalim (dogrulama)
+    auto result = segment.find<int>("Sayilar");
+    if (result.first) {
+        std::cout << "Bulundu, " << result.second << " eleman: ";
+        for (std::size_t i = 0; i < result.second; ++i)
+            std::cout << result.first[i] << " ";
+        std::cout << "\n";
+    }
+
+    ip::shared_memory_object::remove("BoostShm");   // temizle
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Linux'ta paylasimli bellek icin rt kutuphanesi gerekebilir
+g++ -std=c++17 ipc_example.cpp -o ipc_example -lrt -lpthread
+\end{lstlisting}
+
+\uyari{Paylaşımlı bellekte \emph{ham işaretçi} saklamayın; farklı süreçlerde
+adresler farklı olacağından işaretçiler geçersiz olur. Bunun yerine
+Boost.Interprocess'in \code{offset\_ptr} tipini ve paylaşımlı bellek uyumlu
+ayırıcılarını (\code{allocator}) kullanın. Segmenti kullandıktan sonra
+\code{remove} ile temizlemeyi unutmayın; aksi halde çekirdek nesnesi
+sistemde kalır.}
+
+% =====================================================================
+\gsec{Boost.Multiprecision: Yüksek Hassasiyetli Aritmetik}
+
+Boost.Multiprecision, \code{int} veya \code{double}'ın sınırlarını aşan
+sayılarla çalışmanızı sağlar: keyfi hassasiyetli tam sayılar, ondalıklar
+ve rasyonel sayılar. Kriptografi, bilimsel hesaplama ve tam sayı taşmasının
+kabul edilemez olduğu durumlar için kritiktir.
+
+\begin{lstlisting}
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <iostream>
+
+namespace mp = boost::multiprecision;
+
+// 100! -- normal int'te imkansiz (tasar), burada kesin
+mp::cpp_int factorial(int n) {
+    mp::cpp_int result = 1;
+    for (int i = 2; i <= n; ++i)
+        result *= i;
+    return result;
+}
+
+int main() {
+    // Keyfi hassasiyetli tam sayi
+    std::cout << "100! = " << factorial(100) << "\n";
+
+    // Cok buyuk uslu sayi
+    mp::cpp_int big = 1;
+    for (int i = 0; i < 200; ++i) big *= 2;     // 2^200
+    std::cout << "2^200 = " << big << "\n";
+
+    // 50 basamak hassasiyetli ondalik
+    using dec50 = mp::number<mp::cpp_dec_float<50>>;
+    dec50 pi = dec50("3.14159265358979323846264338327950288419716939937510");
+    dec50 radius = 100;
+    std::cout << "Alan = " << pi * radius * radius << "\n";
+
+    // Cok hassasiyetli karekok
+    dec50 two = 2;
+    std::cout << "sqrt(2) = " << sqrt(two) << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{cpp\_int} header-only'dir ve harici bağımlılık gerektirmez.
+Daha da yüksek performans için Boost, GMP (\code{gmp\_int}) ve MPFR
+(\code{mpfr\_float}) arka uçlarını da destekler; bunlar ilgili sistem
+kütüphanelerine bağlanmayı gerektirir ama devasa sayılarda çok daha
+hızlıdır. Rasyonel sayılar için \code{cpp\_rational} kesin kesir aritmetiği
+sunar.}
+
+% =====================================================================
+\gsec{Boost.Graph (BGL): Graf Algoritmaları}
+
+Boost Graph Library (BGL), C++'ın en kapsamlı graf kütüphanesidir. Graf
+gösterimlerini (komşuluk listesi/matrisi) ve üzerlerinde çalışan onlarca
+klasik algoritmayı (BFS, DFS, Dijkstra, Bellman-Ford, Kruskal, Prim,
+topolojik sıralama, güçlü bağlı bileşenler) sağlar. Genel programlama
+(generic programming) tasarımı sayesinde kendi graf tipleriniz üzerinde
+bile çalışabilir.
+
+\gsub{Graf Oluşturma ve Gezinme}
+
+\begin{lstlisting}
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/breadth_first_search.hpp>
+#include <iostream>
+#include <vector>
+
+using namespace boost;
+
+int main() {
+    // Yonsuz graf: komsuluk listesi tabanlI
+    using Graph = adjacency_list<vecS, vecS, undirectedS>;
+    Graph g(6);   // 6 dugum (0..5)
+
+    // Kenar ekle
+    add_edge(0, 1, g);
+    add_edge(0, 2, g);
+    add_edge(1, 3, g);
+    add_edge(2, 3, g);
+    add_edge(3, 4, g);
+    add_edge(4, 5, g);
+
+    std::cout << "Dugum sayisi: " << num_vertices(g) << "\n";
+    std::cout << "Kenar sayisi: " << num_edges(g) << "\n";
+
+    // Tum kenarlari yazdir
+    std::cout << "Kenarlar: ";
+    auto [e_first, e_end] = edges(g);
+    for (auto it = e_first; it != e_end; ++it)
+        std::cout << source(*it, g) << "-" << target(*it, g) << " ";
+    std::cout << "\n";
+
+    // Bir dugumun komsularini gez
+    std::cout << "0'in komsulari: ";
+    auto [k_first, k_end] = adjacent_vertices(0, g);
+    for (auto it = k_first; it != k_end; ++it)
+        std::cout << *it << " ";
+    std::cout << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Dijkstra ile En Kısa Yol}
+
+BGL'nin gerçek gücü hazır algoritmalarındadır. Aşağıda ağırlıklı bir grafta
+en kısa yolları Dijkstra ile buluyoruz:
+
+\begin{lstlisting}
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <iostream>
+#include <vector>
+
+using namespace boost;
+
+int main() {
+    // Kenar agirligi tasiyan yonlu graf
+    using Graph = adjacency_list<
+        vecS, vecS, directedS,
+        no_property,
+        property<edge_weight_t, int>>;   // kenarlarda agirlik
+
+    Graph g(5);
+    // (kaynak, hedef, agirlik)
+    add_edge(0, 1, 10, g);
+    add_edge(0, 2, 5,  g);
+    add_edge(2, 1, 3,  g);
+    add_edge(1, 3, 1,  g);
+    add_edge(2, 3, 9,  g);
+    add_edge(3, 4, 4,  g);
+
+    // Sonuc dizileri: her dugume uzaklik ve onceki dugum
+    std::vector<int> distance(num_vertices(g));
+    std::vector<Graph::vertex_descriptor> previous(num_vertices(g));
+
+    auto start = vertex(0, g);
+
+    // Dijkstra'yi calistir
+    dijkstra_shortest_paths(g, start,
+        predecessor_map(&previous[0]).distance_map(&distance[0]));
+
+    // Sonuclari yazdir
+    std::cout << "0'dan en kisa uzakliklar:\n";
+    for (std::size_t i = 0; i < distance.size(); ++i)
+        std::cout << "  Dugum " << i << ": " << distance[i] << "\n";
+
+    // 0 -> 4 yolunu geri izle
+    std::cout << "0'dan 4'e yol: ";
+    std::vector<int> path;
+    for (int v = 4; v != start; v = previous[v]) path.push_back(v);
+    path.push_back(0);
+    for (auto it = path.rbegin(); it != path.rend(); ++it)
+        std::cout << *it << (it + 1 != path.rend() ? " -> " : "\n");
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# BGL cogunlukla header-only'dir; bu ornekler baglama gerektirmez
+g++ -std=c++17 dijkstra.cpp -o dijkstra
+./dijkstra
+# 0'dan en kisa uzakliklar:
+#   Dugum 0: 0
+#   Dugum 1: 8   (0->2->1: 5+3)
+#   Dugum 2: 5
+#   Dugum 3: 9   (0->2->1->3: 5+3+1)
+#   Dugum 4: 13
+# 0'dan 4'e yol: 0 -> 2 -> 1 -> 3 -> 4
+\end{lstlisting}
+
+\bilgi{BGL, C++ genel programlamasının bir başyapıtıdır: algoritmalar graf
+gösteriminden tamamen bağımsızdır ve ``property map'' soyutlaması sayesinde
+düğüm/kenar verilerine esnek erişim sağlar. Öğrenme eğrisi diktir, ancak bir
+kez kavradığınızda son derece güçlüdür. Karmaşık grafik hesaplamaları için
+tekerleği yeniden icat etmek yerine BGL'yi değerlendirin.}
+
+% =====================================================================
+\gsec{Kapanış: Boost Ekosistemine Bakış}
+
+Bu rehber Boost'un en çok kullanılan kütüphanelerini kapsadı, ancak Boost
+bir buzdağıdır. Karşılaşabileceğiniz diğer önemli kütüphaneler:
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{8.4cm}@{}}
+\toprule
+\textbf{Kütüphane} & \textbf{Amaç} \\
+\midrule
+\code{Boost.Hana} & Modern (C++14+) metaprogramlama; MPL'nin halefi. \\
+\code{Boost.Mp11} & Hafif, pratik tip-listesi metaprogramlama. \\
+\code{Boost.Geometry} & Uzamsal algoritmalar, R-tree, coğrafi hesap. \\
+\code{Boost.Beast} & Asio üzerine HTTP ve WebSocket. \\
+\code{Boost.Log} & Esnek, ölçeklenebilir günlükleme (logging). \\
+\code{Boost.Serialization} & Nesneleri diske/ağa serileştirme. \\
+\code{Boost.Fiber} & Kullanıcı-alanı iş parçacıkları (M:N zamanlama). \\
+\code{Boost.Signals2} & İş parçacığı güvenli sinyal/yuva (observer). \\
+\code{Boost.Coroutine2} & Yığın tabanlı (stackful) coroutine'ler. \\
+\code{Boost.Test} & Kapsamlı birim test çerçevesi. \\
+\code{Boost.Math} & Özel fonksiyonlar, istatistik, dağılımlar. \\
+\code{Boost.uBLAS} & Temel doğrusal cebir (matris/vektör). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\ipucu{\textbf{Öğrenme stratejisi:} Boost'un tamamını öğrenmeye çalışmayın;
+bu ne mümkün ne de gerekli. Bunun yerine, bir problemle karşılaştığınızda
+``Bunun için bir Boost kütüphanesi var mı?'' diye sorun. Genellikle vardır
+ve iyi test edilmiştir. Her kütüphanenin resmi dokümantasyonu, çalışan
+örneklerle doludur ve başlangıç noktanız olmalıdır: \texttt{boost.org/doc/libs}.}
+
+\bilgi{\textbf{Modern C++ ve Boost dengesi:} C++ standardı her sürümde
+büyüdükçe (C++20 concepts, ranges, coroutines; C++23 \code{flat\_map},
+\code{expected}), Boost'un bazı kütüphaneleri gereksizleşiyor. Yine de Asio,
+Spirit, Graph, Multiprecision, Geometry, Beast ve Interprocess gibi
+kütüphaneler standartta karşılığı olmayan, vazgeçilmez araçlar olmaya devam
+ediyor. Doğru yaklaşım: standartta varsa \code{std}'yi, yoksa Boost'u
+kullanın.}
+
+\vspace{1cm}
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.8pt}}\\[6pt]
+{\color{anaMavi}\large\bfseries Rehberin Sonu}\\[4pt]
+{\color{ortaGri}\small Boost 1.85+ \textbullet\ C++17/20 \textbullet\ İyi kodlamalar!}
+\end{center}
+
+\end{document}

@@ -1,0 +1,2912 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{132C4A}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={CMake ile Modern C/C++ Derleme Rehberi},
+  pdfauthor={Derleme Sistemleri Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}CMake ile Modern C/C++}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== ORTAK LITERATE (Türkçe karakterler) ====================
+% Her stilde tekrar kullanılacak dönüşümler.
+
+% ==================== KOD LİSTELEME (CMake) ====================
+\lstdefinestyle{cmakestyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  keywordstyle=[2]\color{mor}\bfseries,
+  keywordstyle=[3]\color{turuncu},
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{acikMavi!45},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{vurguMavi!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  morecomment=[l]{\#},
+  sensitive=false,
+  morekeywords={cmake_minimum_required,project,add_executable,add_library,
+    add_subdirectory,target_link_libraries,target_include_directories,
+    target_compile_features,target_compile_definitions,target_compile_options,
+    target_sources,target_link_options,target_precompile_headers,
+    set,unset,set_target_properties,get_target_property,set_property,
+    get_property,option,list,string,file,math,separate_arguments,
+    if,elseif,else,endif,foreach,endforeach,while,endwhile,
+    function,endfunction,macro,endmacro,return,break,continue,
+    include,include_directories,link_directories,link_libraries,
+    add_definitions,add_compile_options,add_compile_definitions,
+    find_package,find_library,find_path,find_program,find_file,
+    install,export,configure_file,message,enable_testing,add_test,
+    add_custom_command,add_custom_target,add_dependencies,source_group,
+    FetchContent_Declare,FetchContent_MakeAvailable,FetchContent_GetProperties,
+    FetchContent_Populate,ExternalProject_Add,write_basic_package_version_file,
+    configure_package_config_file,install_targets,cmake_policy,
+    cmake_parse_arguments,include_guard,define_property,mark_as_advanced},
+  morekeywords=[2]{PUBLIC,PRIVATE,INTERFACE,STATIC,SHARED,MODULE,OBJECT,
+    IMPORTED,ALIAS,REQUIRED,QUIET,EXACT,COMPONENTS,OPTIONAL_COMPONENTS,
+    CACHE,FORCE,PARENT_SCOPE,GLOBAL,BOOL,STRING,PATH,FILEPATH,INTERNAL,
+    AND,OR,NOT,STREQUAL,EQUAL,LESS,GREATER,MATCHES,VERSION_LESS,
+    VERSION_GREATER,VERSION_EQUAL,DEFINED,EXISTS,IN,LISTS,ITEMS,RANGE},
+  morekeywords=[3]{PROJECT_NAME,PROJECT_SOURCE_DIR,PROJECT_BINARY_DIR,
+    CMAKE_SOURCE_DIR,CMAKE_BINARY_DIR,CMAKE_CURRENT_SOURCE_DIR,
+    CMAKE_CURRENT_BINARY_DIR,CMAKE_CXX_STANDARD,CMAKE_C_STANDARD,
+    CMAKE_BUILD_TYPE,CMAKE_INSTALL_PREFIX,CMAKE_RUNTIME_OUTPUT_DIRECTORY,
+    CMAKE_CXX_STANDARD_REQUIRED,CMAKE_EXPORT_COMPILE_COMMANDS,
+    CMAKE_MODULE_PATH,CMAKE_PREFIX_PATH,BUILD_SHARED_LIBS,
+    CMAKE_CXX_COMPILER,CMAKE_C_COMPILER,CMAKE_SYSTEM_NAME},
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+}
+
+% ==================== KOD LİSTELEME (C++) ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+  morekeywords={uint32_t,int32_t,uint8_t,size_t,nullptr,constexpr,noexcept,
+    override,final,auto,std,string,vector,int64_t}
+}
+
+% ==================== KOD LİSTELEME (C) ====================
+\lstdefinestyle{cstyle}{
+  language=C,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{kirmizi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{acikYesil!35},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{yesil!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+  morekeywords={uint32_t,int32_t,uint8_t,size_t,int64_t,bool,true,false}
+}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1,
+}
+
+\lstset{style=cmakestyle}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Mini proje banner'ı: her konunun sonundaki uygulamalı bölümü işaretler
+\newcommand{\miniproj}[1]{\par\vspace{13pt}\noindent%
+  {\setlength{\fboxsep}{7pt}\colorbox{turuncu}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+    \color{white}\bfseries MİNİ PROJE\hspace{0.6em}\textbullet\hspace{0.6em}#1}}}%
+  \nopagebreak\par\vspace{7pt}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\newcommand{\hd}[1]{\texttt{\color{koyuGri}\textless #1\textgreater}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries CMake ile Modern C/C++}\\[10pt]
+{\color{vurguMavi}\LARGE Derleme Sistemleri, Bağımlılık Yönetimi ve Paketleme Rehberi}\\[8pt]
+{\color{ortaGri}\large Tek Dosyadan Çok Modüllü Projeye, Sıfırdan İleri Seviyeye Kapsamlı Başvuru}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge önce bir derleme sisteminin \textbf{neden gerektiğini} (derleyici,
+bağlayıcı, \code{make}'in sınırları), sonra CMake'in \textbf{nasıl çalıştığını}
+(configure/generate/build aşamaları, hedefler, özellik yayılımı) ve ardından
+\textbf{gerçek projelerde} kütüphane yazmayı, bağımlılık çekmeyi, test ve
+paketlemeyi \textbf{çok sayıda çalışan örnekle} anlatır. Örnekler hem
+\textbf{C} hem \textbf{C++} için verilir ve modern (hedef-tabanlı) CMake
+stiline uygundur.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kapsam --- Kısım 1 (Temeller):} derleme nedir \textbullet\ önişlemci/derleyici/bağlayıcı
+\textbullet\ \code{make}'in sorunları \textbullet\ CMake felsefesi \textbullet\ kurulum
+\textbullet\ ilk C ve C++ projesi \textbullet\ out-of-source build \textbullet\ derleme akışı.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 2 (Dil ve Hedefler):} değişkenler \& tipler \textbullet\ cache
+\textbullet\ liste/string işlemleri \textbullet\ \code{add\_executable}/\code{add\_library}
+\textbullet\ \code{target\_*} komutları \textbullet\ PUBLIC/PRIVATE/INTERFACE
+\textbullet\ static/shared/interface/object kütüphaneler.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 3 (Orta Seviye):} alt dizinler \textbullet\ proje düzeni
+\textbullet\ \code{find\_package} \textbullet\ koşullar \& döngüler \textbullet\ fonksiyon/makro
+\textbullet\ generator expression \textbullet\ derleme tipleri \textbullet\ sanitizer'lar.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 4 (İleri):} FetchContent \textbullet\ ExternalProject
+\textbullet\ install \& CPack \textbullet\ kendi config paketini yazmak
+\textbullet\ CTest ile test \textbullet\ CMakePresets.json \textbullet\ toolchain \& çapraz derleme.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 5 (Pratik):} tam çok-modüllü C++ projesi \textbullet\ tam C projesi
+\textbullet\ en iyi uygulamalar \textbullet\ sık hatalar \& çözümleri \textbullet\ komut cheat sheet.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 18 Temmuz 2026}\\[4pt]
+{\color{ortaGri} CMake 3.20+ \textbullet\ C11/C17 \textbullet\ C++17/C++20 \textbullet\ GCC/Clang/MSVC \textbullet\ Ninja \& Make}
+\vspace*{0.4cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{Temeller --- Derleme, make ve CMake}
+% #####################################################################
+
+% =====================================================================
+\gsec{Bir Derleme Sistemi Neden Gerekir?}
+% =====================================================================
+
+CMake'i öğrenmenin ilk adımı, onun \emph{hangi soruna} çözüm getirdiğini
+görmektir. Yazdığınız bir C ya da C++ programı olduğu gibi çalışmaz; kaynak kod
+(\code{.c} ve \code{.cpp} dosyaları) önce bir dizi araçtan geçip makine koduna
+dönüştürülür. Tek bir küçük dosyada bu adımları elle yürütmek kolaydır. Ne var
+ki proje büyüdükçe --- onlarca dosya, farklı kütüphaneler, birden çok işletim
+sistemi --- bu işi elle takip etmek olanaksız hale gelir. Derleme sistemleri de
+tam olarak bu karmaşıklığı sizin yerinize yönetmek için vardır.
+
+\gsub{Derleme Zinciri: Önişlemci, Derleyici, Bağlayıcı}
+
+Bir kaynak dosyası çalıştırılabilir bir programa dönüşürken üç temel aşamadan
+geçer. Bu aşamaları tanımak, ileride karşılaşacağınız hataları --- özellikle
+``undefined reference'' türünden bağlayıcı hatalarını --- çözmenin anahtarıdır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Aşama} & \color{anaMavi}\textbf{Ne yapar?} & \color{anaMavi}\textbf{Girdi $\to$ Çıktı}\\
+\midrule
+Önişlemci & \code{\#include}, \code{\#define}, \code{\#ifdef} gibi direktifleri işler; başlık dosyalarını metin olarak yerleştirir. & \code{.c/.cpp} $\to$ genişletilmiş kaynak\\
+\rowcolor{acikGri} Derleyici & Genişletilmiş kaynağı makine koduna çevirir; her dosya için bir nesne (object) dosyası üretir. & \code{.cpp} $\to$ \code{.o}\\
+Bağlayıcı (linker) & Tüm nesne dosyalarını ve kütüphaneleri birleştirir; sembol referanslarını çözer; tek bir çalıştırılabilir üretir. & \code{.o} + kütüphaneler $\to$ \code{a.out}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Örneğin \code{main.cpp} dosyasını elle derlemek şöyle görünür:
+
+\begin{lstlisting}[style=shstyle]
+# All in one step (preprocess + compile + link together)
+g++ -std=c++17 main.cpp -o program
+
+# Step by step: first the object file, then the linking stage
+g++ -std=c++17 -c main.cpp -o main.o      # compile only: .cpp -> .o
+g++ main.o -o program                      # link: .o -> executable
+
+# Inspect the produced binary and its symbols
+file program           # ELF 64-bit executable, dynamically linked, ...
+nm main.o | head       # list symbols defined/referenced in the object file
+\end{lstlisting}
+
+\gsub{Elle Derlemenin Sınırları}
+
+Tek dosya için yukarıdaki komut yeterli. Ama gerçek bir proje düşünün:
+
+\begin{lstlisting}[style=shstyle]
+# Compile every translation unit separately (-I adds a header search path)
+g++ -std=c++17 -Iinclude -c src/main.cpp    -o build/main.o
+g++ -std=c++17 -Iinclude -c src/matrix.cpp  -o build/matrix.o
+g++ -std=c++17 -Iinclude -c src/vector.cpp  -o build/vector.o
+g++ -std=c++17 -Iinclude -c src/parser.cpp  -o build/parser.o
+
+# Link all object files together with the required libraries
+# (-lpthread = POSIX threads, -lm = C math library)
+g++ build/main.o build/matrix.o build/vector.o build/parser.o \
+    -lpthread -lm -o program
+\end{lstlisting}
+
+Bu yaklaşımın sorunları:
+
+\begin{itemize}
+\item \textbf{Tekrar derleme:} Sadece \code{matrix.cpp} değişse bile, elle
+her şeyi yeniden derlersiniz. Hangi dosyanın değiştiğini takip etmek gerekir.
+\item \textbf{Taşınabilirlik yok:} Windows'ta \code{g++} yerine \code{cl.exe}
+(MSVC), farklı bayraklar gerekir. Komutlarınız tek bir platforma bağlı kalır.
+\item \textbf{Bağımlılık yönetimi:} Harici bir kütüphane (ör. Boost, SQLite)
+kullanacaksanız onun yolunu, bayraklarını elle bulmak zorundasınız.
+\item \textbf{Ölçeklenmez:} 200 dosyalık bir projede bu komutları yazmak ve
+güncellemek imkansızdır.
+\end{itemize}
+
+\gsub{Make: İlk Çözüm ve Sınırları}
+
+Bu soruna getirilen ilk büyük çözüm \code{make} oldu. \code{Makefile} adında
+bir dosyaya ``hangi çıktı, hangi girdilerden ve nasıl üretilir'' kurallarını
+yazarsınız; \code{make} da yalnızca \emph{değişen} dosyaları yeniden derler.
+
+\begin{lstlisting}[style=shstyle]
+# Variables reused throughout the recipes
+CXX      = g++
+CXXFLAGS = -std=c++17 -Iinclude
+OBJ      = build/main.o build/matrix.o build/vector.o
+
+# The final target depends on all object files; relink only when they change
+program: $(OBJ)
+	$(CXX) $(OBJ) -o program
+
+# Pattern rule: how to build any build/X.o from src/X.cpp
+# $< = the first prerequisite (the .cpp), $@ = the target (the .o)
+build/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+\end{lstlisting}
+
+\code{make} güçlü bir araçtır, ama hâlâ platforma bağımlıdır: Windows'un yerel
+derleyicisi \code{make} kullanmaz, Visual Studio kendi proje biçimini
+(\code{.sln}/\code{.vcxproj}) bekler. Üstelik bağımlılıkları bulmayı, sürümleri
+denetlemeyi, kurulum ve paketlemeyi de elle çözmeniz gerekir. CMake işte bu
+boşluğu doldurmak için geliştirildi.
+
+% =====================================================================
+\gsec{CMake Nedir ve Nasıl Çalışır?}
+% =====================================================================
+
+CMake bir \emph{derleyici değildir}; kodu kendisi derlemez. O bir
+\textbf{meta derleme sistemi}dir (build system generator): siz platformdan
+bağımsız tek bir tarif (\code{CMakeLists.txt}) yazarsınız, CMake de bunu içinde
+bulunduğunuz platformun \emph{yerel} derleme dosyalarına dönüştürür --- Linux'ta
+Makefile ya da Ninja dosyalarına, Windows'ta Visual Studio projelerine, macOS'ta
+Xcode projelerine. Böylece tek bir tarif her yerde çalışır.
+
+\bilgi{Özet zihinsel model: \textbf{Sen} \code{CMakeLists.txt} yazarsın $\to$
+\textbf{CMake} onu okuyup \code{build/} klasörüne Ninja/Make/VS dosyaları
+\emph{üretir} (configure + generate) $\to$ \textbf{Ninja/Make} o dosyalarla
+\code{g++}/\code{clang}/\code{cl}'i çağırıp kodu \emph{derler} (build).}
+
+\gsub{İki Aşama: Configure/Generate ve Build}
+
+CMake ile çalışmak her zaman iki mantıksal aşamadan oluşur:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Aşama} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Configure \& Generate & CMake \code{CMakeLists.txt} dosyalarını okur, derleyiciyi tespit eder, seçenekleri değerlendirir ve \code{build/} içine yerel derleme dosyalarını üretir. Komut: \code{cmake -S . -B build}\\
+\rowcolor{acikGri} Build & Üretilen dosyalar kullanılarak asıl derleme yapılır (nesne dosyaları, kütüphaneler, çalıştırılabilirler). Komut: \code{cmake -{}-build build}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Generator Kavramı}
+
+CMake'in hangi yerel derleme sistemini üreteceğini ``generator'' (üretici)
+belirler. En yaygın kullanılanlar şunlardır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Generator} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Unix Makefiles & Klasik \code{make} dosyaları üretir (Linux/macOS varsayılanı).\\
+\rowcolor{acikGri} Ninja & Çok hızlı, paralel derleme için ideal. Önerilir. \code{-G Ninja}\\
+Visual Studio 17 2022 & Windows'ta \code{.sln} çözümü üretir.\\
+\rowcolor{acikGri} Xcode & macOS'ta Xcode projesi üretir.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G "Ninja"                    # use Ninja (recommended)
+cmake -S . -B build -G "Unix Makefiles"           # use classic Make
+cmake -S . -B build -G "Visual Studio 17 2022"    # generate a VS solution
+cmake --help                                      # list all available generators
+\end{lstlisting}
+
+\ipucu{Ninja'yı öneririz: hem hızlıdır hem de tüm platformlarda aynı
+davranır. Kurulum: Linux \code{sudo pacman -S ninja} / \code{apt install ninja-build},
+macOS \code{brew install ninja}, Windows \code{winget install Ninja-build.Ninja}.}
+
+% =====================================================================
+\gsec{Kurulum ve İlk Proje}
+% =====================================================================
+
+\gsub{CMake Kurulumu}
+
+\begin{lstlisting}[style=shstyle]
+# Linux (Arch)
+sudo pacman -S cmake ninja
+
+# Linux (Debian/Ubuntu)
+sudo apt install cmake ninja-build
+
+# macOS
+brew install cmake ninja
+
+# Windows
+winget install Kitware.CMake Ninja-build.Ninja
+
+# Verify the installation (CMake 3.20 or newer is assumed in this guide)
+cmake --version
+ninja --version
+\end{lstlisting}
+
+\gsub{En Küçük C++ Projesi}
+
+Bir klasör açalım ve iki dosya koyalım.
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <iostream>
+
+int main() {
+    // std::cout is the standard output stream; std::endl flushes the buffer.
+    std::cout << "Hello, CMake!" << std::endl;
+    return 0;   // returning 0 from main() signals success to the OS
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+# Minimum required CMake version. Make this the first line of every project.
+# It also decides which policy defaults ("modern behavior") are enabled.
+cmake_minimum_required(VERSION 3.20)
+
+# Project name, version and the languages used. CXX = C++, C = the C language.
+# This call sets variables like PROJECT_NAME and PROJECT_VERSION for you.
+project(HelloCMake VERSION 1.0 LANGUAGES CXX)
+
+# Select the C++ standard used to compile all targets defined afterwards.
+set(CMAKE_CXX_STANDARD 17)          # compile as C++17
+set(CMAKE_CXX_STANDARD_REQUIRED ON) # fail instead of silently falling back
+set(CMAKE_CXX_EXTENSIONS OFF)       # use -std=c++17, not the GNU -std=gnu++17
+
+# Create an executable target: target name + its source files.
+add_executable(hello main.cpp)
+\end{lstlisting}
+
+Şimdi derleyip çalıştıralım:
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja    # 1) configure + generate
+cmake --build build            # 2) build (compiles main.cpp, links hello)
+./build/hello                  # 3) run  ->  Hello, CMake!
+\end{lstlisting}
+
+\notk{\code{-S .} kaynak dizini (\code{CMakeLists.txt}'nin bulunduğu yer),
+\code{-B build} ise derleme çıktılarının yazılacağı dizindir. Bu ayrım
+\textbf{out-of-source build} denen iyi uygulamadır: kaynağınız temiz kalır,
+\code{build/} klasörünü silerek her şeyi sıfırlayabilirsiniz.}
+
+\gsub{En Küçük C Projesi}
+
+Aynı yapı C için de neredeyse birebir aynıdır; tek fark \code{LANGUAGES C}
+ve C standardıdır.
+
+\begin{lstlisting}[style=cstyle,title={\color{ortaGri}\ttfamily main.c}]
+#include <stdio.h>
+
+int main(void) {
+    /* printf writes formatted text to standard output; \n adds a newline. */
+    printf("Hello, CMake (C)!\n");
+    return 0;   /* 0 = success */
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(HelloC VERSION 1.0 LANGUAGES C)   # note: LANGUAGES C, not CXX
+
+set(CMAKE_C_STANDARD 11)          # compile as C11
+set(CMAKE_C_STANDARD_REQUIRED ON) # do not silently fall back to an older C
+set(CMAKE_C_EXTENSIONS OFF)       # use -std=c11 instead of -std=gnu11
+
+add_executable(hello_c main.c)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja
+cmake --build build
+./build/hello_c    # -> Hello, CMake (C)!
+\end{lstlisting}
+
+\uyari{\code{build/} klasörünü \textbf{asla} sürüm kontrolüne (git) eklemeyin.
+\code{.gitignore} dosyanıza \code{build/} satırını ekleyin. Bu klasör tümüyle
+üretilir ve makineden makineye taşınamaz.}
+
+\gsub{Faydalı Komut Satırı Bayrakları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bayrak} & \color{anaMavi}\textbf{Ne yapar}\\
+\midrule
+-S <dir> & Kaynak dizini (CMakeLists.txt konumu).\\
+\rowcolor{acikGri} -B <dir> & Derleme (binary) dizini.\\
+-G <gen> & Generator seç (Ninja, "Unix Makefiles"...).\\
+\rowcolor{acikGri} -D VAR=DEG & Bir cache değişkenine değer ata.\\
+--build <dir> & Yapılandırılmış projeyi derle.\\
+\rowcolor{acikGri} --build <dir> -j 8 & 8 iş parçacığıyla paralel derle.\\
+--build <dir> -{}-target X & Sadece X hedefini derle.\\
+\rowcolor{acikGri} --fresh & Cache'i yok sayıp baştan yapılandır (3.24+).\\
+--install <dir> & Projeyi kur (install aşaması).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% #####################################################################
+\gpart{2}{CMake Dili ve Hedefler}
+% #####################################################################
+
+% =====================================================================
+\gsec{CMake Dilinin Temelleri}
+% =====================================================================
+
+\code{CMakeLists.txt} aslında küçük bir betik dilidir. Dosyadaki her satır bir
+\emph{komut çağrısıdır}: \code{komut(argüman1 argüman2 ...)}. Bu dilin en
+şaşırtıcı yanı şudur: \textbf{her şey birer metindir (string)}. Sayılar,
+listeler, mantıksal değerler... hepsi arka planda metin olarak saklanır.
+
+\gsub{Değişkenler ve set/unset}
+
+\begin{lstlisting}
+# Define a variable (its value is ALWAYS stored as text)
+set(MY_NAME "Tolga")
+set(MY_VERSION 42)
+
+# Use a variable: ${...} "dereferences" it (substitutes its value)
+message(STATUS "Name: ${MY_NAME}, Version: ${MY_VERSION}")
+
+# A list is really a single string with ; as the element separator
+set(SOURCES main.cpp util.cpp parser.cpp)   # stored as "main.cpp;util.cpp;parser.cpp"
+
+# An undefined variable expands to an empty string (no error is raised)
+message(STATUS "Undefined -> '${DOES_NOT_EXIST}'")   # -> Undefined -> ''
+
+# Remove a variable
+unset(MY_NAME)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+-- Name: Tolga, Version: 42
+-- Undefined -> ''
+\end{lstlisting}
+
+\notk{\code{message(STATUS ...)} yapılandırma sırasında ekrana bilgi yazar ---
+hata ayıklamanın en pratik yolu. Diğer seviyeler: \code{WARNING},
+\code{FATAL\_ERROR} (yapılandırmayı durdurur), \code{DEBUG}.}
+
+\gsub{Değişken Kapsamları (Scope)}
+
+CMake'te bir değişken, varsayılan olarak tanımlandığı \emph{dizin} ve
+\emph{fonksiyon} kapsamında yaşar. Bir alt dizine geçildiğinde
+(\code{add\_subdirectory}) değişkenlerin bir kopyası o alt dizine aktarılır.
+Bir değişikliği üst kapsama geri taşımak isterseniz \code{PARENT\_SCOPE}
+anahtarını kullanırsınız.
+
+\begin{lstlisting}
+function(demo_scope)
+    set(X "local")                  # visible only inside this function
+    set(Y "outer" PARENT_SCOPE)     # written into the CALLER's scope
+endfunction()
+
+demo_scope()
+message(STATUS "X='${X}' Y='${Y}'")   # -> X='' Y='outer'
+\end{lstlisting}
+
+\gsub{Cache Değişkenleri}
+
+Sıradan değişkenler her yapılandırmada sıfırdan oluşturulur. \textbf{Cache
+(önbellek) değişkenleri} ise \code{build/CMakeCache.txt} dosyasında kalıcı
+olarak saklanır ve komut satırından \code{-D} ile değiştirilebilir. Kullanıcının
+dışarıdan ayarlamasını istediğiniz seçenekler için bu tür değişkenleri kullanın.
+
+\begin{lstlisting}
+# A cache variable needs a type (STRING/BOOL/PATH/FILEPATH) and a description
+set(MY_LIB_PATH "/usr/local" CACHE PATH "Library root directory")
+
+# option() is a convenient shortcut for a boolean cache variable
+option(BUILD_TESTS "Build the unit tests" ON)
+
+# Using it
+if(BUILD_TESTS)
+    message(STATUS "Tests will be built")
+endif()
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Override cache values from the command line with -D:
+cmake -S . -B build -D BUILD_TESTS=OFF -D MY_LIB_PATH=/opt/mylib
+
+# Inspect or edit all cache variables interactively:
+cmake -L build          # list cache variables and their values
+ccmake build            # curses-based cache editor (if installed)
+\end{lstlisting}
+
+\bilgi{\code{option(X "..." ON)} aslında \code{set(X ON CACHE BOOL "...")}
+kısaltmasıdır. Mantıksal değerler için \code{ON/OFF}, \code{TRUE/FALSE},
+\code{1/0}, \code{YES/NO} kullanılabilir.}
+
+\gsub{Liste İşlemleri}
+
+\begin{lstlisting}
+set(FILES a.cpp b.cpp c.cpp)
+
+list(APPEND FILES d.cpp)             # append -> a;b;c;d
+list(PREPEND FILES z.cpp)            # prepend -> z;a;b;c;d
+list(REMOVE_ITEM FILES b.cpp)        # remove an element by value -> z;a;c;d
+list(LENGTH FILES count)             # element count -> count = 4
+list(GET FILES 0 first)              # index access -> first = z.cpp
+list(FIND FILES c.cpp idx)           # index of an element -> idx = 2 (-1 if absent)
+list(SORT FILES)                     # sort in place -> a;c;d;z
+list(REVERSE FILES)                  # reverse in place -> z;d;c;a
+list(REMOVE_DUPLICATES FILES)        # drop repeated elements, keep first
+list(JOIN FILES ", " joined)         # list -> string: "z.cpp, d.cpp, c.cpp, a.cpp"
+\end{lstlisting}
+
+\gsub{String İşlemleri}
+
+\begin{lstlisting}
+string(TOUPPER "hello" upper)                # upper  = "HELLO"
+string(TOLOWER "CMake" lower)                # lower  = "cmake"
+string(LENGTH "cmake" len)                   # len    = 5
+string(REPLACE "a" "@" out "cmake")          # out    = "cm@ke"
+string(SUBSTRING "cmake" 0 2 head)           # head   = "cm"  (start, length)
+string(FIND "hello.cpp" ".cpp" pos)          # pos    = 5  (index, -1 if absent)
+string(REGEX MATCH "[0-9]+" num "abc123")    # num    = "123"  (first match)
+string(REGEX REPLACE "[0-9]" "#" masked "a1b2")  # masked = "a#b#"
+\end{lstlisting}
+
+\gsub{Koşullar}
+
+\begin{lstlisting}
+if(WIN32)
+    message(STATUS "We are on Windows")
+elseif(APPLE)
+    message(STATUS "We are on macOS")
+elseif(UNIX)
+    message(STATUS "We are on Linux/Unix")
+endif()
+
+# Comparison operators
+if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0")  # version compare
+endif()
+if(name STREQUAL "tolga")                  # string equality
+endif()
+if(x EQUAL 42)                             # numeric equality
+endif()
+if(DEFINED MY_VAR)                         # is the variable defined?
+endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/config.h")  # does the file/directory exist?
+endif()
+if(NOT BUILD_TESTS AND USE_GUI)            # boolean operators: NOT / AND / OR
+endif()
+if("release" IN_LIST ALLOWED_TYPES)        # membership test on a list variable
+endif()
+\end{lstlisting}
+
+\gsub{Döngüler}
+
+\begin{lstlisting}
+# Iterate over the elements of a list
+set(MODULES core net ui)
+foreach(mod IN LISTS MODULES)
+    message(STATUS "Module: ${mod}")
+endforeach()
+
+# Iterate over several items directly (IN ITEMS)
+foreach(name IN ITEMS alice bob carol)
+    message(STATUS "User: ${name}")
+endforeach()
+
+# Numeric range (inclusive): 1,2,3,4,5
+foreach(i RANGE 1 5)
+    message(STATUS "i = ${i}")
+endforeach()
+
+# while loop with arithmetic via math(EXPR ...)
+set(n 3)
+while(n GREATER 0)
+    message(STATUS "n = ${n}")
+    math(EXPR n "${n} - 1")   # evaluate an integer expression
+endwhile()
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Hedefler (Targets): Modern CMake'in Kalbi}
+% =====================================================================
+
+Modern CMake'in en temel kavramı \textbf{hedeftir} (target). Hedef, derlenecek
+bir şeydir: bir çalıştırılabilir program ya da bir kütüphane. Eski CMake,
+\code{include\_directories()} veya \code{add\_definitions()} gibi \emph{global}
+komutlara dayanırdı; bunlar tüm projeyi birden etkilediği için büyük projelerde
+işler kolayca içinden çıkılmaz hale gelirdi. Modern yaklaşım ise her ayarı
+\textbf{ilgili hedefe bağlar}: ``bu hedef şu başlıklara, şu bayraklara ve şu
+kütüphanelere ihtiyaç duyar'' dersiniz.
+
+\bilgi{Altın kural: \textbf{Global komutlardan kaçın}
+(\code{include\_directories}, \code{link\_libraries}, \code{add\_definitions}).
+Bunun yerine \code{target\_*} komutlarını kullan. Her ayar, ait olduğu hedefe
+bağlansın.}
+
+\gsub{add\_executable ve add\_library}
+
+\begin{lstlisting}
+# Executable target
+add_executable(app main.cpp app.cpp)
+
+# Static library (.a / .lib) -- compiled into and embedded in the consumer
+add_library(math STATIC matrix.cpp vector.cpp)
+
+# Shared library (.so / .dll / .dylib) -- loaded at run time
+add_library(math_shared SHARED matrix.cpp vector.cpp)
+
+# If you omit the type, the BUILD_SHARED_LIBS variable decides
+# (defaults to STATIC when BUILD_SHARED_LIBS is unset)
+add_library(math_auto matrix.cpp vector.cpp)
+\end{lstlisting}
+
+\gsub{PUBLIC, PRIVATE, INTERFACE --- Yayılım (Propagation)}
+
+\code{target\_*} komutlarındaki bu üç anahtar sözcük, bir ayarın \emph{kimi}
+etkileyeceğini belirler. Bu üçünü kavramak, modern CMake'i kavramanın ta
+kendisidir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Anahtar} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+PRIVATE & Sadece \emph{bu hedefin kendisi} kullanır. Bu hedefe bağlanan başkaları etkilenmez. (Uygulama detayı.)\\
+\rowcolor{acikGri} INTERFACE & Bu hedefin kendisi kullanmaz ama \emph{ona bağlananlar} kullanır. (Sadece başlıklı --- header-only --- kütüphaneler için tipik.)\\
+PUBLIC & Hem bu hedef hem de \emph{ona bağlananlar} kullanır. (PRIVATE + INTERFACE.)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ornek[Sezgi]{Bir kütüphane, başlığında (\code{.h}) bir tipi
+\code{\#include} ediyorsa, o başlığı kullanan \emph{herkes} de o include
+yoluna ihtiyaç duyar $\to$ \textbf{PUBLIC}. Sadece \code{.cpp} içinde,
+gizli bir şekilde kullanıyorsa $\to$ \textbf{PRIVATE}.}
+
+\gsub{target\_include\_directories}
+
+Bir hedefin başlık dosyalarını nerede arayacağını söyler.
+
+\begin{lstlisting}
+add_library(math STATIC src/matrix.cpp src/vector.cpp)
+
+target_include_directories(math
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include   # consumers of math.h see this too
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src       # only math's own source files
+)
+\end{lstlisting}
+
+\gsub{target\_link\_libraries}
+
+Bir hedefi başka bir hedefe ya da kütüphaneye bağlar. Bu komutun asıl gücü
+şuradadır: bağlandığınız hedefin \code{PUBLIC} ve \code{INTERFACE} özellikleri
+--- include yolları, tanımlar, bayraklar --- \emph{kendiliğinden} sizin
+hedefinize de geçer.
+
+\begin{lstlisting}
+add_library(math STATIC src/matrix.cpp)
+target_include_directories(math PUBLIC include)
+
+add_executable(app main.cpp)
+# app AUTOMATICALLY inherits math's PUBLIC include path!
+target_link_libraries(app PRIVATE math)
+\end{lstlisting}
+
+\ipucu{\code{target\_link\_libraries(app PRIVATE math)} yazdığınızda
+\code{math/include} yolunu ayrıca \code{app}'a eklemeniz gerekmez.
+Bu ``kullanım gereksinimlerinin'' (usage requirements) otomatik yayılımı,
+modern CMake'in en güçlü özelliğidir.}
+
+\gsub{target\_compile\_features --- Standart Belirlemenin Doğru Yolu}
+
+\code{set(CMAKE\_CXX\_STANDARD 17)} tüm projeyi birden etkiler. Standardı hedef
+hedef belirlemek ve bu gereksinimi bağlanan hedeflere de yaymak için
+\code{target\_compile\_features} tercih edilir.
+
+\begin{lstlisting}
+add_library(math STATIC src/matrix.cpp)
+
+# This library requires C++17; anything that links it also gets at least C++17.
+target_compile_features(math PUBLIC cxx_std_17)
+
+# For C:
+# target_compile_features(mylib PUBLIC c_std_11)
+\end{lstlisting}
+
+\gsub{target\_compile\_definitions ve target\_compile\_options}
+
+\begin{lstlisting}
+add_executable(app main.cpp)
+
+# Preprocessor macros (equivalent to -DNAME=VALUE on the command line)
+target_compile_definitions(app PRIVATE
+    APP_VERSION="1.2.0"      # in C++: #define APP_VERSION "1.2.0"
+    ENABLE_LOGGING           # value-less macro, tested with #ifdef ENABLE_LOGGING
+)
+
+# Compiler flags (use with care -- these are not portable!)
+target_compile_options(app PRIVATE
+    -Wall -Wextra -Wpedantic
+)
+\end{lstlisting}
+
+\uyari{Derleyici bayrakları taşınabilir değildir: \code{-Wall} GCC/Clang'te
+çalışır ama MSVC'de \code{/W4} gerekir. Bu tür bayrakları generator expression
+(Kısım 3) ile derleyiciye göre koşullamak gerekir.}
+
+\gsub{Bir Hedefin Tüm Özelliklerini Bir Arada}
+
+\begin{lstlisting}
+add_library(graphics STATIC
+    src/renderer.cpp
+    src/texture.cpp
+    src/shader.cpp
+)
+
+target_include_directories(graphics
+    PUBLIC  include            # for consumers that include graphics.h
+    PRIVATE src                # internal implementation details
+)
+
+target_compile_features(graphics PUBLIC cxx_std_17)
+
+target_compile_definitions(graphics
+    PUBLIC  GRAPHICS_VERSION="2.0"
+    PRIVATE GRAPHICS_INTERNAL_BUILD
+)
+
+target_link_libraries(graphics
+    PUBLIC  math               # if math types appear in graphics' public headers
+    PRIVATE pthread            # used only inside the implementation
+)
+\end{lstlisting}
+
+\miniproj{Yayılımı canlı görmek: uygulama hiçbir yol/makro yazmadan derleniyor}
+
+Aşağıdaki projede \code{app}, ne başlık yolu ne de bir makro tanımlar; hepsini
+\code{greet} kütüphanesinin \code{PUBLIC} özelliklerinden \emph{otomatik}
+devralır. İşte modern CMake'in tüm mantığı budur.
+
+\begin{lstlisting}[style=shstyle]
+targets-demo/
+|-- CMakeLists.txt
+|-- include/greet.h
+|-- src/greet.cpp
+`-- app/main.cpp
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily include/greet.h}]
+#pragma once
+#include <string>
+namespace greet { std::string hello(); }
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily src/greet.cpp}]
+#include "greet.h"
+namespace greet { std::string hello() { return "Merhaba, hedefler!"; } }
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily app/main.cpp}]
+#include <iostream>
+#include "greet.h"                 // include yolu greet'ten otomatik geldi
+int main() {
+    std::cout << greet::hello() << "\n";
+    std::cout << "Surum: " << GREET_VERSION << "\n";  // makro da greet'ten geldi
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(TargetsDemo LANGUAGES CXX)
+
+add_library(greet STATIC src/greet.cpp)
+target_include_directories(greet PUBLIC include)               # app da gorecek
+target_compile_definitions(greet PUBLIC GREET_VERSION="1.0")   # app da gorecek
+target_compile_features(greet PUBLIC cxx_std_17)               # app da gorecek
+
+add_executable(app app/main.cpp)
+target_link_libraries(app PRIVATE greet)   # ustteki 3 PUBLIC ozellik app'e gecer
+# DIKKAT: app icin ne include yolu ne de makro yazdik -- gerek kalmadi!
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja && cmake --build build
+./build/app
+#   Merhaba, hedefler!
+#   Surum: 1.0
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Kütüphane Türleri}
+% =====================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tür} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+STATIC & \code{.a}/\code{.lib} --- kod, kullanan programa gömülür. Bağımlılık dağıtmak kolaydır.\\
+\rowcolor{acikGri} SHARED & \code{.so}/\code{.dll}/\code{.dylib} --- çalışma anında yüklenir. Bellek paylaşımı, ayrı güncelleme.\\
+MODULE & Çalışma anında \code{dlopen} ile açılan eklenti (plugin). Bağlanmaz.\\
+\rowcolor{acikGri} INTERFACE & Derlenecek kaynağı yok; sadece kullanım gereksinimleri (header-only kütüphaneler).\\
+OBJECT & Nesne dosyaları (\code{.o}) üretir, arşivlenmez; başka hedeflere gömülmek için.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Bu türlerden en sık kullandığınız ikisi \textbf{statik} ve \textbf{paylaşımlı
+(dinamik)} kütüphanelerdir. İkisinin de kaynak kodu ve \code{add\_library}
+çağrısı neredeyse birebir aynıdır; aradaki fark, kütüphanenin makine kodunun
+\emph{ne zaman} ve \emph{nasıl} programa dahil olduğudur. Aşağıda ikisini de
+sıfırdan, çalışan birer projeyle kuruyoruz. Her iki proje de \emph{aynı} kaynak
+dosyalarını kullanır; yalnızca \code{CMakeLists.txt} içindeki tek kelime değişir.
+
+\gsub{Statik Kütüphane (STATIC): Adım Adım}
+
+Statik kütüphane derlendiğinde bir \code{.a} dosyası (Windows'ta \code{.lib})
+üretir. Bu dosyadaki makine kodu, kütüphaneyi kullanan programa \emph{bağlama
+anında} kopyalanır. Sonuçta ortaya tek ve kendi kendine yeten bir
+çalıştırılabilir çıkar: dağıtırken yanında ayrıca kütüphane taşımanız gerekmez.
+Bedeli ise, ikili dosyanın biraz büyümesi ve kütüphaneyi güncellediğinizde
+programı yeniden bağlamanız gerekmesidir.
+
+\miniproj{Statik \code{geo} kütüphanesi + onu kullanan uygulama}
+
+Şu klasör yapısını kuralım:
+
+\begin{lstlisting}[style=shstyle]
+geo-static/
+|-- CMakeLists.txt
+|-- include/geo.h          # kutuphanenin genel arayuzu (baslik)
+|-- src/geo.cpp            # kutuphanenin govdesi (kaynak)
+`-- app/main.cpp           # kutuphaneyi kullanan uygulama
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily include/geo.h}]
+#pragma once
+namespace geo {
+    double circle_area(double r);        // daire alani
+    double rect_area(double w, double h); // dikdortgen alani
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily src/geo.cpp}]
+#include "geo.h"
+namespace geo {
+    static const double PI = 3.14159265358979;
+    double circle_area(double r)         { return PI * r * r; }
+    double rect_area(double w, double h) { return w * h; }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily app/main.cpp}]
+#include <iostream>
+#include "geo.h"
+
+int main() {
+    std::cout << "Daire (r=2)    : " << geo::circle_area(2) << "\n";
+    std::cout << "Dikdortgen 3x4 : " << geo::rect_area(3, 4) << "\n";
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(GeoStatic VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 1) STATIC kutuphane: derlenince libgeo.a (arsiv) uretir
+add_library(geo STATIC src/geo.cpp)
+
+# 2) geo.h'yi kullanan herkes include/ dizinini gorebilsin (PUBLIC)
+target_include_directories(geo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# 3) Uygulamayi tanimla ve kutuphaneye bagla
+add_executable(app app/main.cpp)
+target_link_libraries(app PRIVATE geo)   # geo'nun kodu app'in icine gomulur
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja
+cmake --build build
+./build/app
+#   Daire (r=2)    : 12.5664
+#   Dikdortgen 3x4 : 12
+
+ls build/libgeo.a        # <- uretilen statik kutuphane (arsiv dosyasi)
+ldd build/app | grep geo # <- CIKTI YOK: geo'nun kodu app'e gomuldu,
+                         #    calisma aninda ayri bir dosyaya ihtiyac yok
+\end{lstlisting}
+
+\bilgi{\code{ldd} komutunun çıktısında \code{geo}'yu \emph{görmezsiniz}; çünkü
+statik kütüphanede kod, çalıştırılabilirin \emph{içine} kopyalanmıştır.
+\code{./build/app} dosyasını başka bir makineye kopyalasanız, \code{libgeo.a}
+olmadan da çalışır.}
+
+\gsub{Dinamik (Paylaşımlı) Kütüphane (SHARED): Adım Adım}
+
+Paylaşımlı kütüphane; Linux'ta \code{.so}, Windows'ta \code{.dll}, macOS'ta
+\code{.dylib} dosyası üretir. Bu kez kod programa kopyalanmaz, ayrı bir dosyada
+kalır ve \emph{çalışma anında} yüklenir. Böylece aynı kütüphaneyi birçok program
+paylaşabilir ve kütüphaneyi, programları yeniden derlemeden güncelleyebilirsiniz.
+Karşılığında bir sorumluluk gelir: program çalışırken bu \code{.so} dosyasını
+\emph{bulabilmelidir}; aksi halde ``cannot open shared object file'' hatası
+alırsınız.
+
+\miniproj{Aynı \code{geo} projesi, bu kez paylaşımlı kütüphaneyle}
+
+Kaynak dosyaların (\code{geo.h}, \code{geo.cpp}, \code{main.cpp}) hepsi
+\textbf{birebir aynı} kalır. Değişen tek şey \code{CMakeLists.txt}:
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(GeoShared VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# TEK FARK: STATIC yerine SHARED -> libgeo.so uretir
+add_library(geo SHARED src/geo.cpp)
+target_include_directories(geo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Iyi aliskanlik: kutuphaneye surum ver -> libgeo.so -> libgeo.so.1 -> .so.1.0
+set_target_properties(geo PROPERTIES VERSION 1.0 SOVERSION 1)
+
+add_executable(app app/main.cpp)
+target_link_libraries(app PRIVATE geo)   # geo bu sefer app'e GOMULMEZ, disarida kalir
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja
+cmake --build build
+./build/app
+#   Daire (r=2)    : 12.5664
+#   Dikdortgen 3x4 : 12
+
+ls build/libgeo.so*        # libgeo.so  libgeo.so.1  libgeo.so.1.0
+ldd build/app | grep geo   # libgeo.so.1 => .../build/libgeo.so.1
+                           # <- calisma aninda GEREKLI: kod ayri dosyada
+\end{lstlisting}
+
+\ipucu{Yukarıda \code{./build/app} sorunsuz çalıştı; çünkü CMake, derleme
+ağacındaki kütüphanenin yolunu çalıştırılabilirin içine (RPATH olarak) otomatik
+gömer. Kütüphaneyi \code{install} ile başka bir yere kurup taşırsanız,
+çalışma anında bulunması için ya kurulum RPATH'i ayarlanmalı ya da
+\code{LD\_LIBRARY\_PATH} kütüphanenin dizinini içermelidir.}
+
+\notk[Hangisini seçmeli?]{\textbf{Statik}: dağıtımı kolaydır (tek dosya),
+çalışma anında bağımlılık yoktur; ama ikili büyür ve güncelleme için yeniden
+bağlama gerekir. \textbf{Paylaşımlı}: bellek ve disk paylaşımı sağlar, ayrı
+güncellenebilir; ama \code{.so} çalışma anında bulunmalıdır. Kararsızsanız
+statikle başlayın. \code{add\_library}'de tür yazmazsanız seçimi
+\code{BUILD\_SHARED\_LIBS} değişkeni yapar: \code{-D BUILD\_SHARED\_LIBS=ON} ile
+projedeki tüm kütüphaneleri tek hamlede paylaşımlıya çevirebilirsiniz.}
+
+\gsub{Header-Only Kütüphane (INTERFACE)}
+
+Yalnızca başlık dosyalarından oluşan bir kütüphaneyi (birçok modern C++
+kütüphanesi böyledir) \code{INTERFACE} olarak tanımlarsınız; ortada derlenecek
+bir \code{.cpp} yoktur.
+
+\begin{lstlisting}
+# Only header files (.hpp) under include/ exist -- nothing to compile
+add_library(minimatrix INTERFACE)
+
+target_include_directories(minimatrix INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_compile_features(minimatrix INTERFACE cxx_std_17)
+
+# Usage:
+add_executable(demo demo.cpp)
+target_link_libraries(demo PRIVATE minimatrix)  # gets the include path automatically
+\end{lstlisting}
+
+\gsub{ALIAS Hedefleri --- Namespace'li İsimler}
+
+Kütüphanelere \code{Ad::Alt} biçiminde takma ad vermek yerleşmiş, profesyonel
+bir alışkanlıktır; böylece kütüphaneniz \code{find\_package} ile gelen
+hedeflerle aynı görünümü kazanır.
+
+\begin{lstlisting}
+add_library(math STATIC src/matrix.cpp)
+add_library(MiniMat::math ALIAS math)   # namespaced alias name
+
+# Now it can be used like this (as if it came from find_package):
+target_link_libraries(app PRIVATE MiniMat::math)
+\end{lstlisting}
+
+\ipucu{\code{Ad::} içeren bir hedef adı, CMake tarafından ``bu bir gerçek
+hedeftir'' olarak katı denetlenir: yanlış yazarsanız sessizce \code{-lYanlis}
+denemek yerine hemen hata verir. Bu yüzden namespace'li adlar daha güvenlidir.}
+
+% #####################################################################
+\gpart{3}{Orta Seviye --- Yapı, Bağımlılık ve Mantık}
+% #####################################################################
+
+% =====================================================================
+\gsec{Çok Dizinli Proje Düzeni}
+% =====================================================================
+
+Gerçek projeler tek bir \code{CMakeLists.txt} dosyasıyla yürütülmez. Her
+mantıksal bileşen kendi alt dizininde, kendi \code{CMakeLists.txt} dosyasıyla
+yaşar; kök dosya da bunların hepsini \code{add\_subdirectory} ile bir araya
+getirir.
+
+\gsub{Önerilen Klasör Yapısı}
+
+\begin{lstlisting}[style=shstyle]
+myproject/
+|-- CMakeLists.txt          # root: project-wide settings
+|-- include/                # public headers (optional centralized location)
+|-- src/
+|   `-- CMakeLists.txt      # the main application
+|-- libs/
+|   `-- math/
+|       |-- CMakeLists.txt  # the math library
+|       |-- include/math/
+|       |   `-- matrix.h
+|       `-- src/matrix.cpp
+|-- tests/
+|   `-- CMakeLists.txt      # tests
+`-- build/                  # (generated; listed in .gitignore)
+\end{lstlisting}
+
+\gsub{Kök CMakeLists.txt}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt (kök)}]
+cmake_minimum_required(VERSION 3.20)
+project(MyProject VERSION 1.0 LANGUAGES CXX)
+
+# Project-wide settings
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Collect all executables in one place (optional, but keeps things tidy)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# Emit compile_commands.json (very useful for clangd and IDEs)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Add subdirectories in order (dependency order matters!)
+add_subdirectory(libs/math)   # the library first
+add_subdirectory(src)         # then the application that uses it
+
+# Add the tests conditionally
+option(BUILD_TESTS "Build the unit tests" ON)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+\end{lstlisting}
+
+\gsub{Kütüphane Alt Dizini}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily libs/math/CMakeLists.txt}]
+add_library(math STATIC
+    src/matrix.cpp
+    src/vector.cpp
+)
+add_library(MyProject::math ALIAS math)
+
+target_include_directories(math PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_compile_features(math PUBLIC cxx_std_17)
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily src/CMakeLists.txt}]
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE MyProject::math)  # consume the library
+\end{lstlisting}
+
+\bilgi{\code{add\_subdirectory} sırası önemlidir: bir hedefe
+\code{target\_link\_libraries} ile bağlanmadan önce o hedefin tanımlanmış
+olması gerekir. Kütüphaneleri her zaman kullanıcılarından önce ekleyin.}
+
+\miniproj{Yukarıdaki düzeni çalışan hale getirmek}
+
+Eksik kalan tek şey kaynak dosyaları. Aşağıdaki üç dosyayı ekleyince proje
+uçtan uca derlenir (testleri şimdilik kapatıyoruz):
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily libs/math/include/math/matrix.h}]
+#pragma once
+namespace mp { int add(int a, int b); }
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily libs/math/src/matrix.cpp}]
+#include "math/matrix.h"
+namespace mp { int add(int a, int b) { return a + b; } }
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily src/main.cpp}]
+#include <iostream>
+#include "math/matrix.h"        // include/math yolu MyProject::math'ten geldi
+int main() { std::cout << "2 + 3 = " << mp::add(2, 3) << "\n"; }
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# tests/ klasorunu yazmadigimiz icin BUILD_TESTS=OFF veriyoruz
+cmake -S . -B build -G Ninja -D BUILD_TESTS=OFF
+cmake --build build
+./build/bin/app          # cikti build/bin altina gider (koktaki ayar)
+#   2 + 3 = 5
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Harici Bağımlılıklar: find\_package}
+% =====================================================================
+
+Çoğu proje, sistemde kurulu kütüphanelerden (Threads, OpenGL, Boost, SQLite,
+fmt gibi) yararlanır. \code{find\_package} bu kütüphaneleri sizin için bulur ve
+doğrudan bağlayabileceğiniz hazır hedefler sunar.
+
+\gsub{İki Mod: Config ve Module}
+
+\code{find\_package} iki şekilde arama yapar:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Mod} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+Config & Kütüphanenin kendi kurduğu \code{XxxConfig.cmake} dosyasını bulur. Modern kütüphaneler bunu sağlar (en güvenilir).\\
+\rowcolor{acikGri} Module & CMake ile gelen veya sizin yazdığınız \code{FindXxx.cmake} bulma betiğini kullanır (eski kütüphaneler için).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Örnek: Threads (pthread)}
+
+\begin{lstlisting}
+find_package(Threads REQUIRED)     # REQUIRED: stop with an error if not found
+
+add_executable(server server.cpp)
+target_link_libraries(server PRIVATE Threads::Threads)
+\end{lstlisting}
+
+\gsub{Örnek: fmt Kütüphanesi (Config mod)}
+
+\begin{lstlisting}
+find_package(fmt 9.0 REQUIRED)     # require version 9.0 or newer
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE fmt::fmt)
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <fmt/core.h>
+int main() {
+    // {} are placeholders, filled positionally by the following arguments
+    fmt::print("Hello {}! {} + {} = {}\n", "world", 2, 3, 2 + 3);
+}
+\end{lstlisting}
+
+\gsub{COMPONENTS ve Opsiyonel Kullanım}
+
+\begin{lstlisting}
+# Request only specific components of a large package
+find_package(Boost 1.75 REQUIRED COMPONENTS filesystem system)
+target_link_libraries(app PRIVATE Boost::filesystem Boost::system)
+
+# Without REQUIRED: enable the feature if found, otherwise continue silently
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(app PRIVATE OpenMP::OpenMP_CXX)
+    message(STATUS "OpenMP found; parallel build enabled")
+else()
+    message(STATUS "OpenMP not found; building without parallelism")
+endif()
+\end{lstlisting}
+
+\notk{CMake'e kütüphanenin nerede olduğunu söylemek için
+\code{-DCMAKE\_PREFIX\_PATH=/opt/mylib} kullanın. \code{find\_package} bu
+yolları da tarar.}
+
+\gsub{Elle Kurulan Kütüphaneler: CMake Nerede Arar?}
+
+Sık karşılaşılan bir durum: bir kütüphaneyi paket yöneticisinden değil,
+kaynaktan derleyip \code{make install} (veya \code{cmake --install}) ile
+kurarsınız. Bu genellikle dosyaları \code{/usr/local} altına yerleştirir:
+
+\begin{lstlisting}[style=shstyle]
+/usr/local/lib/            # .so / .a  (kutuphane dosyalari)
+/usr/local/include/        # .h / .hpp (basliklar)
+/usr/local/lib/cmake/Xxx/  # XxxConfig.cmake  <-- find_package BUNU arar
+\end{lstlisting}
+
+\code{find\_package(Xxx)}, kütüphane dosyasını (\code{.so}) değil, o kütüphanenin
+kurulum sırasında bıraktığı \code{XxxConfig.cmake} dosyasını arar. CMake bu
+dosyayı ararken şu \emph{ön ek} (prefix) yollarının her birinin altına bakar:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Aranan yol (\code{<prefix>} altında)} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+\code{lib/cmake/Xxx/} & En yaygın konum.\\
+\rowcolor{acikGri} \code{lib/Xxx/cmake/} & Bazı kütüphanelerin tercihi.\\
+\code{share/Xxx/cmake/} & Mimariden bağımsız kurulumlar.\\
+\rowcolor{acikGri} \code{lib64/cmake/Xxx/} & Bazı 64-bit dağıtımlar.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Buradaki \code{<prefix>}, CMake'in varsayılan olarak taradığı köklerdir:
+\code{CMAKE\_SYSTEM\_PREFIX\_PATH}. Linux'ta bu liste \code{/usr} ve
+\code{/usr/local}'ı \emph{zaten içerir}; bu yüzden \code{/usr/local} altına
+düzgün kurulmuş çoğu kütüphane hiçbir ayar yapmadan bulunur.
+
+\gsubsub{Peki neden bazen bulunamıyor?}
+
+\begin{itemize}
+\item \textbf{Farklı bir ön eke kuruldu:} Kütüphane \code{/usr/local} yerine
+\code{/opt/mylib} ya da \code{\$HOME/.local} gibi standart dışı bir yere
+kurulmuştur (\code{-DCMAKE\_INSTALL\_PREFIX} veya \code{./configure --prefix}).
+CMake oralara varsayılan olarak bakmaz.
+\item \textbf{Config dosyası hiç üretilmemiş:} Kütüphane yalnızca \code{.so} ve
+başlık kurar, \code{XxxConfig.cmake} sağlamaz (eski veya Autotools tabanlı
+projeler). Bu durumda \code{find\_package}'in Config modu için tutunacak bir
+şey yoktur.
+\item \textbf{\code{lib} / \code{lib64} uyuşmazlığı:} Dosyalar \code{lib64}
+altındayken CMake \code{lib} altına bakıyordur (dağıtıma göre değişir).
+\end{itemize}
+
+\gsubsub{Çözüm 1 --- CMAKE\_PREFIX\_PATH (standart dışı ön ek)}
+
+CMake'e ``şu kök(ler)in altına da bak'' demenin en temiz yolu budur.
+Verdiğiniz yolun altındaki \code{lib/cmake/...} vb. otomatik taranır:
+
+\begin{lstlisting}[style=shstyle]
+# Kutuphane /opt/mylib altina kuruldu diyelim:
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/opt/mylib
+
+# Birden fazla yol -- noktali virgulle ayrilir:
+cmake -S . -B build -DCMAKE_PREFIX_PATH="/opt/mylib;$HOME/.local"
+\end{lstlisting}
+
+Aynı şeyi kalıcı olarak ortam değişkeni ile de verebilirsiniz; CMake bunu okur:
+
+\begin{lstlisting}[style=shstyle]
+export CMAKE_PREFIX_PATH=/opt/mylib:$HOME/.local   # (: ile ayirin)
+\end{lstlisting}
+
+\gsubsub{Çözüm 2 --- Xxx\_DIR (doğrudan config klasörü)}
+
+Yalnızca \emph{tek} bir paket sorun çıkarıyorsa, o paketin \code{Config.cmake}
+dosyasının bulunduğu klasörü doğrudan gösterebilirsiniz. Değişkenin adı
+\code{<PaketAdı>\_DIR} biçimindedir:
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build \
+      -Dfmt_DIR=/opt/fmt/lib/cmake/fmt   # XxxConfig.cmake'in oldugu klasor
+\end{lstlisting}
+
+\gsubsub{Çözüm 3 --- Config yoksa: pkg-config'e düşün}
+
+Kütüphane hiç \code{XxxConfig.cmake} sağlamıyorsa ama bir \code{.pc}
+(\code{/usr/local/lib/pkgconfig/xxx.pc}) dosyası bırakmışsa, \code{find\_package}
+yerine \code{pkg-config} köprüsünü kullanabilirsiniz:
+
+\begin{lstlisting}
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(XXX REQUIRED IMPORTED_TARGET xxx)  # xxx = .pc dosyasinin adi
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE PkgConfig::XXX)    # bayraklar/yollar otomatik
+\end{lstlisting}
+
+\gsubsub{Örnek: İki farklı yoldaki iki kütüphane}
+
+Gerçekçi bir senaryo: projeniz iki kütüphaneye bağlı. Biri kaynaktan derleyip
+\code{/usr/local} altına kurduğunuz kendi \code{mylib}'iniz, diğeri ise
+resmi kurulumla \code{/opt/Qt/6.7.0/gcc\_64} altına gelen \textbf{Qt}. İkisi
+\emph{farklı ön eklerde} durduğundan, \code{CMAKE\_PREFIX\_PATH}'e her ikisini
+de vermeniz gerekir:
+
+\begin{lstlisting}[style=shstyle]
+# Her iki paketin de config dosyalari bulunan koklerini ; ile ver:
+cmake -S . -B build -G Ninja \
+      -DCMAKE_PREFIX_PATH="/usr/local;/opt/Qt/6.7.0/gcc_64"
+
+#   /usr/local           altinda -> lib/cmake/mylib/mylibConfig.cmake
+#   /opt/Qt/6.7.0/gcc_64 altinda -> lib/cmake/Qt6/Qt6Config.cmake
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(IkiKutuphane LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+
+# find_package her iki koku de CMAKE_PREFIX_PATH sayesinde tarar:
+find_package(mylib REQUIRED)                       # /usr/local altindan
+find_package(Qt6 REQUIRED COMPONENTS Widgets)      # /opt/Qt/... altindan
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE
+    mylib::mylib          # kendi kutuphaneniz
+    Qt6::Widgets)         # Qt bileseni
+\end{lstlisting}
+
+\notk[İpucu]{Yalnızca Qt sorun çıkarıyorsa, \code{CMAKE\_PREFIX\_PATH} yerine
+tek bir paketi hedefleyen \code{-DQt6\_DIR=/opt/Qt/6.7.0/gcc\_64/lib/cmake/Qt6}
+da işe yarar. \code{CMAKE\_PREFIX\_PATH} \emph{birden çok} paket için, \code{\_DIR}
+\emph{tek} bir paket için pratiktir.}
+
+\uyari{\code{/usr/local/lib}'e kurdunuz ama \emph{çalıştırırken}
+\code{error while loading shared libraries: libxxx.so} alıyorsanız bu bir CMake
+sorunu değildir: dinamik yükleyici bu klasörü taramıyordur. \code{/etc/ld.so.conf.d/}
+altına yolu ekleyip \code{sudo ldconfig} çalıştırın veya
+\code{export LD\_LIBRARY\_PATH=/usr/local/lib} verin.}
+
+\ipucu{Paket gerçekten nerede aranıyor, göremiyor musunuz?
+\code{cmake --debug-find -S . -B build} komutu \code{find\_package}'in
+denediği \emph{tüm} yolları tek tek yazdırır; hangi klasöre bakıp bulamadığını
+anında görürsünüz.}
+
+\miniproj{\code{find\_package(Threads)} ile çalışan bir çok-iş-parçacıklı program}
+
+\code{Threads}, hemen her sistemde hazır bulunur; ayrıca bir şey kurmanız
+gerekmez. Bu yüzden \code{find\_package}'i denemenin en kolay yolu budur.
+
+\begin{lstlisting}[style=shstyle]
+threads-demo/
+|-- CMakeLists.txt
+`-- main.cpp
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <iostream>
+#include <thread>
+#include <vector>
+
+int main() {
+    std::vector<std::thread> workers;
+    for (int i = 0; i < 3; ++i)
+        workers.emplace_back([i]{ std::cout << "Is parcacigi " << i << "\n"; });
+    for (auto& t : workers) t.join();   // hepsinin bitmesini bekle
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(ThreadsDemo LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+
+# Sistemdeki is parcacigi destegini bul (Linux'ta pthread'e cozulur)
+find_package(Threads REQUIRED)
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE Threads::Threads)  # -pthread'i CMake ekler
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja && cmake --build build
+./build/app
+#   Is parcacigi 0
+#   Is parcacigi 1      # sira karisabilir -- is parcaciklari es zamanli calisir
+#   Is parcacigi 2
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Fonksiyonlar ve Makrolar}
+% =====================================================================
+
+Bir CMake fonksiyonu, tıpkı herhangi bir programlama dilindeki fonksiyon gibi,
+tekrar eden bir işi \emph{bir kez} tanımlayıp \emph{defalarca} çağırmanızı
+sağlar. Aynı beş satırlık hedef kurulumunu on ayrı yere kopyalamak yerine, o
+mantığı bir fonksiyonun içine koyar ve her seferinde tek satırla çağırırsınız.
+Bu bölümde önce bir fonksiyonun yapısını, ardından \emph{gerçek bir projede}
+onu nasıl tanımlayıp kullanacağınızı adım adım ele alacağız.
+
+\gsub{function vs macro}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{function} & \color{anaMavi}\textbf{macro}\\
+\midrule
+Kendi değişken kapsamı vardır (yereldir). & Kapsamı yoktur; çağrıldığı yere metin gibi genişler.\\
+\rowcolor{acikGri} \code{PARENT\_SCOPE} ile dışarı yazar. & Çağıranın değişkenlerini doğrudan değiştirir.\\
+Genelde tercih edilir (daha güvenli). & Sadece değişken sızdırmak gerektiğinde.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Bir Fonksiyonun Anatomisi: Parametreler ve ARGN}
+
+Bir fonksiyonu \code{function(<isim> <par1> <par2> ...)} ile tanımlarsınız.
+Adlandırılmış parametrelerin yanı sıra CMake, her çağrıda birkaç
+\textbf{otomatik değişkeni} de sizin için doldurur: \code{ARGC} (argüman
+sayısı), \code{ARGV} (tüm argümanlar, tek bir liste olarak), \code{ARGN}
+(adlandırılmış parametrelerden \emph{sonra} gelen ``fazladan'' argümanlar) ve
+\code{ARGV0}, \code{ARGV1}, \code{...} (indeksle erişim). Bunlardan \code{ARGN}
+özellikle önemlidir: değişken sayıda kaynak dosyası alan hedef kurucular tam da
+bunun üzerine inşa edilir.
+
+\begin{lstlisting}
+function(demo first second)
+    # Named positional parameters:
+    message(STATUS "first  = ${first}")   # 1st argument
+    message(STATUS "second = ${second}")  # 2nd argument
+
+    # Automatic variables available inside every function:
+    message(STATUS "ARGC = ${ARGC}")      # total number of arguments
+    message(STATUS "ARGV = ${ARGV}")      # ALL arguments, as a ;-list
+    message(STATUS "ARGN = ${ARGN}")      # only the EXTRA args (after first, second)
+    message(STATUS "ARGV0 = ${ARGV0}")    # index access -> same as 'first'
+endfunction()
+
+demo(one two three four)
+# -- first  = one
+# -- second = two
+# -- ARGC = 4
+# -- ARGV = one;two;three;four
+# -- ARGN = three;four
+# -- ARGV0 = one
+\end{lstlisting}
+
+\bilgi{Bir fonksiyon \emph{kendi değişken kapsamına} sahiptir: içinde
+\code{set(x ...)} yaptığınızda bu \code{x}, fonksiyon bittiğinde yok olur ve
+çağıranın \code{x}'ini kirletmez. Bu yüzden hedef kurmak gibi işler için
+fonksiyon, makrodan daha güvenlidir.}
+
+\gsub{Neden Fonksiyon? Önce/Sonra}
+
+Diyelim ki projenizde bir \code{examples/} klasörü var ve içinde onlarca küçük
+örnek program bulunuyor. Bunların her biri \emph{aynı} kütüphaneye bağlanmalı,
+\emph{aynı} C++ standardını ve \emph{aynı} uyarı bayraklarını kullanmalı,
+çıktısı da \emph{aynı} klasöre düşmeli. Fonksiyon kullanmazsanız bu, her örnek
+için tekrar tekrar yazılan dört satır demektir:
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily examples/CMakeLists.txt --- fonksiyonsuz (tekrar dolu)}]
+add_executable(gauss gauss.cpp)
+target_link_libraries(gauss PRIVATE MyProject::math project_warnings)
+target_compile_features(gauss PRIVATE cxx_std_17)
+set_target_properties(gauss PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
+
+add_executable(fourier fourier.cpp fft.cpp)
+target_link_libraries(fourier PRIVATE MyProject::math project_warnings)
+target_compile_features(fourier PRIVATE cxx_std_17)
+set_target_properties(fourier PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
+
+# ... 10 örnek daha, her biri aynı 4 satır -> bakımı imkansız, hataya açık
+\end{lstlisting}
+
+Bu mantığı tek bir \code{add\_example} fonksiyonuna taşırsak, aynı iş her örnek
+için \textbf{tek satıra} iner:
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily examples/CMakeLists.txt --- fonksiyonlu (temiz)}]
+add_example(gauss   gauss.cpp)              # tek kaynak
+add_example(fourier fourier.cpp fft.cpp)    # birden çok kaynak (ARGN'e gider)
+add_example(newton  newton.cpp)
+\end{lstlisting}
+
+\gsub{Gerçek Proje: Fonksiyonu Ayrı Bir Modüle Koymak}
+
+Profesyonel projelerde yardımcı fonksiyonlar kök \code{CMakeLists.txt} içine
+değil, \code{cmake/} klasöründeki ayrı bir \code{.cmake} modülüne yazılır; kök
+dosya da bu modülü \code{include()} ile yükler. Böylece fonksiyon tüm projede,
+yani bütün alt dizinlerde kullanılabilir hale gelir. Aşağıda bunun uçtan uca
+tam bir örneği var.
+
+\begin{lstlisting}[style=shstyle,title={\color{ortaGri}\ttfamily Proje düzeni}]
+myproject/
+|-- CMakeLists.txt            # kök: modülü yükler, alt dizinleri ekler
+|-- cmake/
+|   `-- AddExample.cmake      # yeniden kullanılabilir yardımcı fonksiyon
+|-- libs/math/                # MyProject::math kütüphanesi
+`-- examples/
+    |-- CMakeLists.txt        # sadece add_example(...) çağrıları
+    |-- gauss.cpp
+    |-- fourier.cpp
+    `-- fft.cpp
+\end{lstlisting}
+
+Önce fonksiyonun \emph{tanımı} kendi modül dosyasına yazılır:
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily cmake/AddExample.cmake}]
+# Reusable helper: build ONE example program, already wired to the math
+# library, the shared warning flags, and a common output directory.
+include_guard(GLOBAL)   # run this file's body at most once, even if included twice
+
+function(add_example name)
+    # name  -> the target (executable) name, e.g. "gauss"
+    # ARGN  -> every remaining argument = this example's source files
+    add_executable(${name} ${ARGN})
+
+    target_link_libraries(${name} PRIVATE
+        MyProject::math       # our own library (namespaced ALIAS target)
+        project_warnings      # shared warning policy (an INTERFACE target)
+    )
+    target_compile_features(${name} PRIVATE cxx_std_17)
+
+    set_target_properties(${name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples
+    )
+
+    # Bonus: also register the example as a smoke test -- running it must
+    # succeed (exit code 0). One function call now gives us build + test.
+    add_test(NAME example_${name} COMMAND ${name})
+endfunction()
+\end{lstlisting}
+
+Kök dosya, CMake'e ``kendi modüllerimi \code{cmake/} klasöründe ara'' dedikten
+sonra fonksiyonu \code{include} ile yükler. Bu \code{include} çağrısından
+\emph{sonra} eklenen her alt dizin, artık bu fonksiyona erişebilir:
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt (kök) --- ilgili kısım}]
+cmake_minimum_required(VERSION 3.20)
+project(MyProject VERSION 1.0 LANGUAGES CXX)
+
+# 1) CMake'in modül arama yoluna kendi cmake/ klasörümüzü ekle
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# 2) Modülü yükle -> artık add_example() her yerde tanımlı
+include(AddExample)          # AddExample.cmake dosyasını çalıştırır
+
+enable_testing()             # add_test() çağrılarının kaydedilmesi için
+
+add_subdirectory(libs/math)  # önce kütüphane (add_example onu kullanıyor)
+add_subdirectory(examples)   # sonra örnekler
+\end{lstlisting}
+
+Son olarak alt dizin, tüm o karmaşayı unutup sadece \emph{ne} istediğini yazar:
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily examples/CMakeLists.txt}]
+add_example(gauss   gauss.cpp)              # -> hedef "gauss" + test "example_gauss"
+add_example(fourier fourier.cpp fft.cpp)    # fazladan kaynak ARGN ile gelir
+add_example(newton  newton.cpp)
+\end{lstlisting}
+
+\ornek[Ne oluyor?]{\code{add\_example(fourier fourier.cpp fft.cpp)} satırı
+çalıştığında CMake, sanki o dört satırı \code{examples/CMakeLists.txt} içine
+elle yazmışsınız gibi davranır: \code{name} = \code{"fourier"}, \code{ARGN} =
+\code{"fourier.cpp;fft.cpp"} olur; \code{add\_executable} bu iki kaynağı
+derler, kütüphane ve uyarılar bağlanır, çıktı \code{build/examples/} altına
+konur ve bir de \code{example\_fourier} testi kaydedilir. Onlarca örnek için
+bakılacak tek yer artık \code{AddExample.cmake} dosyasıdır.}
+
+\bilgi{Bir fonksiyon \emph{bir kez} (global olarak) tanımlanır ve
+tanımlandığı andan itibaren \textbf{tüm alt dizinlerde} görünür --- değişkenlerin
+aksine, alt dizine ``kopyalanması'' gerekmez. Bu yüzden yardımcıları kökte
+\code{include} etmek, onları tek merkezden tüm projeye yaymanın yoludur.}
+
+\ipucu{Yeniden kullanılabilir fonksiyonları \code{cmake/} klasöründe ayrı
+\code{.cmake} dosyalarında toplayın (\code{AddExample.cmake},
+\code{Warnings.cmake}\ldots). \code{include\_guard(GLOBAL)} ile dosya iki kez
+\code{include} edilse bile fonksiyon ``already defined'' hatası vermez.}
+
+\gsub{İsimli Argümanlar: cmake\_parse\_arguments}
+
+Yukarıdaki \code{add\_example} basit bir örnekti; çünkü fazladan gelen tüm
+argümanları (\code{ARGN}) doğrudan kaynak dosyası sayıyordu. Ama fonksiyonunuzun
+\emph{seçenekler} (bayraklar), \emph{tek değerli} ve \emph{çok değerli}
+anahtarlar alması gerekiyorsa, \code{ARGN}'i elle ayrıştırmak epey zahmetlidir.
+CMake'in yerleşik \code{cmake\_parse\_arguments} komutu bu işi sizin yerinize
+yapar: her anahtarı \code{<önek>\_<ANAHTAR>} biçiminde bir değişkene yerleştirir.
+
+\begin{lstlisting}
+function(add_app name)
+    # cmake_parse_arguments(<prefix> <options> <one_value> <multi_value> ${ARGN})
+    #   options    "GUI"          -> ARG_GUI       TRUE/FALSE (bayrak var mı?)
+    #   one_value  "VERSION"      -> ARG_VERSION   tek bir değer
+    #   multi      "SOURCES;LIBS" -> ARG_SOURCES / ARG_LIBS   birer liste
+    cmake_parse_arguments(ARG "GUI" "VERSION" "SOURCES;LIBS" ${ARGN})
+
+    add_executable(${name} ${ARG_SOURCES})
+    if(ARG_LIBS)
+        target_link_libraries(${name} PRIVATE ${ARG_LIBS})
+    endif()
+    if(ARG_VERSION)
+        target_compile_definitions(${name} PRIVATE APP_VERSION="${ARG_VERSION}")
+    endif()
+    if(ARG_GUI)                       # sadece GUI anahtarı verildiyse tanımla
+        target_compile_definitions(${name} PRIVATE USE_GUI)
+    endif()
+endfunction()
+
+# Çağrı: anahtarların sırası önemli değildir, okunması kolaydır
+add_app(app
+    GUI                              # bir bayrak (değer almaz)
+    VERSION 1.4                      # tek değerli anahtar
+    SOURCES main.cpp ui.cpp          # çok değerli anahtar
+    LIBS    math Threads::Threads    # çok değerli anahtar
+)
+\end{lstlisting}
+
+\notk{Böyle bir imza, çağrı yerinde kodun \emph{niyetini} okunur kılar:
+\code{add\_app(app GUI VERSION 1.4 SOURCES ... LIBS ...)} satırına bakan biri,
+argümanların ne anlama geldiğini sırayı ezberlemeden anlar. Büyük projelerde
+kendi hedef kurucularınızı hep bu kalıpla yazmak, \code{CMakeLists.txt}
+dosyalarını okunur tutar.}
+
+\miniproj{Küçük ama çalışan bir \code{add\_example} fonksiyonu}
+
+Yukarıdaki örnek büyük bir projeyi anlatıyordu. İşte fikri kanıtlayan, hemen
+derlenebilen en küçük hali: tek fonksiyon, iki örnek program.
+
+\begin{lstlisting}[style=shstyle]
+funcs-demo/
+|-- CMakeLists.txt
+|-- hello.cpp
+`-- bye.cpp
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily hello.cpp / bye.cpp}]
+// hello.cpp
+#include <iostream>
+int main() { std::cout << "Merhaba fonksiyon!\n"; }
+
+// bye.cpp
+#include <iostream>
+int main() { std::cout << "Gule gule!\n"; }
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(FuncsDemo LANGUAGES CXX)
+
+# Tekrar eden hedef kurulumunu tek bir fonksiyona sariyoruz
+function(add_example name)
+    add_executable(${name} ${ARGN})     # ARGN = fazladan gelen kaynak dosyalar
+    target_compile_features(${name} PRIVATE cxx_std_17)
+    set_target_properties(${name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
+endfunction()
+
+# Artik her ornek tek satir:
+add_example(hello hello.cpp)
+add_example(bye   bye.cpp)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja && cmake --build build
+./build/examples/hello     #   Merhaba fonksiyon!
+./build/examples/bye       #   Gule gule!
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Generator Expressions}
+% =====================================================================
+
+Generator expression (kısaca ``genex''), \code{\$<...>} biçiminde yazılan ve
+\emph{yapılandırma anında değil, üretim anında} değerlendirilen ifadelerdir.
+Derleyiciye, derleme tipine (Debug/Release) ya da hedefin özelliklerine göre
+farklı değerler üretmenin tek doğru yolu bunlardır.
+
+\gsub{Neden Gerekir?}
+
+Bir \code{if(CMAKE\_BUILD\_TYPE STREQUAL "Debug")} kontrolü, çok yapılandırmalı
+generator'larda (Visual Studio, Xcode) işe yaramaz; çünkü oralarda derleme tipi
+\emph{derleme anında} seçilir, yapılandırma anında henüz belli değildir. Genex
+tam da bu sorunu çözer.
+
+\gsub{Derleyiciye Göre Bayrak}
+
+\begin{lstlisting}
+add_executable(app main.cpp)
+
+target_compile_options(app PRIVATE
+    # these flags only when the compiler is GCC or Clang
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
+    # this flag only when the compiler is MSVC
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
+\end{lstlisting}
+
+\gsub{Derleme Tipine Göre Tanım}
+
+\begin{lstlisting}
+target_compile_definitions(app PRIVATE
+    # defined only in Debug builds
+    $<$<CONFIG:Debug>:DEBUG_MODE ENABLE_ASSERTS>
+    # defined only in Release builds
+    $<$<CONFIG:Release>:NDEBUG FAST_MATH>
+)
+\end{lstlisting}
+
+\gsub{Sık Kullanılan Genex Kalıpları}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\footnotesize\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{İfade} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+\$<CONFIG:Debug> & Derleme tipi Debug ise 1, değilse 0.\\
+\rowcolor{acikGri} \$<CXX\_COMPILER\_ID:GNU> & Derleyici GCC ise 1.\\
+\$<PLATFORM\_ID:Windows> & Hedef platform Windows ise 1.\\
+\rowcolor{acikGri} \$<BUILD\_INTERFACE:...> & Sadece derleme ağacında (install değil).\\
+\$<INSTALL\_INTERFACE:...> & Sadece kurulumdan sonra.\\
+\rowcolor{acikGri} \$<TARGET\_FILE:app> & Hedefin üretilen dosya yolu.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{BUILD\_INTERFACE / INSTALL\_INTERFACE}
+
+Bir kütüphane kurulduğunda include yolu değişir: kaynak ağacındaki konumdan
+kurulum dizinine kayar ($\to$). Bu ikili genex, her iki durumu da doğru şekilde
+ele alır; kendi paketinizi yazarken (Kısım 4) bu ayrım kritiktir.
+
+\begin{lstlisting}
+target_include_directories(math PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  # while building here
+    $<INSTALL_INTERFACE:include>                            # after installation
+)
+\end{lstlisting}
+
+\miniproj{Genex'in etkisini gözle görmek: Debug ile Release farklı davransın}
+
+Aşağıdaki program, derleme tipine göre \emph{farklı} bir mesaj yazar --- çünkü
+\code{DEBUG\_MODE} makrosunu yalnızca Debug yapıya genex ile ekliyoruz. Kaynak
+kod hiç değişmeden, çıktı yapıya göre değişir.
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <iostream>
+int main() {
+#ifdef DEBUG_MODE
+    std::cout << "Debug yapisi: ayrintili gunluk acik\n";
+#else
+    std::cout << "Release yapisi: hizli mod\n";
+#endif
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(GenexDemo LANGUAGES CXX)
+
+add_executable(app main.cpp)
+
+# DEBUG_MODE makrosu SADECE Debug yapida tanimlanir
+target_compile_definitions(app PRIVATE $<$<CONFIG:Debug>:DEBUG_MODE>)
+
+# Uyari bayraklari SADECE GCC/Clang'te eklenir (MSVC bunlari reddederdi)
+target_compile_options(app PRIVATE
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra>)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Ayni kaynak, iki farkli yapi -> iki farkli cikti
+cmake -S . -B build-dbg -G Ninja -D CMAKE_BUILD_TYPE=Debug
+cmake --build build-dbg && ./build-dbg/app
+#   Debug yapisi: ayrintili gunluk acik
+
+cmake -S . -B build-rel -G Ninja -D CMAKE_BUILD_TYPE=Release
+cmake --build build-rel && ./build-rel/app
+#   Release yapisi: hizli mod
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Derleme Tipleri, Uyarılar ve Sanitizer'lar}
+% =====================================================================
+
+\gsub{CMAKE\_BUILD\_TYPE}
+
+Tek yapılandırmalı generator'larda (Make, Ninja) derleme tipini
+\code{CMAKE\_BUILD\_TYPE} değişkeni belirler. Her tip, kendine özgü optimizasyon
+ve hata ayıklama bayraklarıyla gelir.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\ttfamily\footnotesize}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Tip} & \color{anaMavi}\textbf{Amaç} & \color{anaMavi}\textbf{Tipik bayraklar}\\
+\midrule
+Debug & Hata ayıklama; optimizasyon yok, sembol var. & -g -O0\\
+\rowcolor{acikGri} Release & Üretim; tam optimizasyon. & -O3 -DNDEBUG\\
+RelWithDebInfo & Optimize + sembollü (profil/crash için). & -O2 -g -DNDEBUG\\
+\rowcolor{acikGri} MinSizeRel & En küçük ikili. & -Os -DNDEBUG\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release
+cmake --build build
+\end{lstlisting}
+
+\ipucu{Kullanıcı bir tip belirtmezse boş kalır (optimizasyonsuz). Kök
+dosyanıza makul bir varsayılan koymak iyidir:}
+
+\begin{lstlisting}
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "" FORCE)
+endif()
+\end{lstlisting}
+
+\gsub{Uyarıları Merkezi Açmak}
+
+Uyarıları tüm projeye dağıtmak yerine, bir INTERFACE hedefinde toplayıp yalnızca
+istediğiniz hedeflere bağlamak modern bir yaklaşımdır.
+
+\begin{lstlisting}
+# A virtual (INTERFACE) target that carries the "warning policy"
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE
+    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Wshadow>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
+
+# Apply it to any target you like:
+target_link_libraries(app PRIVATE project_warnings)
+\end{lstlisting}
+
+\gsub{Sanitizer'lar (ASan, UBSan)}
+
+Bellek hatalarını ve tanımsız davranışları yakalamakta sanitizer'ların değeri
+ölçülemez. Bunları bir seçeneğin arkasına alalım.
+
+\begin{lstlisting}
+option(ENABLE_ASAN "Address + UB sanitizer" OFF)
+
+if(ENABLE_ASAN)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja -D ENABLE_ASAN=ON -D CMAKE_BUILD_TYPE=Debug
+cmake --build build
+./build/app     # prints a detailed report if a memory error occurs
+\end{lstlisting}
+
+\miniproj{Sanitizer bir hatayı yakalarken görmek}
+
+Kasten hatalı bir program yazalım: dizinin sınırının bir dışına yazıyoruz.
+Normalde bu hata sessizce geçebilir; ASan ise programı durdurup tam yerini
+gösterir.
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+int main() {
+    int a[3] = {1, 2, 3};
+    a[3] = 42;        // HATA: gecerli indeksler 0..2, a[3] siniri asiyor
+    return a[0];
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(AsanDemo LANGUAGES CXX)
+
+option(ENABLE_ASAN "Address + UB sanitizer" OFF)
+
+add_executable(app main.cpp)
+if(ENABLE_ASAN)
+    target_compile_options(app PRIVATE -fsanitize=address,undefined -g)
+    target_link_options(app    PRIVATE -fsanitize=address,undefined)
+endif()
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja -D ENABLE_ASAN=ON -D CMAKE_BUILD_TYPE=Debug
+cmake --build build
+./build/app
+#   main.cpp:3:10: runtime error: index 3 out of bounds for type 'int [3]'
+#   ==12345==ERROR: AddressSanitizer: stack-buffer-overflow ...
+#       WRITE of size 4 ...  #0 in main main.cpp:3     <- hatanin tam satiri
+\end{lstlisting}
+
+\ipucu{Sanitizer'lar programı biraz yavaşlatır, o yüzden yalnızca geliştirme ve
+test yaparken (\code{-D ENABLE\_ASAN=ON}) açın; yayımladığınız Release yapıda
+kapalı kalsın.}
+
+% #####################################################################
+\gpart{4}{İleri Seviye --- Bağımlılık Çekme, Test, Paketleme}
+% #####################################################################
+
+% =====================================================================
+\gsec{FetchContent: Bağımlılığı Projeye Çekmek}
+% =====================================================================
+
+\code{find\_package}, sistemde zaten kurulu olan kütüphaneleri bulur. Peki ya
+kullanıcının kütüphaneyi önceden kurmuş olmasını istemiyorsanız?
+\code{FetchContent}, bir bağımlılığı derleme sırasında indirir ve doğrudan
+projenize katar; kullanıcı yalnızca \code{cmake} çalıştırır, gerisini CMake
+halleder.
+
+\begin{lstlisting}
+include(FetchContent)
+
+# Declare the dependency (git repository + a fixed tag)
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG        10.2.1        # always pin a fixed version/tag!
+)
+
+# Download, configure and make the dependency's targets available
+FetchContent_MakeAvailable(fmt)
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE fmt::fmt)   # just like a find_package target
+\end{lstlisting}
+
+\uyari{\code{GIT\_TAG} olarak \code{main}/\code{master} gibi hareketli dallar
+\emph{kullanmayın}. Her zaman sabit bir sürüm etiketi (\code{10.2.1}) veya
+commit hash'i verin --- aksi halde derleme tekrarlanabilir olmaz ve bir gün
+beklenmedik şekilde kırılır.}
+
+\gsub{FetchContent + find\_package Hibrit (3.24+)}
+
+CMake 3.24 ile birlikte bir bağımlılık önce sistemde \code{find\_package} ile
+aranabilir, bulunamazsa indirilebilir. Böylece iki yaklaşımın da en iyi yanını
+bir arada kullanmış olursunuz.
+
+\begin{lstlisting}
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG        10.2.1
+    FIND_PACKAGE_ARGS 10  # try find_package(fmt 10) first; download if missing
+)
+FetchContent_MakeAvailable(fmt)
+\end{lstlisting}
+
+\notk{\code{FetchContent} bağımlılığı sizinle birlikte \emph{kaynak koddan}
+derler --- ilk derleme yavaş olabilir ama tam kontrol ve sürüm garantisi verir.
+Büyük bağımlılıklar (ör. Qt) için sistem paketi + \code{find\_package} genelde
+daha pratiktir.}
+
+\miniproj{fmt kütüphanesini indirip kullanan tam proje}
+
+Bu projeyi kurmak için sistemde \code{fmt} kurulu olması gerekmez; CMake ilk
+derlemede onu GitHub'dan çeker (bu adım için internet gerekir).
+
+\begin{lstlisting}[style=shstyle]
+fetch-demo/
+|-- CMakeLists.txt
+`-- main.cpp
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <fmt/core.h>
+int main() {
+    // {} yer tutuculari, sonraki argumanlarla sirayla doldurulur
+    fmt::print("Merhaba {}! {} + {} = {}\n", "fmt", 2, 3, 2 + 3);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(FetchDemo LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+
+include(FetchContent)
+FetchContent_Declare(fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG        10.2.1)          # her zaman sabit surum etiketi ver
+FetchContent_MakeAvailable(fmt)     # indir, yapilandir, hedeflerini hazir et
+
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE fmt::fmt)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja    # fmt bu asamada indirilir (ilk sefer yavas)
+cmake --build build
+./build/app
+#   Merhaba fmt! 2 + 3 = 5
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Test: CTest ile}
+% =====================================================================
+
+CMake, kendi test koşucusu \code{ctest} ile birlikte gelir. Testlerinizi
+kaydeder, çalıştırır ve sonuçlarını raporlar.
+
+\gsub{Temel Test Kaydı}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily kök CMakeLists.txt}]
+enable_testing()             # enable testing (call once, in the root list file)
+add_subdirectory(tests)
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily tests/CMakeLists.txt}]
+add_executable(math_test math_test.cpp)
+target_link_libraries(math_test PRIVATE MyProject::math)
+
+# Register a test: a name + the command to run
+add_test(NAME MatrixMultiply COMMAND math_test)
+
+# Decide pass/fail from the program's output instead of its exit code
+add_test(NAME VersionCheck COMMAND app --version)
+set_tests_properties(VersionCheck PROPERTIES
+    PASS_REGULAR_EXPRESSION "1\\.0\\.0")
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily math\_test.cpp (basit iddia)}]
+#include <cassert>
+#include "math/matrix.h"
+
+int main() {
+    Matrix a = Matrix::identity(3);
+    assert(a(0, 0) == 1.0 && a(0, 1) == 0.0);
+    // If an assert fails it aborts the program with a non-zero exit code,
+    // and CTest reports the test as "failed".
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake --build build
+cd build && ctest --output-on-failure   # run all tests, show output on failure
+ctest -R Matrix                          # only tests whose name matches "Matrix"
+ctest -j 8                               # run 8 tests in parallel
+ctest --rerun-failed --output-on-failure # re-run only the tests that failed
+\end{lstlisting}
+
+\gsub{GoogleTest ile Entegrasyon}
+
+\begin{lstlisting}
+include(FetchContent)
+FetchContent_Declare(googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.14.0)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+add_executable(all_tests test_matrix.cpp test_vector.cpp)
+target_link_libraries(all_tests PRIVATE MyProject::math GTest::gtest_main)
+
+# Discover each GoogleTest TEST() case as a separate CTest test
+include(GoogleTest)
+gtest_discover_tests(all_tests)
+\end{lstlisting}
+
+\miniproj{Kendi kendine yeten, çalışan bir test projesi}
+
+Harici bir kütüphane olmadan, sadece \code{assert} kullanan küçük bir test.
+Test başarısız olursa program sıfırdan farklı bir kodla çıkar ve CTest onu
+``failed'' olarak işaretler.
+
+\begin{lstlisting}[style=shstyle]
+ctest-demo/
+|-- CMakeLists.txt
+`-- test_math.cpp
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily test\_math.cpp}]
+#include <cassert>
+static int add(int a, int b) { return a + b; }
+
+int main() {
+    assert(add(2, 3) == 5);
+    assert(add(-1, 1) == 0);
+    return 0;   // tum assert'ler gecerse 0 = basari
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(CTestDemo LANGUAGES CXX)
+
+enable_testing()                       # testleri etkinlestir (kokte bir kez)
+add_executable(math_test test_math.cpp)
+add_test(NAME AddWorks COMMAND math_test)   # bir test kaydet: ad + calistirilacak komut
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja && cmake --build build
+ctest --test-dir build --output-on-failure
+#   Test project .../build
+#       Start 1: AddWorks
+#   1/1 Test #1: AddWorks .........................   Passed    0.00 sec
+#   100% tests passed, 0 tests failed out of 1
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Kurulum (install) ve Paketleme (CPack)}
+% =====================================================================
+
+\gsub{install Komutu}
+
+\code{install()}, \code{cmake -{}-install} çalıştırıldığında hangi dosyaların
+nereye kopyalanacağını belirler.
+
+\begin{lstlisting}
+# Install the executables and libraries
+install(TARGETS app math
+    RUNTIME DESTINATION bin        # executables -> <prefix>/bin
+    LIBRARY DESTINATION lib        # shared libs (.so/.dll) -> <prefix>/lib
+    ARCHIVE DESTINATION lib        # static libs (.a/.lib)  -> <prefix>/lib
+)
+
+# Install the public headers
+install(DIRECTORY libs/math/include/
+    DESTINATION include            # -> <prefix>/include
+    FILES_MATCHING PATTERN "*.h"   # copy only header files, keep the tree
+)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -D CMAKE_INSTALL_PREFIX=/opt/myproject
+cmake --build build
+cmake --install build              # copies the files into /opt/myproject
+\end{lstlisting}
+
+\gsub{CPack ile Dağıtım Paketi}
+
+CPack, projenizi \code{.tar.gz}, \code{.deb}, \code{.rpm}, Windows kurulumu
+gibi paketlere dönüştürür.
+
+\begin{lstlisting}
+# Place this after your install() rules:
+set(CPACK_PACKAGE_NAME "MyProject")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_CONTACT "tolga@example.com")
+set(CPACK_GENERATOR "TGZ;DEB")     # which package formats to produce
+include(CPack)                     # must be included last
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake --build build
+cd build && cpack                  # produces MyProject-1.0.0-Linux.tar.gz, .deb, ...
+\end{lstlisting}
+
+\miniproj{Küçük bir programı gerçekten kurmak}
+
+Bir programı bir hedef dizine kurup, kurulan dosya ağacının nasıl göründüğünü
+görelim. (Sistem dizinlerini kirletmemek için hedef olarak proje içinde bir
+\code{stage/} klasörü seçiyoruz.)
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <iostream>
+int main() { std::cout << "kuruldum!\n"; }
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(InstallDemo LANGUAGES CXX)
+
+add_executable(hello main.cpp)
+
+# hello ikilisi <prefix>/bin altina kurulsun
+install(TARGETS hello RUNTIME DESTINATION bin)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja
+cmake --build build
+cmake --install build --prefix ./stage    # dosyalari ./stage altina kopyalar
+
+./stage/bin/hello       #   kuruldum!
+find stage              #   stage
+                        #   stage/bin
+                        #   stage/bin/hello
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Kendi Config Paketini Yazmak}
+% =====================================================================
+
+Başkalarının kütüphanenizi \code{find\_package(MyProject)} ile kullanabilmesi
+için bir ``config paketi'' hazırlayıp kurmanız gerekir. Bu adım, profesyonel
+kütüphane dağıtımının anahtarıdır.
+
+\begin{lstlisting}
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# 1) Install the target and record it in an export set (EXPORT)
+install(TARGETS math
+    EXPORT MyProjectTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(DIRECTORY libs/math/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# 2) Install the export set as a .cmake file (with a namespace prefix)
+install(EXPORT MyProjectTargets
+    FILE MyProjectTargets.cmake
+    NAMESPACE MyProject::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyProject
+)
+
+# 3) Generate the version file (used for version checks in find_package)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/MyProjectConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# 4) Generate the config file from a template and install it
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/MyProjectConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/MyProjectConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyProject
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/MyProjectConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/MyProjectConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyProject
+)
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily cmake/MyProjectConfig.cmake.in}]
+@PACKAGE_INIT@
+include("${CMAKE_CURRENT_LIST_DIR}/MyProjectTargets.cmake")
+\end{lstlisting}
+
+Artık başka bir proje şöyle kullanabilir:
+
+\begin{lstlisting}
+find_package(MyProject 1.0 REQUIRED)
+target_link_libraries(other_app PRIVATE MyProject::math)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{CMakePresets.json --- Yapılandırmayı Sabitlemek}
+% =====================================================================
+
+Uzun \code{-D...} komutlarını her seferinde yeniden yazmak yerine,
+\code{CMakePresets.json} dosyasında hazır yapılandırmalar tanımlarsınız. IDE'ler
+de bu dosyayı okuyup aynı ayarları kullanır.
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily CMakePresets.json},morekeywords={}]
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug (Ninja)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_ASAN": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug",   "configurePreset": "debug" },
+    { "name": "release", "configurePreset": "release" }
+  ]
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake --preset debug        # configure with all the preset's settings
+cmake --build --preset debug
+cmake --list-presets        # list the available presets
+\end{lstlisting}
+
+\ipucu{\code{CMakePresets.json}'u git'e ekleyin: ekipteki herkes aynı
+yapılandırmayı tek komutla kullanır. Kişisel ayarlar için
+\code{CMakeUserPresets.json} (git'e eklenmez) kullanılır.}
+
+\miniproj{Tek komutla yapılandırıp derlenen bir preset projesi}
+
+\begin{lstlisting}[style=shstyle]
+preset-demo/
+|-- CMakeLists.txt
+|-- CMakePresets.json
+`-- main.cpp
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily main.cpp}]
+#include <iostream>
+int main() { std::cout << "merhaba preset\n"; }
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt}]
+cmake_minimum_required(VERSION 3.20)
+project(PresetDemo LANGUAGES CXX)
+add_executable(app main.cpp)
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily CMakePresets.json},morekeywords={}]
+{
+  "version": 3,
+  "configurePresets": [
+    { "name": "debug", "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } }
+  ],
+  "buildPresets": [ { "name": "debug", "configurePreset": "debug" } ]
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake --preset debug         # uzun -D... satiri yok; hepsi preset'ten gelir
+cmake --build --preset debug
+./build/debug/app
+#   merhaba preset
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Toolchain Dosyaları ve Çapraz Derleme}
+% =====================================================================
+
+Başka bir mimari için derleme --- örneğin Linux'ta çalışırken ARM için çıktı
+üretme --- bir ``toolchain dosyası'' aracılığıyla yapılır. Bu dosya, hedef
+sistemin derleyicisini ve gerekli ayarlarını tanımlar.
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily arm-toolchain.cmake}]
+# Describe the target system (this also enables cross-compilation mode)
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+# The cross compilers
+set(CMAKE_C_COMPILER   arm-linux-gnueabihf-gcc)
+set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
+
+# The target root directory (sysroot)
+set(CMAKE_FIND_ROOT_PATH /usr/arm-linux-gnueabihf)
+
+# Search programs on the host, but libraries/headers only in the target sysroot
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build-arm -G Ninja \
+      -D CMAKE_TOOLCHAIN_FILE=arm-toolchain.cmake
+cmake --build build-arm
+\end{lstlisting}
+
+% #####################################################################
+\gpart{5}{Pratik --- Tam Projeler ve Başvuru}
+% #####################################################################
+
+% =====================================================================
+\gsec{Tam Örnek: Çok Modüllü C++ Projesi}
+% =====================================================================
+
+Şimdiye kadar öğrendiğimiz her şeyi çalışan tek bir projede bir araya
+getirelim: bir \code{math} kütüphanesi, onu kullanan bir \code{app} ve testler.
+
+\gsub{Dosya Yapısı}
+
+\begin{lstlisting}[style=shstyle]
+calc/
+|-- CMakeLists.txt
+|-- CMakePresets.json
+|-- libs/math/
+|   |-- CMakeLists.txt
+|   |-- include/math/calculator.h
+|   `-- src/calculator.cpp
+|-- app/
+|   |-- CMakeLists.txt
+|   `-- main.cpp
+`-- tests/
+    |-- CMakeLists.txt
+    `-- calc_test.cpp
+\end{lstlisting}
+
+\gsub{Kütüphane Kaynağı}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily libs/math/include/math/calculator.h}]
+#pragma once
+namespace calc {
+    double add(double a, double b);
+    double multiply(double a, double b);
+    long factorial(int n);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily libs/math/src/calculator.cpp}]
+#include "math/calculator.h"
+
+namespace calc {
+    double add(double a, double b)      { return a + b; }
+    double multiply(double a, double b) { return a * b; }
+    long factorial(int n) {
+        long r = 1;
+        for (int i = 2; i <= n; ++i) r *= i;
+        return r;
+    }
+}
+\end{lstlisting}
+
+\gsub{Tüm CMakeLists.txt Dosyaları}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt (kök)}]
+cmake_minimum_required(VERSION 3.21)
+project(Calc VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "" FORCE)
+endif()
+
+add_subdirectory(libs/math)
+add_subdirectory(app)
+
+option(BUILD_TESTS "Build the unit tests" ON)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily libs/math/CMakeLists.txt}]
+add_library(math STATIC src/calculator.cpp)
+add_library(Calc::math ALIAS math)
+
+target_include_directories(math PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_compile_features(math PUBLIC cxx_std_17)
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily app/CMakeLists.txt}]
+add_executable(calc_app main.cpp)
+target_link_libraries(calc_app PRIVATE Calc::math)
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily app/main.cpp}]
+#include <iostream>
+#include "math/calculator.h"
+
+int main() {
+    std::cout << "2 + 3   = " << calc::add(2, 3)      << "\n";
+    std::cout << "4 * 5   = " << calc::multiply(4, 5) << "\n";
+    std::cout << "5!      = " << calc::factorial(5)   << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily tests/CMakeLists.txt}]
+add_executable(calc_test calc_test.cpp)
+target_link_libraries(calc_test PRIVATE Calc::math)
+add_test(NAME CalcBasic COMMAND calc_test)
+\end{lstlisting}
+
+\begin{lstlisting}[style=cppstyle,title={\color{ortaGri}\ttfamily tests/calc\_test.cpp}]
+#include <cassert>
+#include "math/calculator.h"
+
+int main() {
+    assert(calc::add(2, 3) == 5.0);
+    assert(calc::multiply(4, 5) == 20.0);
+    assert(calc::factorial(5) == 120);
+    return 0;   // if every assert passes, 0 = success
+}
+\end{lstlisting}
+
+\gsub{Derleme ve Çalıştırma}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja
+cmake --build build
+./build/bin/calc_app
+#   2 + 3   = 5
+#   4 * 5   = 20
+#   5!      = 120
+cd build && ctest --output-on-failure
+#   100% tests passed, 0 tests failed out of 1
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Tam Örnek: C Projesi (Kütüphane + Uygulama)}
+% =====================================================================
+
+Aynı yapıyı bu kez saf C ile kuralım: bir dinamik dizi (dynamic array)
+kütüphanesi ve onu kullanan bir uygulama.
+
+\gsub{Dosya Yapısı}
+
+\begin{lstlisting}[style=shstyle]
+darray/
+|-- CMakeLists.txt
+|-- lib/
+|   |-- CMakeLists.txt
+|   |-- include/darray.h
+|   `-- src/darray.c
+`-- app/
+    |-- CMakeLists.txt
+    `-- main.c
+\end{lstlisting}
+
+\gsub{Kaynaklar}
+
+\begin{lstlisting}[style=cstyle,title={\color{ortaGri}\ttfamily lib/include/darray.h}]
+#ifndef DARRAY_H
+#define DARRAY_H
+#include <stddef.h>
+
+typedef struct {
+    int   *data;
+    size_t size;
+    size_t capacity;
+} DArray;
+
+void darray_init(DArray *a);
+void darray_push(DArray *a, int value);
+void darray_free(DArray *a);
+
+#endif /* DARRAY_H */
+\end{lstlisting}
+
+\begin{lstlisting}[style=cstyle,title={\color{ortaGri}\ttfamily lib/src/darray.c}]
+#include "darray.h"
+#include <stdlib.h>
+
+void darray_init(DArray *a) {
+    a->data = NULL; a->size = 0; a->capacity = 0;
+}
+
+void darray_push(DArray *a, int value) {
+    if (a->size == a->capacity) {
+        a->capacity = a->capacity ? a->capacity * 2 : 4;
+        a->data = realloc(a->data, a->capacity * sizeof(int));
+    }
+    a->data[a->size++] = value;
+}
+
+void darray_free(DArray *a) {
+    free(a->data);
+    a->data = NULL; a->size = a->capacity = 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=cstyle,title={\color{ortaGri}\ttfamily app/main.c}]
+#include <stdio.h>
+#include "darray.h"
+
+int main(void) {
+    DArray a;
+    darray_init(&a);
+    for (int i = 1; i <= 5; ++i) darray_push(&a, i * i);
+
+    printf("Size: %zu\n", a.size);
+    for (size_t i = 0; i < a.size; ++i) printf("%d ", a.data[i]);
+    printf("\n");
+
+    darray_free(&a);
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{CMakeLists.txt Dosyaları}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily CMakeLists.txt (kök)}]
+cmake_minimum_required(VERSION 3.20)
+project(DArray VERSION 1.0 LANGUAGES C)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_subdirectory(lib)
+add_subdirectory(app)
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily lib/CMakeLists.txt}]
+add_library(darray STATIC src/darray.c)
+add_library(DArray::darray ALIAS darray)
+
+target_include_directories(darray PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_compile_features(darray PUBLIC c_std_11)
+
+# Strict warnings only on GCC/Clang (MSVC would reject these flags)
+target_compile_options(darray PRIVATE
+    $<$<C_COMPILER_ID:GNU,Clang>:-Wall;-Wextra>
+)
+\end{lstlisting}
+
+\begin{lstlisting}[title={\color{ortaGri}\ttfamily app/CMakeLists.txt}]
+add_executable(darray_app main.c)
+target_link_libraries(darray_app PRIVATE DArray::darray)
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+cmake -S . -B build -G Ninja
+cmake --build build
+./build/bin/darray_app
+#   Size: 5
+#   1 4 9 16 25
+\end{lstlisting}
+
+% =====================================================================
+\gsec{En İyi Uygulamalar}
+% =====================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{yesil}}c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikYesil}\color{yesil}\textbf{Yap} & \color{yesil}\textbf{Neden}\\
+\midrule
+\checkmark & \code{target\_*} komutlarını kullan; global \code{include\_directories}/\code{add\_definitions}'dan kaçın.\\
+\rowcolor{acikGri}\color{yesil}\checkmark & PUBLIC/PRIVATE/INTERFACE'i bilinçli seç --- kullanım gereksinimleri kendiliğinden yayılsın.\\
+\checkmark & Out-of-source build yap (\code{-B build}); \code{build/} klasörünü git'e ekleme.\\
+\rowcolor{acikGri}\color{yesil}\checkmark & Kütüphanelere \code{Ad::Alt} ALIAS ver; \code{find\_package} hedefleriyle tutarlı olsun.\\
+\checkmark & \code{FetchContent}'te daima sabit \code{GIT\_TAG} (sürüm/commit) kullan.\\
+\rowcolor{acikGri}\color{yesil}\checkmark & \code{cmake\_minimum\_required} sürümünü gerçekçi ve güncel tut (3.20+).\\
+\checkmark & \code{CMAKE\_EXPORT\_COMPILE\_COMMANDS ON} ile IDE/clangd desteğini aç.\\
+\rowcolor{acikGri}\color{yesil}\checkmark & Derleyiciye bağlı bayrakları genex (\code{\$<...>}) ile koşulla.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{kirmizi}}c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{kirmizi!8}\color{kirmizi}\textbf{Yapma} & \color{kirmizi}\textbf{Neden}\\
+\midrule
+\texttimes & \code{file(GLOB ...)} ile kaynak toplama --- yeni dosya eklenince CMake yeniden çalışmaz, derleme kırılır.\\
+\rowcolor{acikGri}\color{kirmizi}\texttimes & Kaynak dizinine derleme yapma (in-source build) --- kaynağı kirletir.\\
+\texttimes & \code{link\_libraries}/\code{include\_directories}'i global kullanma.\\
+\rowcolor{acikGri}\color{kirmizi}\texttimes & Sabit yollar (\code{/home/tolga/...}) yazma --- taşınabilir değildir.\\
+\texttimes & \code{CMAKE\_CXX\_FLAGS}'ı elle üzerine yazma --- mevcut bayrakları ezersin.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\uyari{\code{file(GLOB SOURCES "src/*.cpp")} cazip görünür ama tehlikelidir:
+CMake dosya listesini yapılandırma anında dondurur; yeni bir \code{.cpp}
+eklediğinizde CMake bunu fark etmez ve dosya derlemeye girmez. Kaynakları
+her zaman \code{add\_executable}/\code{add\_library} içinde \emph{elle}
+listeleyin. (3.12+ ile \code{CONFIGURE\_DEPENDS} kısmen yardımcı olsa da yine
+de önerilmez.)}
+
+% =====================================================================
+\gsec{Sık Karşılaşılan Hatalar ve Çözümleri}
+% =====================================================================
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Hata / Belirti} & \color{anaMavi}\textbf{Neden \& Çözüm}\\
+\midrule
+\code{undefined reference to `foo'} & Bağlayıcı sembolü bulamıyor. Fonksiyonu tanımlayan kütüphaneyi \code{target\_link\_libraries} ile ekleyin.\\
+\rowcolor{acikGri} \code{fatal error: xyz.h: No such file} & Include yolu eksik. \code{target\_include\_directories} ile başlık dizinini ekleyin (doğru PUBLIC/PRIVATE ile).\\
+\code{Could not find package XYZ} & \code{find\_package} kütüphaneyi bulamadı. \code{-DCMAKE\_PREFIX\_PATH=...} verin veya kütüphaneyi kurun.\\
+\rowcolor{acikGri} \code{CMake Error: ... does not appear to contain CMakeLists.txt} & \code{-S} yanlış dizini gösteriyor. Kök \code{CMakeLists.txt}'nin bulunduğu dizini verin.\\
+Değişiklik derlemeye yansımıyor & Eski cache. \code{build/} klasörünü silin ya da \code{cmake -{}-fresh} ile yeniden yapılandırın.\\
+\rowcolor{acikGri} \code{target\_link\_libraries ... is not a target} & Hedef henüz tanımlanmamış. \code{add\_subdirectory} sırasını düzeltin (kütüphane önce).\\
+Release'te optimizasyon yok & \code{CMAKE\_BUILD\_TYPE} boş. \code{-DCMAKE\_BUILD\_TYPE=Release} verin.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\gsec{Hızlı Başvuru (Cheat Sheet)}
+% =====================================================================
+
+\gsub{En Sık Komutlar}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\footnotesize\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Komut} & \color{anaMavi}\textbf{Ne yapar}\\
+\midrule
+cmake\_minimum\_required(VERSION x) & Gereken en düşük CMake sürümü (ilk satır).\\
+\rowcolor{acikGri} project(Ad VERSION x LANGUAGES CXX C) & Projeyi ve dilleri tanımlar.\\
+add\_executable(ad kaynaklar) & Çalıştırılabilir hedef.\\
+\rowcolor{acikGri} add\_library(ad STATIC/SHARED src) & Kütüphane hedefi.\\
+target\_link\_libraries(t PUBLIC x) & Hedefe kütüphane bağlar (özellikler yayılır).\\
+\rowcolor{acikGri} target\_include\_directories(t PUBLIC d) & Başlık arama yolu.\\
+target\_compile\_features(t PUBLIC cxx\_std\_17) & Dil standardı gereksinimi.\\
+\rowcolor{acikGri} target\_compile\_definitions(t PRIVATE M) & Önişlemci makrosu.\\
+find\_package(X REQUIRED) & Harici kütüphane bulur.\\
+\rowcolor{acikGri} add\_subdirectory(dir) & Alt dizindeki CMakeLists'i dahil eder.\\
+install(TARGETS ...) & Kurulum kuralları.\\
+\rowcolor{acikGri} enable\_testing() / add\_test(...) & CTest testleri.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{En Sık Terminal Komutları}
+
+\begin{lstlisting}[style=shstyle]
+# Configure + generate (Ninja, Release)
+cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release
+
+# Build (with 8 parallel jobs)
+cmake --build build -j 8
+
+# Build a single target only
+cmake --build build --target calc_app
+
+# Run the tests
+ctest --test-dir build --output-on-failure
+
+# Install
+cmake --install build --prefix /opt/calc
+
+# Reconfigure from scratch (wipe the cache)
+cmake --fresh -S . -B build
+# or:  rm -rf build
+
+# Using a preset
+cmake --preset debug && cmake --build --preset debug
+\end{lstlisting}
+
+\gsub{Önemli Yerleşik Değişkenler}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily\footnotesize\color{koyuGri}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Değişken} & \color{anaMavi}\textbf{Anlamı}\\
+\midrule
+CMAKE\_SOURCE\_DIR & En üst kaynak dizini.\\
+\rowcolor{acikGri} CMAKE\_BINARY\_DIR & En üst derleme dizini.\\
+CMAKE\_CURRENT\_SOURCE\_DIR & İçinde bulunulan CMakeLists'in dizini.\\
+\rowcolor{acikGri} PROJECT\_NAME / PROJECT\_VERSION & En yakın project() değerleri.\\
+CMAKE\_BUILD\_TYPE & Debug/Release/... (tek-config generator).\\
+\rowcolor{acikGri} CMAKE\_INSTALL\_PREFIX & Kurulum kök dizini.\\
+BUILD\_SHARED\_LIBS & Tip belirtilmeyen kütüphaneler SHARED mı?\\
+\rowcolor{acikGri} CMAKE\_CXX\_STANDARD & Varsayılan C++ standardı.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\ipucu{Bu rehber seni derleme sistemlerinin \emph{neden} var olduğundan
+başlayıp, CMake'in hedef-tabanlı modern stiliyle çok modüllü, testli,
+paketlenebilir projeler kurmaya taşıdı: derleyici $\to$ make $\to$ CMake
+$\to$ hedefler $\to$ bağımlılıklar $\to$ test $\to$ paketleme. Buradan sonrası
+pratik: küçük bir kütüphane yaz, onu \code{find\_package}'le tükettir,
+CI'a bağla. Her \code{CMakeLists.txt} satırını ``bu ayar hangi hedefe ait?''
+sorusuyla oku --- modern CMake'in tamamı bu sorunun cevabıdır. İyi derlemeler!}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.6pt}}\\[6pt]
+{\color{ortaGri}\small CMake ile Modern C/C++ Derleme Rehberi --- Son}
+\end{center}
+
+\end{document}

@@ -1,0 +1,2768 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{132C4A}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={C++ Programlama Dili Kapsamlı Rehber},
+  pdfauthor={Modern C++ Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}C++ Programlama Rehberi}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C++) ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+  morekeywords={size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,
+    int32_t,int64_t,nullptr,constexpr,consteval,noexcept,override,final,auto,
+    vector,string,pair,map,set,unordered_map,unordered_set,priority_queue,
+    queue,stack,deque,array,tuple,optional,shared_ptr,unique_ptr,weak_ptr,
+    template,typename,class,public,private,protected,virtual,namespace,
+    using,std,move,forward,make_pair,make_shared,make_unique,decltype,
+    default,delete,explicit,mutable,friend,operator,noexcept}
+}
+\lstset{style=cppstyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Soru / Çözüm sistemi (alıştırmalar için)
+\newcounter{soruc}
+\newcommand{\soru}[1]{\par\smallskip\refstepcounter{soruc}%
+  \noindent\begingroup\setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{turuncu}{turuncu!6}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+  {\bfseries\color{turuncu}Soru \thesoruc}\par\smallskip #1}}\endgroup\par\smallskip}
+\newcommand{\cozum}{\par\noindent{\bfseries\color{yesil}Çözüm.}\ }
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\newcommand{\bigO}[1]{\ensuremath{\mathcal{O}(#1)}}
+\let\svtimes\times   \renewcommand{\times}{\ensuremath{\svtimes}}
+\let\svcdot\cdot     \renewcommand{\cdot}{\ensuremath{\svcdot}}
+\let\svto\to         \renewcommand{\to}{\ensuremath{\svto}}
+\let\svle\le         \renewcommand{\le}{\ensuremath{\svle}}
+\let\svge\ge         \renewcommand{\ge}{\ensuremath{\svge}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries C++ Programlama Dili}\\[10pt]
+{\color{vurguMavi}\LARGE Kapsamlı Uygulamalı Rehber}\\[8pt]
+{\color{ortaGri}\large Temellerden Modern C++'a: Nesne Yönelimi, Bellek Yönetimi, Şablonlar ve STL}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge, C++'ı temel sözdiziminden başlayarak nesne yönelimli programlamaya,
+bellek ve kaynak yönetiminin inceliklerine, şablonlara, STL'e ve modern
+C++17/20 özelliklerine kadar \textbf{derinlemesine ve çalışan kod
+örnekleriyle} anlatır. Her sınıfın kalbi olan \textbf{özel üye fonksiyonlar}
+(Beşin Kuralı), akıllı işaretçiler, istisna güvenliği ve operatör aşırı
+yükleme gibi kritik konular ayrıntılı biçimde ele alınır.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{K1 (Temeller):} program yapısı \textbullet\ tipler \& \code{auto}
+\textbullet\ kontrol akışı \textbullet\ fonksiyonlar.\quad
+\textbf{K2 (OOP):} sınıflar \textbullet\ kalıtım \textbullet\ polimorfizm
+\& sanal fonksiyonlar.\vspace{3pt}
+
+\textbf{K3 (Bellek \& İşaretçiler):} yığın/öbek \textbullet\ \code{new}/\code{delete}
+\textbullet\ işaretçi vs referans \textbullet\ \code{const} ile işaretçiler.\quad
+\textbf{K4 (RAII \& Akıllı İşaretçiler):} \code{unique\_ptr} \textbullet\
+\code{shared\_ptr} \textbullet\ \code{weak\_ptr}.\vspace{3pt}
+
+\textbf{K5 (Beşin Kuralı):} lvalue/rvalue \& \code{std::move} \textbullet\
+yıkıcı \textbullet\ kopya/taşıma yapıcı \& atama \textbullet\ copy-and-swap.\quad
+\textbf{K6 (Şablonlar):} fonksiyon/sınıf şablonları \textbullet\ variadic
+\textbullet\ özelleştirme.\vspace{3pt}
+
+\textbf{K7 (STL):} konteynerler \textbullet\ iteratörler \textbullet\
+algoritmalar.\quad
+\textbf{K8 (Lambda):} lambda ifadeleri \textbullet\ \code{std::function}.\quad
+\textbf{K9 (İstisnalar):} \code{try}/\code{catch} \textbullet\ istisna güvenliği.\vspace{3pt}
+
+\textbf{K10 (Anahtar Kelimeler):} \code{explicit} \textbullet\ \code{constexpr}
+\textbullet\ \code{noexcept} \textbullet\ \code{static}/\code{mutable}/\code{friend}.\quad
+\textbf{K11 (Operatörler):} aritmetik \textbullet\ \code{<=>} \textbullet\
+\code{[]}, \code{()} \textbullet\ dönüşüm.\quad
+\textbf{K12 (Modern C++):} yapısal bağlama \textbullet\ concepts \& ranges.\vspace{4pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 19 Temmuz 2026}\\[4pt]
+{\color{ortaGri} C++17 / C++20 \textbullet\ g++ / clang++ \textbullet\ -Wall -Wextra}
+\vspace*{0.6cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{C++ Temelleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{Bir C++ Programının Yapısı}
+
+C++, C dilinin üzerine inşa edilmiş, çok paradigmalı (yordamsal, nesne
+yönelimli, jenerik ve fonksiyonel) bir sistem programlama dilidir. Derlenen
+(compiled) bir dildir: kaynak kod, doğrudan makine koduna çevrilir; bu da
+onu son derece hızlı kılar. En küçük çalışan programla başlayalım:
+
+\begin{lstlisting}
+#include <iostream>    // std::cout icin standart giris/cikis akisi
+
+// main: her programin baslangic noktasidir; isletim sistemi burayi cagirir
+int main() {
+    std::cout << "Merhaba, Dunya!" << "\n";   // ekrana yaz
+    return 0;          // 0 = basarili cikis kodu
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Derleme ve calistirma (GCC)
+g++ -std=c++17 -Wall -Wextra merhaba.cpp -o merhaba
+./merhaba
+# Cikti: Merhaba, Dunya!
+\end{lstlisting}
+
+\bilgi{Derleme dört aşamadan geçer: \textbf{ön işleme} (\code{\#include},
+makrolar), \textbf{derleme} (kaynak $\to$ assembly), \textbf{çevirme}
+(assembly $\to$ nesne dosyası \code{.o}) ve \textbf{bağlama} (linking:
+nesne dosyaları + kütüphaneler $\to$ çalıştırılabilir). \code{-Wall -Wextra}
+bayraklarını her zaman açın; potansiyel hataları derleme aşamasında yakalar.}
+
+\gsub{Başlık Dosyaları ve Ad Alanları (Namespaces)}
+
+Kod, \emph{bildirimlerin} bulunduğu başlık dosyaları (\code{.hpp}) ve
+\emph{tanımların} bulunduğu kaynak dosyalar (\code{.cpp}) olarak
+örgütlenir. \code{namespace}, isim çakışmalarını önlemek için sembolleri
+mantıksal gruplara ayırır.
+
+\begin{lstlisting}
+#include <iostream>
+
+// Kendi ad alanimiz -- isim cakismalarini onler
+namespace math {
+    const double PI = 3.14159265358979;
+    double square(double x) { return x * x; }
+
+    namespace geometry {          // ic ice ad alani
+        double circle_area(double r) { return PI * square(r); }
+    }
+}
+
+int main() {
+    // Tam nitelenmis isim (fully qualified)
+    std::cout << math::geometry::circle_area(2.0) << "\n";
+
+    // 'using' ile bir ismi kapsama getir
+    using math::square;
+    std::cout << square(5) << "\n";       // 25
+
+    // DIKKAT: 'using namespace std;' baslik dosyalarinda ASLA kullanilmaz
+    // (tum std'yi getirir, cakismalara yol acar). .cpp icinde olc
+
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Başlık dosyalarında (\code{.hpp}) asla \code{using namespace std;}
+yazmayın. Bu satır, o başlığı dahil eden \emph{her} dosyaya tüm \code{std}
+ad alanını enjekte eder ve gizli isim çakışmalarına yol açar. Kaynak
+dosyalarda (\code{.cpp}) ölçülü kullanılabilir; en güvenlisi her zaman
+\code{std::} önekini açıkça yazmaktır.}
+
+% =====================================================================
+\gsec{Temel Tipler, Değişkenler ve auto}
+
+C++ \emph{statik tipli} bir dildir: her değişkenin tipi derleme zamanında
+bilinir ve sabittir. Temel (yerleşik) tipler bellekte belirli boyutlar
+kaplar ve belirli değer aralıklarına sahiptir.
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Tip} & \textbf{Tipik Boyut} & \textbf{Açıklama} \\
+\midrule
+\code{bool} & 1 bayt & \code{true} / \code{false} \\
+\code{char} & 1 bayt & Karakter / küçük tam sayı \\
+\code{int} & 4 bayt & Tam sayı ($\approx \pm 2.1$ milyar) \\
+\code{long long} & 8 bayt & Büyük tam sayı \\
+\code{float} & 4 bayt & Tek hassasiyetli ondalık \\
+\code{double} & 8 bayt & Çift hassasiyetli ondalık \\
+\code{std::size\_t} & 8 bayt & İşaretsiz boyut/indeks tipi \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <cstdint>
+
+int main() {
+    // Modern C++: kume parantezli baslatma (uniform initialization)
+    int    age{25};            // brace-init: daraltmaya (narrowing) izin vermez
+    double pi{3.14159};
+    bool   active{true};
+    char   letter{'A'};
+    std::string name{"Ada"};
+
+    // int hata{3.14};        // HATA: double -> int daraltma engellenir (guvenli!)
+
+    // 'auto': tipi derleyici initializer'dan CIKARIR
+    auto number = 42;            // int
+    auto ratio = 3.5;          // double
+    auto text = std::string{"otomatik"};  // std::string
+    auto& ref = age;          // int& (referans icin & yaz)
+
+    // Tamsayi literalleri ve ayirici
+    auto big = 1'000'000;   // ' okunabilirlik ayiricisi (C++14)
+    std::uint64_t mask = 0xFF00;   // onaltilik (hex)
+
+    std::cout << name << ", " << age << " (auto sayi=" << number << ")\n";
+
+    // const ve constexpr
+    const int CONSTANT = 100;             // calisma zamani sabiti
+    constexpr int COMPILE_CONSTANT = 50; // derleme zamani sabiti
+    std::cout << CONSTANT + COMPILE_CONSTANT << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{\code{auto}, kodu kısaltır ve tip tekrarını önler; özellikle uzun
+iteratör tiplerinde (\code{std::vector<int>::iterator} yerine \code{auto})
+çok değerlidir. Ancak niyeti belirsizleştirdiği yerlerde açık tip yazmak
+daha okunur olabilir. Kume parantezli başlatma (\code{\{\}}) ise ``daraltma''
+(narrowing) dönüşümlerini derleme zamanında yakaladığı için en güvenli
+başlatma biçimidir.}
+
+% =====================================================================
+\gsec{Kontrol Akışı}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <string>
+
+int main() {
+    int score = 75;
+
+    // if / else if / else
+    if (score >= 90)      std::cout << "AA\n";
+    else if (score >= 70) std::cout << "BB\n";
+    else                 std::cout << "Kaldi\n";
+
+    // switch: tam sayi/enum degerlerine dallan
+    int day = 3;
+    switch (day) {
+        case 1: std::cout << "Pazartesi\n"; break;
+        case 3: std::cout << "Carsamba\n";  break;
+        default: std::cout << "Diger\n";    break;
+    }
+
+    // Klasik for
+    for (int i = 0; i < 5; ++i) std::cout << i << " ";
+    std::cout << "\n";
+
+    // while ve do-while
+    int n = 3;
+    while (n > 0) { std::cout << n << " "; --n; }
+    std::cout << "\n";
+
+    // RANGE-BASED FOR (C++11): en cok tercih edilen dongu bicimi
+    std::vector<std::string> colors{"kirmizi", "yesil", "mavi"};
+    for (const auto& color : colors)      // kopyalamadan gez (const ref)
+        std::cout << color << " ";
+    std::cout << "\n";
+
+    // Indeksle gezmek gerekiyorsa yapısal bağlama ile (C++17)
+    for (std::size_t i = 0; i < colors.size(); ++i)
+        std::cout << i << ":" << colors[i] << " ";
+    std::cout << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{Range-based for} (\code{for (auto\& x : kap)}) modern C++'ın
+tercih edilen döngüsüdür: indeks hatası (off-by-one) riskini ortadan
+kaldırır ve niyeti nettir. Elemanları değiştirmeyecekseniz \code{const auto\&},
+değiştirecekseniz \code{auto\&}, ucuz kopyalanabilir küçük tipler için
+\code{auto} kullanın.}
+
+% =====================================================================
+\gsec{Fonksiyonlar}
+
+Fonksiyonlar, kodu yeniden kullanılabilir birimlere böler. C++'ta
+parametreler değere, referansa veya sabit referansa göre geçirilebilir ---
+bu seçim hem performansı hem anlamı belirler.
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <vector>
+
+// 1) DEGERE gore: kopya alir; kucuk tipler icin uygun
+int square(int x) { return x * x; }
+
+// 2) REFERANSA gore: cagiranin degiskenini DEGISTIRIR
+void double_value(int& x) { x *= 2; }
+
+// 3) SABIT REFERANSA gore: buyuk nesneyi KOPYALAMADAN, degistirmeden gecir
+double average(const std::vector<double>& values) {
+    double sum = 0;
+    for (double v : values) sum += v;
+    return values.empty() ? 0.0 : sum / values.size();
+}
+
+// 4) VARSAYILAN argumanlar
+void greet(const std::string& name, const std::string& title = "Sn.") {
+    std::cout << title << " " << name << ", merhaba!\n";
+}
+
+// 5) ASIRI YUKLEME (overloading): ayni isim, farkli parametre listeleri
+int add(int a, int b)          { return a + b; }
+double add(double a, double b) { return a + b; }
+
+// 6) Sondaki donus tipi (trailing return type) -- karmasik tiplerde
+auto multiply(int a, int b) -> int { return a * b; }
+
+int main() {
+    std::cout << square(6) << "\n";                 // 36
+
+    int value = 10;
+    double_value(value);                          // referans -> deger degisir
+    std::cout << value << "\n";                    // 20
+
+    std::cout << average({1.0, 2.0, 3.0, 4.0}) << "\n";  // 2.5
+
+    greet("Ada");                                  // varsayilan unvan
+    greet("Turing", "Prof.");
+
+    std::cout << add(2, 3) << " " << add(2.5, 3.5) << "\n";  // 5  6
+    std::cout << multiply(4, 5) << "\n";           // 20
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{\textbf{Parametre geçirme kuralı:} Küçük, ucuz kopyalanan tipler
+(\code{int}, \code{double}, işaretçi) için \emph{değere} geçirin. Büyük
+nesneleri (\code{std::string}, \code{std::vector}, sınıflar) yalnızca
+okuyacaksanız \code{const T\&} ile geçirin --- kopya maliyetinden kaçınır.
+Fonksiyonun çağıranın nesnesini \emph{değiştirmesi} gerekiyorsa \code{T\&}
+(referans) kullanın.}
+
+% #####################################################################
+\gpart{2}{Nesne Yönelimli Programlama}
+% #####################################################################
+
+% =====================================================================
+\gsec{Sınıflar ve Nesneler}
+
+Sınıf (class), veriyi (üye değişkenler) ve o veri üzerinde çalışan
+davranışı (üye fonksiyonlar) tek bir birimde toplayan kullanıcı tanımlı
+bir tiptir. Bu birleştirmeye \textbf{kapsülleme} (encapsulation) denir.
+Erişim belirleyiciler (\code{private}, \code{public}, \code{protected})
+verinin dışarıdan nasıl görüneceğini kontrol eder.
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+#include <stdexcept>
+
+class BankAccount {
+private:                          // disaridan ERISILEMEZ (kapsulleme)
+    std::string owner_;
+    double balance_;
+
+public:                           // genel arayuz (interface)
+    // Yapici (constructor): nesne olustugunda uyeleri baslatir
+    BankAccount(std::string owner, double initial = 0.0)
+        : owner_(std::move(owner)), balance_(initial) {
+        if (initial < 0) throw std::invalid_argument("Negatif bakiye");
+    }
+
+    // Uye fonksiyonlar (metotlar) -- veriyi kontrollu degistirir
+    void deposit(double amount) {
+        if (amount <= 0) throw std::invalid_argument("Gecersiz miktar");
+        balance_ += amount;
+    }
+
+    void withdraw(double amount) {
+        if (amount > balance_) throw std::runtime_error("Yetersiz bakiye");
+        balance_ -= amount;
+    }
+
+    // const uye fonksiyon: nesneyi DEGISTIRMEZ (yalnizca okur)
+    double balance() const { return balance_; }
+    const std::string& owner() const { return owner_; }
+};
+
+int main() {
+    BankAccount account("Ada Lovelace", 1000);
+    account.deposit(500);
+    account.withdraw(200);
+    std::cout << account.owner() << " bakiye: " << account.balance() << "\n"; // 1300
+
+    try {
+        account.withdraw(999999);        // yetersiz bakiye -> istisna
+    } catch (const std::exception& e) {
+        std::cout << "Hata: " << e.what() << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{Kapsülleme ilkesi:} Üye değişkenleri \code{private} yapın ve
+dışarıya yalnızca kontrollü bir \code{public} arayüz sunun. Böylece sınıfın
+iç durumu her zaman tutarlı (invariant) kalır --- yukarıda bakiye asla
+negatif olamaz, çünkü tek değiştirme yolu \code{yatir}/\code{cek}
+metotlarından geçer ve onlar doğrulama yapar. \code{struct} ile \code{class}
+teknik olarak yalnızca varsayılan erişim belirleyicisinde farklıdır
+(\code{struct}: public, \code{class}: private).}
+
+% =====================================================================
+\gsec{Kalıtım (Inheritance)}
+
+Kalıtım, mevcut bir sınıftan (\emph{taban}, base) yeni bir sınıf
+(\emph{türetilmiş}, derived) oluşturmayı sağlar. Türetilmiş sınıf, tabanın
+üyelerini devralır ve genişletir. Bu, ``bir-türüdür'' (is-a) ilişkisini
+modeller: bir \code{Kopek}, bir \code{Hayvan}'dır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+// TABAN sinif
+class Animal {
+protected:                        // turetilmis siniflar erisebilir, disari erisemez
+    std::string name_;
+public:
+    Animal(std::string name) : name_(std::move(name)) {}
+    void breathe() const { std::cout << name_ << " nefes aliyor\n"; }
+    const std::string& name() const { return name_; }
+};
+
+// TURETILMIS sinif: Hayvan'dan public kalitim
+class Dog : public Animal {
+    std::string breed_;
+public:
+    // Taban yapicisini uye baslatma listesinde CAGIR
+    Dog(std::string name, std::string breed)
+        : Animal(std::move(name)), breed_(std::move(breed)) {}
+
+    void bark() const { std::cout << name_ << " (" << breed_ << "): Hav!\n"; }
+};
+
+int main() {
+    Dog k("Karabas", "Kangal");
+    k.breathe();     // TABAN'dan devralindi
+    k.bark();        // KENDI metodu
+    std::cout << k.name() << "\n";   // taban'in public metodu
+    return 0;
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{@{}lp{9.2cm}@{}}
+\toprule
+\textbf{Kalıtım türü} & \textbf{Etkisi} \\
+\midrule
+\code{public} & Taban'ın public'i public, protected'ı protected kalır. (En yaygın, ``is-a''.) \\
+\code{protected} & Taban'ın public ve protected üyeleri protected olur. \\
+\code{private} & Taban'ın tüm üyeleri private olur. (``ile-gerçeklenmiştir''.) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =====================================================================
+\gsec{Polimorfizm ve Sanal Fonksiyonlar}
+
+Polimorfizm (``çok biçimlilik''), bir taban sınıf işaretçisi/referansı
+üzerinden çağrılan bir fonksiyonun, \emph{çalışma zamanında} gerçek nesnenin
+tipine göre doğru sürümünü çalıştırmasıdır. Bu, \code{virtual} anahtar
+kelimesiyle sağlanır ve nesne yönelimli tasarımın en güçlü aracıdır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <memory>
+
+// Soyut taban sinif (abstract base class / arayuz)
+class Shape {
+public:
+    // Saf sanal fonksiyon (= 0): govdesi yok, alt siniflar MECBUREN yazar
+    virtual double area() const = 0;
+    virtual void draw() const = 0;
+
+    // SANAL YIKICI: taban isaretcisiyle silmede kritik!
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+    double radius_;
+public:
+    Circle(double r) : radius_(r) {}
+    double area() const override { return 3.14159 * radius_ * radius_; }
+    void draw() const override { std::cout << "Daire (r=" << radius_ << ")\n"; }
+};
+
+class Rectangle : public Shape {
+    double width_, height_;
+public:
+    Rectangle(double e, double b) : width_(e), height_(b) {}
+    double area() const override { return width_ * height_; }
+    void draw() const override { std::cout << "Dikdortgen " << width_ << "x" << height_ << "\n"; }
+};
+
+int main() {
+    // Taban isaretcileriyle farkli turleri TEK kapta tut (polimorfizm)
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.push_back(std::make_unique<Circle>(2.0));
+    shapes.push_back(std::make_unique<Rectangle>(3.0, 4.0));
+
+    double total = 0;
+    for (const auto& s : shapes) {
+        s->draw();                     // dogru ciz() CALISMA ZAMANINDA secilir
+        total += s->area();          // dogru alan() cagrilir
+    }
+    std::cout << "Toplam alan: " << total << "\n";
+    return 0;
+}   // unique_ptr'lar silinirken SANAL yikici sayesinde dogru yikici cagrilir
+\end{lstlisting}
+
+\uyari{\textbf{Sanal yıkıcı kritiktir:} Bir sınıf polimorfik olarak
+kullanılacaksa (taban işaretçisiyle türetilmiş nesne tutulup silinecekse),
+tabanın yıkıcısı \code{virtual} olmalıdır. Aksi halde \code{delete taban\_ptr}
+yalnızca tabanın yıkıcısını çağırır, türetilmişinkini \emph{atlar} ---
+kaynak sızıntısı ve tanımsız davranış. Kural: ``Sanal fonksiyonu olan her
+sınıfın sanal yıkıcısı olmalıdır.''}
+
+\bilgi{\code{override} anahtar kelimesi zorunlu değildir ama her zaman
+kullanın: derleyici, gerçekten bir taban sanal fonksiyonunu geçersiz kılıp
+kılmadığınızı kontrol eder. İmzada küçük bir hata (örneğin \code{const}
+unutmak) yaparsanız, \code{override} olmadan sessizce \emph{yeni} bir
+fonksiyon tanımlarsınız; \code{override} ile derleme hatası alır ve hatayı
+anında görürsünüz. \code{final} ise bir sınıfın/fonksiyonun daha fazla
+türetilmesini/geçersiz kılınmasını engeller.}
+
+% #####################################################################
+\gpart{3}{Bellek Modeli ve İşaretçiler}
+% #####################################################################
+
+% =====================================================================
+\gsec{Programın Bellek Düzeni}
+
+Bir C++ programı çalışırken belleği birkaç mantıksal bölgeye ayrılır. Bu
+bölgeleri anlamak, kaynak yönetiminin temelidir; çünkü bir nesnenin
+\emph{nerede} yaşadığı, ne kadar yaşadığını ve onu kimin temizlemesi
+gerektiğini belirler.
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{9.0cm}@{}}
+\toprule
+\textbf{Bölge} & \textbf{Açıklama} \\
+\midrule
+\textbf{Kod (text)} & Makine talimatları. Salt okunur, sabit boyut. \\
+\textbf{Statik/Global} & Global ve \code{static} değişkenler. Program boyunca yaşar. \\
+\textbf{Yığın (stack)} & Yerel değişkenler, fonksiyon çağrı çerçeveleri.
+Otomatik ömür: kapsam bitince \emph{otomatik} yok edilir. Hızlı ama sınırlı. \\
+\textbf{Öbek (heap)} & \code{new}/\code{malloc} ile ayrılan bellek. Ömrü
+programcı yönetir. Esnek ama pahalı ve sızıntıya açık. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}
+#include <iostream>
+
+int global_value = 10;          // statik/global bolge
+
+void func() {
+    int local = 5;              // YIĞIN (stack): kapsam bitince otomatik silinir
+    static int calls = 0;       // STATIK: cagrilar arasi degerini korur
+    int* heap_val = new int(42); // ÖBEK (heap): ELLE silinmeli!
+
+    ++calls;
+    std::cout << "yerel=" << local << " cagri=" << calls
+              << " obek=" << *heap_val << "\n";
+
+    delete heap_val;             // AKSI HALDE BELLEK SIZINTISI
+}   // 'yerel' burada otomatik yok olur; 'obekten' isaretcisi de,
+    // ama isaret ettigi obek bellegi delete edilmezse sizardi.
+
+int main() {
+    func();
+    func();
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{Otomatik ömür (automatic storage)} C++'ın en güçlü özelliğidir:
+yığındaki nesneler, kapsam (scope, yani \code{\{ \}}) bittiğinde derleyici
+tarafından \emph{garantili} olarak yok edilir; siz hiçbir şey yapmazsınız.
+Bu garanti, ileride göreceğimiz RAII deseninin temelidir. Öbekteki nesnelerde
+ise böyle bir garanti yoktur; onları siz temizlemekle yükümlüsünüz.}
+
+% =====================================================================
+\gsec{new ve delete: Öbek Belleği Yönetimi}
+
+\code{new} operatörü öbekte bellek ayırır \emph{ve} nesnenin yapıcısını
+çağırır. \code{delete} ise yıkıcıyı çağırır \emph{ve} belleği geri verir.
+Bu ikisi C'deki \code{malloc}/\code{free}'den farklıdır: onlar yapıcı/yıkıcı
+çalıştırmaz, yalnızca ham bellek yönetir.
+
+\begin{lstlisting}
+#include <iostream>
+
+struct Resource {
+    int id;
+    Resource(int i) : id(i) { std::cout << "Kaynak " << id << " olustu\n"; }
+    ~Resource()             { std::cout << "Kaynak " << id << " yok oldu\n"; }
+};
+
+int main() {
+    // Tekil nesne
+    Resource* k = new Resource(1);   // bellek ayIr + yapIcI cagIr
+    std::cout << "id = " << k->id << "\n";
+    delete k;                    // yIkIcI cagIr + bellek geri ver
+
+    // Dizi: new[] ve delete[] BIRLIKTE kullanIlmalI
+    Resource* arr = new Resource[3]{ {10}, {20}, {30} };
+    std::cout << "dizi[1].id = " << arr[1].id << "\n";
+    delete[] arr;               // MUTLAKA delete[] -- 'delete' YANLIS olur
+
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{\code{new[]} ile ayrılan bellek \code{delete[]} ile, \code{new} ile
+ayrılan \code{delete} ile serbest bırakılmalıdır. \code{new[]} belleğini
+düz \code{delete} ile silmek \textbf{tanımsız davranıştır} (undefined
+behavior); genellikle yalnızca ilk elemanın yıkıcısı çağrılır ve bellek
+bozulur. Modern C++'ta bu hatalardan kaçınmak için \emph{ham} \code{new}/\code{delete}
+yerine akıllı işaretçileri ve konteynerleri (\code{std::vector}) tercih edin.}
+
+\gsub{Bellek Sızıntıları ve İkili Silme}
+
+En sık yapılan iki hata: belleği hiç silmemek (sızıntı) veya aynı belleği
+iki kez silmek (double free).
+
+\begin{lstlisting}
+void leak() {
+    int* p = new int(5);
+    // ... delete unutuldu -> SIZINTI: bu bellek program bitene kadar kayIp
+}
+
+void double_delete() {
+    int* p = new int(5);
+    delete p;
+    delete p;      // TANIMSIZ DAVRANIS: ayni bellegi iki kez silmek
+    // Cozum: sildikten sonra p = nullptr; yapmak
+    //   (nullptr'I delete etmek guvenlidir, hicbir sey yapmaz)
+}
+
+void dangling() {
+    int* p = new int(5);
+    delete p;
+    std::cout << *p;   // SARKAN ISARETCI: silinen bellege erisim -> UB
+    p = nullptr;       // dogru alIskanlIk
+}
+\end{lstlisting}
+
+\ipucu{Bu üç sorunun (sızıntı, ikili silme, sarkan işaretçi) \emph{kalıcı}
+çözümü, ham \code{new}/\code{delete}'i elle yönetmeyi bırakıp sahipliği
+akıllı işaretçilere devretmektir. Kısım 2'de bunu göreceğiz. Kural:
+``Modern C++ kodunda çıplak \code{new} ve \code{delete} neredeyse hiç
+görünmemelidir.''}
+
+% =====================================================================
+\gsec{İşaretçiler ve Referanslar}
+
+İşaretçi (pointer), başka bir nesnenin \emph{bellek adresini} tutan bir
+değişkendir. Referans (reference) ise mevcut bir nesneye verilen
+\emph{takma addır} (alias). İkisi de dolaylı erişim sağlar ama davranışları
+önemli ölçüde farklıdır.
+
+\begin{lstlisting}
+#include <iostream>
+
+int main() {
+    int x = 10;
+
+    // ISARETCI: x'in adresini tutar; yeniden atanabilir, null olabilir
+    int* p = &x;       // p, x'i gosterir
+    *p = 20;           // dereference: x'in degerini degistirir
+    std::cout << "x = " << x << "\n";   // 20
+
+    int y = 99;
+    p = &y;            // isaretci baskasini gosterecek sekilde DEGISTIRILEBILIR
+    std::cout << "*p = " << *p << "\n"; // 99
+
+    // REFERANS: x'e takma ad; olusturuldugu anda baglanIr, degistirilemez
+    int& r = x;        // r, x'in ta kendisidir
+    r = 30;            // x'i degistirir (yeni degisken DEGIL)
+    std::cout << "x = " << x << "\n";   // 30
+    // int& r2;        // HATA: referans mutlaka baslangicta baglanmalI
+    // r = y;          // bu y'yi r'ye atamaz; x = y anlamIna gelir!
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{3.8cm}@{}}
+\toprule
+\textbf{Özellik} & \textbf{İşaretçi (\code{T*})} & \textbf{Referans (\code{T\&})} \\
+\midrule
+Null olabilir mi? & Evet (\code{nullptr}) & Hayır \\
+Yeniden bağlanır mı? & Evet, başkasını gösterebilir & Hayır, sabit bağ \\
+Başlatma zorunlu mu? & Hayır (ama tehlikeli) & Evet \\
+Aritmetik yapılır mı? & Evet (\code{p+1}) & Hayır \\
+Adres alınır mı? & \code{\&p} işaretçinin adresi & \code{\&r} nesnenin adresi \\
+Kullanım & Sahiplik, dizi, opsiyonel & Fonksiyon parametresi, takma ad \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bilgi{\textbf{Ne zaman hangisi?} Bir fonksiyona ``değiştirilebilir ama
+her zaman geçerli'' bir nesne geçiriyorsanız \textbf{referans} (\code{T\&})
+kullanın. ``Opsiyonel'' (olmayabilir) veya ``yeniden yönlendirilebilir''
+bir bağlantı gerekiyorsa \textbf{işaretçi} kullanın. Büyük nesneleri
+kopyalamadan salt okunur geçirmek için \code{const T\&} idealdir.}
+
+\gsub{const ve İşaretçiler}
+
+\code{const} anahtar kelimesinin işaretçilerle konumu, neyin sabit
+olduğunu değiştirir. Bu, C++'ta sık kafa karıştıran ama kritik bir konudur.
+Okumak için işaretçiyi \emph{sağdan sola} okuyun.
+
+\begin{lstlisting}
+int value = 10, other = 20;
+
+// 1) Gosterilen SABIT, isaretci degisebilir
+const int* p1 = &value;     // "pointer to const int"
+// *p1 = 5;                 // HATA: gosterilen degeri degistiremez
+p1 = &other;                // OK: isaretci baskasini gosterebilir
+
+// 2) Isaretci SABIT, gosterilen degisebilir
+int* const p2 = &value;     // "const pointer to int"
+*p2 = 5;                    // OK: gosterilen degeri degistirir
+// p2 = &other;            // HATA: isaretci yeniden atanamaz
+
+// 3) Her ikisi de SABIT
+const int* const p3 = &value;
+// *p3 = 5;                // HATA
+// p3 = &baska;           // HATA
+
+// Okuma kurali (sagdan sola):
+//   const int* const p3
+//   p3, const bir (isaretci) -> const int'e
+\end{lstlisting}
+
+\ipucu{Pratik kural: \code{const}'ı işaretçi yıldızının \emph{soluna}
+yazarsanız \emph{gösterilen} sabittir (\code{const int* p}); \emph{sağına}
+yazarsanız \emph{işaretçinin kendisi} sabittir (\code{int* const p}).
+Salt okunur veri geçirmek için en sık kullanılan biçim birincisidir:
+\code{const T*} veya \code{const T\&}.}
+
+\gsub{Boş, Sarkan ve Yaban İşaretçiler}
+
+\begin{lstlisting}
+int* wild;                 // YABAN (wild): baslatilmadi, cop adres -> UB
+int* null_ptr = nullptr;         // BOS (null): guvenli, "hicbir seyi gostermiyor"
+
+if (null_ptr == nullptr)         // guvenli kontrol
+    std::cout << "bos isaretci\n";
+
+int* dangling = new int(5);
+delete dangling;              // bellek geri verildi
+// sarkan artik SARKAN (dangling): gecersiz bellegi gosteriyor
+dangling = nullptr;           // dogru alIskanlIk: sildikten sonra sIfIrla
+
+// nullptr her zaman C++11+ ile kullanIlmalI; eski 'NULL' veya '0' DEGIL
+void f(int);
+void f(char*);
+// f(NULL);   // belirsiz olabilir (NULL genelde 0'dir -> f(int))
+// f(nullptr); // net: f(char*) cagrIlIr
+\end{lstlisting}
+
+\uyari{\code{nullptr}, C++11 ile gelen tip güvenli boş işaretçi sabitidir.
+Eski \code{NULL} makrosu genellikle tam sayı \code{0} olarak tanımlıdır ve
+aşırı yüklenmiş fonksiyonlarda yanlış olanı seçebilir. Modern kodda her
+zaman \code{nullptr} kullanın.}
+
+% #####################################################################
+\gpart{4}{RAII ve Akıllı İşaretçiler}
+% #####################################################################
+
+% =====================================================================
+\gsec{RAII: Kaynak Edinimi Başlatmadır}
+
+RAII (Resource Acquisition Is Initialization), C++'ın en önemli deyimidir.
+Fikir basittir: bir \emph{kaynağı} (bellek, dosya, kilit, soket) bir
+\emph{nesnenin} yapıcısında edin, yıkıcısında serbest bırak. Nesne yığında
+yaşadığından, kapsam bittiğinde yıkıcı \emph{otomatik} ve \emph{garantili}
+çalışır --- istisna atılsa bile. Böylece kaynak asla sızmaz.
+
+\begin{lstlisting}
+#include <iostream>
+
+// RAII sarmalayIcI: bir dosya tanIticIsInI (handle) yonetir
+class FileHolder {
+    std::FILE* file_;
+public:
+    explicit FileHolder(const char* name, const char* mode)
+        : file_(std::fopen(name, mode)) {
+        if (!file_) throw std::runtime_error("Dosya acilamadi");
+        std::cout << "Dosya acildi\n";
+    }
+    ~FileHolder() {                      // YIKICI: kaynagi serbest birak
+        if (file_) { std::fclose(file_); std::cout << "Dosya kapandi\n"; }
+    }
+    std::FILE* get() const { return file_; }
+
+    // Kopyalamayi engelle (kaynak tekil sahiplikte -- Kisim 3'te aciklanacak)
+    FileHolder(const FileHolder&) = delete;
+    FileHolder& operator=(const FileHolder&) = delete;
+};
+
+void write() {
+    FileHolder f("/tmp/test.txt", "w");
+    std::fputs("Merhaba RAII\n", f.get());
+    // throw std::runtime_error("hata!");  // istisna olsa BILE dosya kapanIr
+}   // kapsam bitti -> f'nin yIkIcIsI otomatik cagrIlIr -> dosya kapanIr
+
+int main() {
+    write();
+    std::cout << "Bitti\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{RAII'nin gücü \textbf{istisna güvenliğidir}: fonksiyonun ortasında
+bir istisna atılsa bile, yığın çözülürken (stack unwinding) tüm yerel
+nesnelerin yıkıcıları çalışır. Böylece dosya kapatma, kilit bırakma, bellek
+serbest bırakma gibi temizlik işlemleri \emph{unutulamaz}. \code{std::vector},
+\code{std::string}, \code{std::lock\_guard} ve akıllı işaretçiler --- hepsi
+RAII uygular.}
+
+% =====================================================================
+\gsec{std::unique\_ptr: Tekil Sahiplik}
+
+\code{std::unique\_ptr}, bir öbek nesnesinin \emph{tek} sahibidir.
+Kopyalanamaz (iki sahip olamaz) ama \emph{taşınabilir} (sahiplik devri).
+Kapsam bittiğinde işaret ettiği nesneyi otomatik siler. Ham işaretçiyle
+aynı boyuttadır --- yani sıfır ek yük (zero overhead).
+
+\begin{lstlisting}
+#include <iostream>
+#include <memory>
+
+struct Object {
+    int id;
+    Object(int i) : id(i) { std::cout << "Nesne " << id << " olustu\n"; }
+    ~Object()             { std::cout << "Nesne " << id << " silindi\n"; }
+    void greet() const   { std::cout << "Ben " << id << "\n"; }
+};
+
+std::unique_ptr<Object> produce(int id) {
+    // make_unique: istisna guvenli, tercih edilen olusturma yolu
+    return std::make_unique<Object>(id);
+}   // sahiplik cagIrana TASINIR (move) -- kopyalanmaz
+
+int main() {
+    std::unique_ptr<Object> a = std::make_unique<Object>(1);
+    a->greet();                       // -> operatoru ham isaretci gibi calisir
+
+    // KOPYALAMA YASAK -- derleme hatasi:
+    // std::unique_ptr<Object> b = a;  // HATA: unique_ptr kopyalanamaz
+
+    // TASIMA serbest -- sahiplik a'dan b'ye gecer
+    std::unique_ptr<Object> b = std::move(a);
+    if (!a) std::cout << "a artik bos (nullptr)\n";
+    b->greet();
+
+    // Fonksiyondan donen sahipligi al
+    std::unique_ptr<Object> c = produce(2);
+
+    // release / reset
+    Object* raw = c.release();         // sahipligi BIRAK, ham isaretci al (silme SANA kalIr)
+    delete raw;                       // artik elle silmelisin
+
+    b.reset();                        // b'nin nesnesini simdi sil (Nesne 1 silinir)
+    std::cout << "main sonu\n";
+    return 0;
+}   // program sonu: kalan tum unique_ptr'lar nesnelerini otomatik siler
+\end{lstlisting}
+
+\ipucu{Her zaman \code{std::make\_unique<T>(...)} kullanın, \code{unique\_ptr<T>(new T(...))}
+değil. \code{make\_unique} daha kısadır, \code{T}'yi tekrar yazmaz ve
+istisna güvenlidir. \code{unique\_ptr}, dizi için de çalışır:
+\code{std::unique\_ptr<int[]> d = std::make\_unique<int[]>(100);} otomatik
+olarak \code{delete[]} kullanır.}
+
+\gsub{Özel Silici (Custom Deleter)}
+
+\code{unique\_ptr}, belleği nasıl serbest bırakacağını özelleştirmenize
+izin verir. Bu, \code{delete} dışında bir temizlik gerektiren kaynaklar
+(C API tanıtıcıları, \code{fclose}, \code{free}) için idealdir.
+
+\begin{lstlisting}
+#include <cstdio>
+#include <memory>
+
+int main() {
+    // FILE* icin fclose ile temizleyen unique_ptr
+    auto deleter = [](std::FILE* f){ if (f) std::fclose(f); };
+    std::unique_ptr<std::FILE, decltype(deleter)> file(
+        std::fopen("/tmp/veri.txt", "w"), deleter);
+
+    if (file) std::fputs("ozel silici ile\n", file.get());
+    return 0;
+}   // dosya kapsam disi -> lambda silici cagrIlIr -> fclose
+\end{lstlisting}
+
+% =====================================================================
+\gsec{std::shared\_ptr ve std::weak\_ptr: Paylaşımlı Sahiplik}
+
+\code{std::shared\_ptr}, bir nesnenin \emph{birden fazla} sahibi olmasına
+izin verir. Bir \emph{referans sayacı} tutar: her kopya sayacı artırır, her
+yok olma azaltır. Sayaç sıfıra düştüğünde nesne silinir. Bu esneklik bir
+maliyetle gelir: sayaç için ek bir kontrol bloğu ve atomik güncellemeler.
+
+\begin{lstlisting}
+#include <iostream>
+#include <memory>
+
+struct Node {
+    int value;
+    Node(int v) : value(v) { std::cout << "Dugum " << v << " olustu\n"; }
+    ~Node()                { std::cout << "Dugum " << value << " silindi\n"; }
+};
+
+int main() {
+    std::shared_ptr<Node> a = std::make_shared<Node>(1);
+    std::cout << "Sayac: " << a.use_count() << "\n";   // 1
+
+    {
+        std::shared_ptr<Node> b = a;    // KOPYA: sayac artar
+        std::cout << "Sayac: " << a.use_count() << "\n";  // 2
+        b->value = 100;                  // ayni nesne (a ile paylasImlI)
+        std::cout << "a->deger = " << a->value << "\n";   // 100
+    }   // b yok oldu -> sayac azalIr
+
+    std::cout << "Sayac: " << a.use_count() << "\n";   // 1
+    return 0;
+}   // a yok oldu -> sayac 0 -> "Dugum 1 silindi"
+\end{lstlisting}
+
+\uyari{\code{shared\_ptr} her nesne için ayrı bir kontrol bloğu tahsis eder
+ve sayaç güncellemeleri iş parçacığı güvenliği için atomiktir --- bu,
+\code{unique\_ptr}'a göre gözle görülür bir ek yüktür. \textbf{Varsayılan
+tercihiniz her zaman \code{unique\_ptr} olmalıdır}; yalnızca sahipliğin
+gerçekten \emph{paylaşılması} gerektiğinde \code{shared\_ptr}'a geçin.
+\code{make\_shared}, nesneyi ve kontrol bloğunu tek tahsiste birleştirerek
+performansı iyileştirir.}
+
+\gsub{Döngüsel Referans Sorunu ve weak\_ptr}
+
+\code{shared\_ptr}'ın en büyük tuzağı \textbf{döngüsel referanstır}: iki
+nesne birbirini \code{shared\_ptr} ile tutarsa, sayaçları asla sıfıra
+düşmez ve ikisi de asla silinmez --- bir bellek sızıntısı. Çözüm,
+döngüyü kıran taraflardan birinde \code{std::weak\_ptr} kullanmaktır.
+\code{weak\_ptr}, nesneyi \emph{sahiplenmeden} gözlemler; sayacı etkilemez.
+
+\begin{lstlisting}
+#include <iostream>
+#include <memory>
+
+struct Child;
+struct Parent {
+    std::shared_ptr<Child> child;
+    ~Parent() { std::cout << "Ebeveyn silindi\n"; }
+};
+struct Child {
+    // DIKKAT: ebeveyni shared_ptr ile tutsaydIk DONGU olurdu.
+    // weak_ptr ile sahiplenmeden gozlemliyoruz:
+    std::weak_ptr<Parent> parent;
+    ~Child() { std::cout << "Cocuk silindi\n"; }
+};
+
+int main() {
+    auto e = std::make_shared<Parent>();
+    auto c = std::make_shared<Child>();
+
+    e->child = c;        // Ebeveyn -> Cocuk (shared, sahiplik)
+    c->parent = e;      // Cocuk -> Ebeveyn (weak, gozlem) -> DONGU YOK
+
+    // weak_ptr'I kullanmak icin once lock() ile shared_ptr'a cevir
+    if (auto locked = c->parent.lock()) {
+        std::cout << "Ebeveyn hala yasiyor, sayac: "
+                  << locked.use_count() << "\n";
+    }
+    return 0;
+}   // Her iki nesne de dogru sekilde silinir (dongu kIrIldI)
+\end{lstlisting}
+
+\bilgi{\code{weak\_ptr}, ``sahiplenmeyen gözlemci'' rolündedir. Nesneye
+erişmek için önce \code{lock()} çağırıp geçici bir \code{shared\_ptr}
+elde edersiniz; nesne çoktan silinmişse \code{lock()} boş bir
+\code{shared\_ptr} döndürür ve siz güvenle kontrol edebilirsiniz. Ebeveyn--çocuk,
+gözlemci (observer), önbellek gibi ilişkilerde döngüyü kırmak için idealdir.}
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{8.6cm}@{}}
+\toprule
+\textbf{İşaretçi} & \textbf{Ne zaman kullanılır} \\
+\midrule
+\code{unique\_ptr} & \textbf{Varsayılan.} Tekil sahiplik. Sıfır ek yük. \\
+\code{shared\_ptr} & Sahiplik gerçekten paylaşılmalıysa. Atomik sayaç, ek yük. \\
+\code{weak\_ptr} & Sahiplenmeden gözlem; \code{shared\_ptr} döngülerini kırmak. \\
+Ham \code{T*} & Sahiplenmeyen, salt gözlem/parametre. \emph{Asla \code{delete} etmeyin.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% #####################################################################
+\gpart{5}{Özel Üye Fonksiyonlar --- Beşin Kuralı}
+% #####################################################################
+
+% =====================================================================
+\gsec{Değer Kategorileri: lvalue ve rvalue}
+
+Beşin Kuralını anlamak için önce \emph{değer kategorilerini} anlamak
+gerekir. Basitçe: \textbf{lvalue}, bir adı/adresi olan, kalıcı bir nesnedir
+(soluna atama yapılabilir). \textbf{rvalue}, geçici, isimsiz, birazdan yok
+olacak bir değerdir (bir ifadenin sonucu, geçici nesne).
+
+\begin{lstlisting}
+#include <string>
+
+std::string produce() { return "gecici"; }
+
+int main() {
+    std::string a = "merhaba";   // a bir LVALUE (isimli, kalIcI)
+    std::string b = a;           // a lvalue -> KOPYA yapIlIr
+
+    std::string c = produce();      // uret()'in dondurdugu gecici bir RVALUE
+                                 // -> TASIMA (move) yapIlabilir (ucuz)
+    std::string d = a + b;       // (a+b) gecici bir RVALUE
+
+    // std::move: bir lvalue'yu rvalue'ymus GIBI davranmaya "iter"
+    std::string e = std::move(a);  // a'nIn icerigi e'ye TASINIR
+    // artik a "gecerli ama belirsiz" durumda -- yeniden atamadan kullanmayIn
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{rvalue referansı} (\code{T\&\&}), yalnızca rvalue'lara
+bağlanabilen özel bir referanstır ve C++11'in taşıma semantiğinin
+temelidir. Bir nesne ``birazdan zaten yok olacaksa'', kaynaklarını
+\emph{kopyalamak} yerine \emph{çalmak} (taşımak) çok daha ucuzdur. İşte
+taşıma yapıcı ve taşıma atama operatörü tam olarak bunu yapar.}
+
+\uyari{\code{std::move} aslında hiçbir şeyi \emph{taşımaz}! Yalnızca bir
+statik dönüşümdür: lvalue'yu rvalue referansına çevirerek derleyiciye
+``bu nesnenin kaynaklarını çalabilirsin'' der. Gerçek taşıma işini, çağrılan
+taşıma yapıcı/atama operatörü yapar. \code{std::move}'dan sonra kaynak
+nesne ``geçerli ama belirsiz'' durumdadır; yeniden atamadan içeriğine
+güvenmeyin.}
+
+% =====================================================================
+\gsec{Yıkıcı (Destructor)}
+
+Yıkıcı, bir nesne yok olduğunda \emph{otomatik} çağrılan özel üye
+fonksiyondur. Görevi, nesnenin sahip olduğu kaynakları (öbek belleği,
+dosyalar, kilitler) serbest bırakmaktır. \code{\~SinifAdi()} biçiminde
+yazılır; parametre almaz, değer döndürmez, aşırı yüklenemez.
+
+\begin{lstlisting}
+#include <iostream>
+#include <cstring>
+
+// Dinamik bir karakter dizisi yoneten basit bir sinif
+class TextHolder {
+    char* data_;
+    std::size_t size_;
+public:
+    // Yapici: kaynak edin (obek bellegi ayIr)
+    TextHolder(const char* s) {
+        size_ = std::strlen(s);
+        data_ = new char[size_ + 1];      // OBEK tahsisi
+        std::strcpy(data_, s);
+        std::cout << "Yapici: \"" << data_ << "\"\n";
+    }
+
+    // YIKICI: kaynagi serbest birak
+    ~TextHolder() {
+        std::cout << "Yikici: \"" << data_ << "\" siliniyor\n";
+        delete[] data_;                    // OBEK bellegini geri ver
+    }
+
+    const char* get() const { return data_; }
+};
+
+int main() {
+    {
+        TextHolder m("merhaba");
+        std::cout << "Icerik: " << m.get() << "\n";
+    }   // kapsam bitti -> m'nin YIKICISI otomatik cagrIlIr
+    std::cout << "Kapsam disi\n";
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Bir sınıf \code{new} ile kaynak ayırıyorsa, yıkıcısında mutlaka
+serbest bırakmalıdır. Ayrıca, bir sınıf temel sınıf (base class) olarak
+kullanılacak ve işaretçiyle silinecekse, yıkıcısı \code{virtual}
+olmalıdır; aksi halde türetilmiş sınıfın yıkıcısı çağrılmaz ve kaynak
+sızar: \code{virtual \~Taban() = default;}}
+
+% =====================================================================
+\gsec{Kopya Yapıcı ve Kopya Atama Operatörü}
+
+Yukarıdaki \code{MetinTutucu} sınıfı tehlikeli bir hataya açık: derleyicinin
+\emph{ürettiği} varsayılan kopya, işaretçiyi olduğu gibi kopyalar (sığ kopya,
+shallow copy). Sonuç: iki nesne aynı öbek belleğini gösterir ve ikisi de
+onu silmeye çalışır --- ikili silme ve çökme! Çözüm, \emph{derin kopya}
+(deep copy) yapan kendi kopya işlemlerimizi yazmaktır.
+
+\gsub{Problem: Sığ Kopya}
+
+\begin{lstlisting}
+// Eger kopya yapici yazmazsak, derleyicinin urettigi SIĞ kopya:
+//   veri_ = digeri.veri_;   // AYNI adresi kopyalar!
+//
+// MetinTutucu a("test");
+// MetinTutucu b = a;        // b.veri_ == a.veri_ (AYNI obek!)
+// -> yikicida: once b siler, sonra a AYNI bellegi tekrar siler -> COKME
+\end{lstlisting}
+
+\gsub{Çözüm: Derin Kopya}
+
+\begin{lstlisting}
+#include <iostream>
+#include <cstring>
+
+class TextHolder {
+    char* data_;
+    std::size_t size_;
+public:
+    TextHolder(const char* s)
+        : size_(std::strlen(s)), data_(new char[size_ + 1]) {
+        std::strcpy(data_, s);
+    }
+    ~TextHolder() { delete[] data_; }
+
+    // KOPYA YAPICI: yeni, BAGIMSIZ bir obek tahsis edip icerigi kopyalar
+    TextHolder(const TextHolder& other)
+        : size_(other.size_), data_(new char[other.size_ + 1]) {
+        std::strcpy(data_, other.data_);   // DERIN kopya
+        std::cout << "Kopya yapici\n";
+    }
+
+    // KOPYA ATAMA OPERATORU: mevcut nesneye baska bir nesnenin kopyasInI ata
+    TextHolder& operator=(const TextHolder& other) {
+        std::cout << "Kopya atama\n";
+        if (this == &other) return *this;   // KENDINE atama korumasi
+
+        // 1) Yeni kaynagi once ayIr (istisna guvenligi icin eskiyi silmeden once)
+        char* newData = new char[other.size_ + 1];
+        std::strcpy(newData, other.data_);
+
+        // 2) Eski kaynagi serbest birak
+        delete[] data_;
+
+        // 3) Yeni duruma gec
+        data_ = newData;
+        size_ = other.size_;
+        return *this;                        // zincirleme icin *this don
+    }
+
+    const char* get() const { return data_; }
+};
+
+int main() {
+    TextHolder a("merhaba");
+    TextHolder b = a;          // KOPYA YAPICI (yeni nesne ilklendiriliyor)
+    TextHolder c("gecici");
+    c = a;                      // KOPYA ATAMA (var olan nesneye atanIyor)
+
+    std::cout << a.get() << " " << b.get() << " " << c.get() << "\n";
+    return 0;
+}   // uc bagImsIz obek, uc ayrI silme -> guvenli
+\end{lstlisting}
+
+\bilgi{\textbf{Kopya yapıcı vs kopya atama farkı:} Kopya yapıcı, \emph{yeni}
+bir nesneyi başka bir nesnenin kopyası olarak \emph{ilklendirir}
+(\code{MetinTutucu b = a;}). Kopya atama ise \emph{zaten var olan} bir
+nesneye başka bir nesnenin değerini \emph{atar} (\code{c = a;}). Atama
+operatörü, önce nesnenin eski kaynağını temizlemek zorundadır; yapıcının
+temizleyecek eski kaynağı yoktur.}
+
+\uyari{Kopya atama operatöründe üç şey kritiktir: (1) \textbf{kendine
+atama} kontrolü (\code{if (this == \&digeri)}), (2) eskiyi silmeden önce
+yeniyi ayırarak \textbf{istisna güvenliği}, (3) zincirleme (\code{a = b = c})
+için \code{*this} döndürmek. Bir sonraki bölümde bu üçünü de zarifçe
+çözen ``copy-and-swap'' deyimini göreceğiz.}
+
+% =====================================================================
+\gsec{Taşıma Yapıcı ve Taşıma Atama Operatörü}
+
+Kopyalama, yeni bir öbek ayırıp içeriği baytı baytına kopyalar --- pahalı.
+Ama kaynak nesne zaten geçici (rvalue) ise ve birazdan yok olacaksa, onun
+kaynağını \emph{çalmak} (işaretçiyi devralıp orijinalini boşaltmak) çok
+daha ucuzdur. İşte \textbf{taşıma semantiği} budur. C++11 ile geldi ve
+modern C++'ın performansının temel taşıdır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <cstring>
+#include <utility>
+
+class TextHolder {
+    char* data_;
+    std::size_t size_;
+public:
+    TextHolder(const char* s)
+        : size_(std::strlen(s)), data_(new char[size_ + 1]) {
+        std::strcpy(data_, s);
+    }
+    ~TextHolder() { delete[] data_; }
+
+    // Kopya yapici (derin kopya -- pahalI)
+    TextHolder(const TextHolder& d)
+        : size_(d.size_), data_(new char[d.size_ + 1]) {
+        std::strcpy(data_, d.data_);
+        std::cout << "KOPYA yapici (pahali)\n";
+    }
+
+    // TASIMA YAPICI: kaynagi CAL, orijinali bosalt (ucuz, noexcept)
+    TextHolder(TextHolder&& d) noexcept
+        : data_(d.data_), size_(d.size_) {   // isaretciyi devral
+        d.data_ = nullptr;                     // orijinali BOSALT
+        d.size_ = 0;
+        std::cout << "TASIMA yapici (ucuz)\n";
+    }
+
+    // TASIMA ATAMA OPERATORU
+    TextHolder& operator=(TextHolder&& d) noexcept {
+        std::cout << "TASIMA atama\n";
+        if (this == &d) return *this;
+        delete[] data_;          // eski kaynagI birak
+        data_ = d.data_;         // yeni kaynagI CAL
+        size_ = d.size_;
+        d.data_ = nullptr;       // orijinali bosalt (yIkIcIsI guvenli olsun)
+        d.size_ = 0;
+        return *this;
+    }
+
+    const char* get() const { return data_ ? data_ : "(bos)"; }
+};
+
+TextHolder produce() { return TextHolder("gecici veri"); }
+
+int main() {
+    TextHolder a("kaynak");
+
+    TextHolder b = std::move(a);   // TASIMA yapici: a'nIn kaynagI b'ye gecer
+    std::cout << "a = " << a.get() << ", b = " << b.get() << "\n";
+    // a artik bos, b = "kaynak"
+
+    TextHolder c = produce();         // gecici (rvalue) -> TASIMA yapici
+    c = TextHolder("yeni");        // gecici atanIyor -> TASIMA atama
+
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Taşıma işlemlerini \textbf{her zaman \code{noexcept}} işaretleyin.
+Bunun kritik bir pratik sonucu vardır: \code{std::vector} yeniden boyutlanırken
+elemanlarını taşımak ister, ama yalnızca taşıma yapıcı \code{noexcept}'se
+taşır; değilse güvenlik için \emph{kopyalar}. Yani \code{noexcept} olmayan
+bir taşıma yapıcı, \code{vector} büyüdüğünde sessizce performans kaybına
+yol açar.}
+
+\bilgi{\textbf{Taşıma sonrası durum:} Taşınan (kaynak) nesne yok edilmez;
+``geçerli ama belirsiz'' durumda kalır. Yıkıcısının güvenle çalışabilmesi
+için onu tutarlı bir boş duruma getirmelisiniz (yukarıda \code{veri\_ = nullptr}).
+Böylece kaynağın yıkıcısı \code{delete[] nullptr} çağırır ki bu güvenlidir.}
+
+% =====================================================================
+\gsec{Üç, Beş ve Sıfır Kuralı}
+
+\gsub{Üçün Kuralı (Rule of Three) --- C++98}
+
+Eğer bir sınıfın şu üçünden \emph{birini} elle yazmanız gerekiyorsa,
+büyük olasılıkla \emph{üçünü de} yazmanız gerekir: \textbf{yıkıcı, kopya
+yapıcı, kopya atama operatörü}. Çünkü elle yönetilen bir kaynak (öbek
+belleği vb.) varsa, üçü de o kaynağı doğru ele almalıdır.
+
+\gsub{Beşin Kuralı (Rule of Five) --- C++11}
+
+C++11 ile taşıma semantiği gelince, liste beşe çıktı. Elle kaynak yöneten
+bir sınıf genellikle şu \textbf{beşini} tanımlamalıdır:
+
+\begin{center}
+\begin{tabular}{@{}c>{\raggedright\arraybackslash}p{5.2cm}>{\ttfamily}l@{}}
+\toprule
+\# & \textbf{Fonksiyon} & \textrm{\textbf{İmza}} \\
+\midrule
+1 & Yıkıcı & \textasciitilde{}T() \\
+2 & Kopya yapıcı & T(const T\&) \\
+3 & Kopya atama & T\& operator=(const T\&) \\
+4 & Taşıma yapıcı & T(T\&\&) noexcept \\
+5 & Taşıma atama & T\& operator=(T\&\&) noexcept \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\uyari{\textbf{Kritik kural:} Bu beş fonksiyondan herhangi birini elle
+tanımlarsanız, derleyici diğer bazılarını otomatik üretmeyi \emph{durdurabilir}.
+Örneğin bir yıkıcı yazarsanız, derleyici taşıma işlemlerini \emph{üretmez}
+(ve kopya işlemleri ``kullanımdan kaldırılmış'' sayılır). Bu yüzden ya
+hepsini bilinçli tanımlayın, ya da hiçbirini (aşağıdaki Sıfır Kuralı).}
+
+\gsub{Sıfırın Kuralı (Rule of Zero) --- En İyi Yaklaşım}
+
+Modern C++'ın \emph{tercih edilen} yaklaşımı, bu beş fonksiyonun
+\textbf{hiçbirini} yazmamaktır! Kaynakları doğrudan yönetmek yerine,
+zaten doğru yöneten türleri (\code{std::vector}, \code{std::string},
+\code{std::unique\_ptr}) üye olarak kullanın. O zaman derleyicinin ürettiği
+varsayılan özel üye fonksiyonlar \emph{zaten doğru} çalışır.
+
+\begin{lstlisting}
+#include <string>
+#include <vector>
+#include <memory>
+
+// SIFIRIN KURALI: hicbir ozel uye fonksiyon yazmadIk!
+// Ciplak new/delete yok; kaynak yoneten uyeler kendileri halleder.
+class User {
+    std::string name_;                    // kendi kopya/tasImasInI yonetir
+    std::vector<int> scores_;            // kendi kopya/tasImasInI yonetir
+    std::unique_ptr<int> secret_;          // tasInabilir, kopyalanamaz
+public:
+    User(std::string name)
+        : name_(std::move(name)),
+          secret_(std::make_unique<int>(42)) {}
+
+    // Yikici, kopya/tasIma... HICBIRINI yazmadIk.
+    // Derleyici hepsini DOGRU sekilde uretir:
+    //  - kopya: unique_ptr kopyalanamadIgI icin bu sInIf da kopyalanamaz
+    //  - tasIma: uyelerin tasImasInI cagIrIr (otomatik, dogru, noexcept)
+};
+\end{lstlisting}
+
+\bilgi{\textbf{En iyi tavsiye:} Sınıflarınızı Sıfır Kuralına göre tasarlayın.
+Ham kaynak yöneten (elle \code{new}/\code{delete} yapan) sınıflar yazmaktan
+kaçının; bunun yerine kaynağı bir \code{unique\_ptr} veya konteyner içine
+sarın. Bu sayede Beşin Kuralı'nın tüm karmaşıklığı ve hata riski ortadan
+kalkar. Beşin Kuralı'nı yalnızca gerçekten düşük seviye bir kaynak
+sarmalayıcı (örneğin bir C API tanıtıcısı) yazarken uygulayın.}
+
+\gsub{= default ve = delete ile Açık Kontrol}
+
+C++11, özel üye fonksiyonların üretimini açıkça kontrol etmenizi sağlar.
+\code{= default} derleyiciden varsayılanı üretmesini ister; \code{= delete}
+o fonksiyonu tamamen yasaklar.
+
+\begin{lstlisting}
+class Example {
+public:
+    Example() = default;                         // varsayIlan yapIcIyI uret
+
+    // Kopyalamayi acikca YASAKLA (ornegin tekil sahiplik icin)
+    Example(const Example&) = delete;
+    Example& operator=(const Example&) = delete;
+
+    // Tasimaya IZIN ver (varsayIlanI uret)
+    Example(Example&&) noexcept = default;
+    Example& operator=(Example&&) noexcept = default;
+
+    virtual ~Example() = default;                // varsayIlan sanal yIkIcI
+};
+\end{lstlisting}
+
+\ipucu{\code{= default}, ``derleyicinin ürettiği varsayılan davranış tam
+istediğim şey, ama niyetimi açıkça belgeliyorum'' demektir --- ayrıca bazı
+durumlarda (örneğin başka bir yapıcı tanımladığınızda kaybolan varsayılan
+yapıcıyı geri getirmek için) gereklidir. \code{= delete} ise kopyalamayı,
+istenmeyen dönüşümleri veya belirli aşırı yüklemeleri derleme zamanında
+yasaklamanın temiz yoludur.}
+
+% =====================================================================
+\gsec{Copy-and-Swap Deyimi}
+
+Copy-and-swap, kopya atama operatörünü hem \emph{istisna güvenli} hem
+\emph{kendine-atama güvenli} hem de kısa yazmanın zarif bir yoludur. Fikir:
+argümanı \emph{değer olarak} al (böylece kopya otomatik oluşur), sonra
+mevcut nesneyle \code{swap} et. Bonus: tek bir atama operatörü hem kopya
+hem taşıma atamasını halleder.
+
+\begin{lstlisting}
+#include <algorithm>
+#include <cstring>
+#include <utility>
+
+class TextHolder {
+    char* data_ = nullptr;
+    std::size_t size_ = 0;
+public:
+    TextHolder(const char* s = "")
+        : size_(std::strlen(s)), data_(new char[size_ + 1]) {
+        std::strcpy(data_, s);
+    }
+    ~TextHolder() { delete[] data_; }
+
+    TextHolder(const TextHolder& d)
+        : size_(d.size_), data_(new char[d.size_ + 1]) {
+        std::strcpy(data_, d.data_);
+    }
+    TextHolder(TextHolder&& d) noexcept { swap_with(d); }   // bos'tan basla, takas et
+
+    // Uyeleri takas eden yardImcI (ADL icin ozgur swap kullanIr)
+    void swap_with(TextHolder& d) noexcept {
+        using std::swap;
+        swap(data_, d.data_);
+        swap(size_, d.size_);
+    }
+
+    // TEK atama operatoru: argumanI DEGER olarak alIr.
+    // - lvalue verilirse: kopya yapIcI cagrIlIr
+    // - rvalue verilirse: tasIma yapIcI cagrIlIr
+    // Sonra sadece takas ederiz. Kendine-atama ve istisna guvenligi BEDAVA.
+    TextHolder& operator=(TextHolder d) noexcept {
+        swap_with(d);
+        return *this;
+    }   // 'd' (eski icerigimizi tasIyan) burada yok olur, eski kaynak temizlenir
+
+    const char* get() const { return data_; }
+};
+\end{lstlisting}
+
+\bilgi{Copy-and-swap'ın zarafeti: argüman \code{d} \emph{değer olarak}
+alındığı için, çağıran lvalue geçtiyse kopya yapıcı, rvalue geçtiyse taşıma
+yapıcı otomatik devreye girer. Böylece \emph{tek} bir \code{operator=} hem
+kopya hem taşıma atamasını halleder. Kendine-atama kontrolüne gerek yoktur
+(kopya zaten oluşmuştur) ve güçlü istisna güvenliği sağlanır (takas
+\code{noexcept}'tir, kopya başarısız olursa nesne değişmeden kalır).}
+
+% #####################################################################
+\gpart{6}{Şablonlar ve Generic Programlama}
+% #####################################################################
+
+% =====================================================================
+\gsec{Fonksiyon Şablonları}
+
+Şablonlar (templates), C++'ın \emph{jenerik programlama} aracıdır: tek bir
+kod parçasını \emph{farklı tipler} için yeniden yazmadan çalıştırmanızı
+sağlar. Derleyici, kullanılan her tip için şablonu \emph{somutlaştırır}
+(instantiate). Bu, \code{std::vector} veya \code{std::sort} gibi tüm STL'in
+temelidir.
+
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+// Fonksiyon sablonu: T herhangi bir tip olabilir
+template <typename T>
+T maximum(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+// Iki farkli tip parametresi
+template <typename T, typename U>
+auto add(T a, U b) -> decltype(a + b) {   // donus tipini cikart
+    return a + b;
+}
+
+int main() {
+    // Derleyici T'yi argumanlardan CIKARIR (template argument deduction)
+    std::cout << maximum(3, 7) << "\n";              // T=int -> 7
+    std::cout << maximum(2.5, 1.5) << "\n";          // T=double -> 2.5
+    std::cout << maximum<std::string>("elma", "armut") << "\n";  // acik tip
+
+    // Karisik tipler: int + double -> double
+    std::cout << add(3, 4.5) << "\n";              // 7.5
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{Derleyici \code{maximum(3, 7)} çağrısını görünce \code{T = int} için
+somut bir fonksiyon üretir; \code{maximum(2.5, 1.5)} için ayrı bir
+\code{double} sürümü üretir. Bu ``sıfır maliyetli soyutlamadır'': elle
+yazılmış tipe özel koddan hiçbir çalışma zamanı farkı yoktur. Şablonlar
+tamamen derleme zamanında çözülür.}
+
+% =====================================================================
+\gsec{Sınıf Şablonları}
+
+Sınıflar da şablonlaştırılabilir. Aşağıda basit ama tam çalışan, jenerik
+bir yığın (stack) uygulaması var --- \code{std::stack}'in nasıl çalıştığını
+gösterir.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+
+// Herhangi bir tip T tutabilen jenerik yigin
+template <typename T>
+class Stack {
+    std::vector<T> items_;
+public:
+    void push(const T& value) { items_.push_back(value); }
+
+    void pop() {
+        if (empty()) throw std::out_of_range("Bos yigin");
+        items_.pop_back();
+    }
+
+    const T& top() const {
+        if (empty()) throw std::out_of_range("Bos yigin");
+        return items_.back();
+    }
+
+    bool empty() const { return items_.empty(); }
+    std::size_t size() const { return items_.size(); }
+};
+
+int main() {
+    Stack<int> numbers;
+    numbers.push(10); numbers.push(20); numbers.push(30);
+    std::cout << "Tepe: " << numbers.top() << ", boyut: " << numbers.size() << "\n";
+    numbers.pop();
+    std::cout << "Pop sonrasi tepe: " << numbers.top() << "\n";   // 20
+
+    // Ayni sablon, farkli tiple
+    Stack<std::string> words;
+    words.push("merhaba"); words.push("dunya");
+    std::cout << words.top() << "\n";     // dunya
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Değişken Sayıda Şablon (Variadic) ve Kat İfadeleri}
+
+Değişken sayıda şablon parametresi (variadic templates), keyfi sayıda
+argüman alan jenerik fonksiyonlar yazmanızı sağlar. C++17'nin \emph{kat
+ifadeleri} (fold expressions) bunu son derece zarif kılar.
+
+\begin{lstlisting}
+#include <iostream>
+
+// C++17 kat ifadesi: tum argumanlari topla
+template <typename... Args>
+auto sum(Args... args) {
+    return (args + ...);        // kat ifadesi: ((a1 + a2) + a3) + ...
+}
+
+// Her argumani ekrana yazan variadic fonksiyon
+template <typename... Args>
+void print(const Args&... args) {
+    ((std::cout << args << " "), ...);   // virgul kat ifadesi
+    std::cout << "\n";
+}
+
+int main() {
+    std::cout << sum(1, 2, 3, 4, 5) << "\n";          // 15
+    std::cout << sum(1.5, 2.5) << "\n";               // 4.0
+    print("Sayilar:", 1, 2.5, 'X', "bitti");          // karisik tipler
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Kat ifadeleri (\code{(args + ...)}) C++17 ile geldi ve variadic
+şablonları okunması zor özyinelemeli yardımcılardan kurtardı. \code{(args + ...)}
+sağ kat, \code{(... + args)} sol kattır. Virgül operatörüyle
+(\code{(ifade, ...)}) her argüman için bir yan etki (örneğin yazdırma)
+çalıştırabilirsiniz. Bu, modern jenerik kodun temel araçlarından biridir.}
+
+% #####################################################################
+\gpart{7}{STL: Konteynerler, İteratörler ve Algoritmalar}
+% #####################################################################
+
+% =====================================================================
+\gsec{Standart Konteynerler}
+
+STL (Standard Template Library), C++'ın hazır veri yapıları ve
+algoritmalarından oluşan çekirdeğidir. Konteynerler, verileri farklı
+şekillerde saklar; her birinin kendine özgü performans karakteristiği vardır.
+
+\begin{center}
+\begin{tabular}{@{}>{\ttfamily}l>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{3.6cm}@{}}
+\toprule
+\textrm{\textbf{Konteyner}} & \textbf{Yapı} & \textbf{Tipik Erişim} \\
+\midrule
+vector & Dinamik dizi (bitişik bellek) & Sonda \bigO{1}, indeks \bigO{1} \\
+deque & Çift uçlu kuyruk & İki uçta \bigO{1} \\
+list & Çift bağlı liste & Ekleme/silme \bigO{1} \\
+map & Sıralı (kırmızı-siyah ağaç) & Arama \bigO{\log n} \\
+unordered\_map & Hash tablosu & Arama ortalama \bigO{1} \\
+set & Sıralı benzersiz küme & \bigO{\log n} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <string>
+
+int main() {
+    // vector: en cok kullanilan konteyner (dinamik dizi)
+    std::vector<int> numbers{5, 3, 8, 1};
+    numbers.push_back(9);
+    std::cout << "vector[2] = " << numbers[2] << ", boyut = " << numbers.size() << "\n";
+
+    // map: sirali anahtar-deger (otomatik sirali gezilir)
+    std::map<std::string, int> ages;
+    ages["Ada"] = 36;
+    ages["Alan"] = 41;
+    ages["Grace"] = 45;
+    for (const auto& [name, age] : ages)          // yapisal baglama (C++17)
+        std::cout << name << ": " << age << "\n";  // alfabetik sirali
+
+    // unordered_map: hash tabanli (siralamaz ama ortalama O(1))
+    std::unordered_map<std::string, double> prices;
+    prices["kalem"] = 5.0;
+    prices["defter"] = 12.5;
+    if (auto it = prices.find("kalem"); it != prices.end())   // if-init (C++17)
+        std::cout << "kalem fiyati: " << it->second << "\n";
+
+    // set: benzersiz, sirali
+    std::set<int> unique{3, 1, 4, 1, 5, 9, 2, 6, 5};  // tekrarlar elenir
+    std::cout << "Benzersiz eleman sayisi: " << unique.size() << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{İteratörler}
+
+İteratör (iterator), bir konteynerin elemanları üzerinde gezinmek için
+kullanılan, işaretçiyi genelleştiren bir soyutlamadır. \code{begin()} ilk
+elemanı, \code{end()} son elemanın \emph{bir sonrasını} gösterir. Tüm STL
+algoritmaları iteratörler üzerinden çalışır --- bu sayede algoritmalar
+konteyner tipinden bağımsızdır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <list>
+
+int main() {
+    std::vector<int> v{10, 20, 30, 40};
+
+    // Klasik iterator dongusu
+    for (std::vector<int>::iterator it = v.begin(); it != v.end(); ++it)
+        std::cout << *it << " ";        // *it: iteratorun gosterdigi eleman
+    std::cout << "\n";
+
+    // auto ile cok daha kisa
+    for (auto it = v.begin(); it != v.end(); ++it)
+        std::cout << *it << " ";
+    std::cout << "\n";
+
+    // Ters iterator (sondan basa)
+    for (auto it = v.rbegin(); it != v.rend(); ++it)
+        std::cout << *it << " ";        // 40 30 20 10
+    std::cout << "\n";
+
+    // Iteratorler farkli konteynerlerde ayni sekilde calisir
+    std::list<char> chars{'a', 'b', 'c'};
+    for (auto it = chars.begin(); it != chars.end(); ++it)
+        std::cout << *it << " ";
+    std::cout << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{end()} \emph{geçerli bir elemanı göstermez}; son elemanın bir
+sonrasını (``geçmiş-son'', past-the-end) gösteren bir nöbetçidir. Döngü
+koşulu bu yüzden \code{it != end()} biçimindedir. Bir iteratörü
+\code{end()}'e ulaştıktan sonra dereference etmek (\code{*it}) tanımsız
+davranıştır. Ayrıca konteyneri değiştirmek (örneğin \code{vector}'e ekleme
+yapmak) mevcut iteratörleri \emph{geçersiz kılabilir} --- buna dikkat edin.}
+
+% =====================================================================
+\gsec{Algoritmalar}
+
+\code{<algorithm>} başlığı, iteratör aralıkları üzerinde çalışan onlarca
+hazır algoritma sunar: sıralama, arama, dönüştürme, sayma, biriktirme.
+Kendi döngülerinizi yazmak yerine bunları kullanmak hem daha kısa hem daha
+az hatalıdır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+
+int main() {
+    std::vector<int> v{5, 2, 8, 1, 9, 3};
+
+    // sort: sirala (varsayilan artan)
+    std::sort(v.begin(), v.end());
+    for (int x : v) std::cout << x << " ";      // 1 2 3 5 8 9
+    std::cout << "\n";
+
+    // Lambda ile ozel olcut: azalan sirala
+    std::sort(v.begin(), v.end(), [](int a, int b){ return a > b; });
+    for (int x : v) std::cout << x << " ";      // 9 8 5 3 2 1
+    std::cout << "\n";
+
+    // find: bir eleman ara
+    if (auto it = std::find(v.begin(), v.end(), 5); it != v.end())
+        std::cout << "5 bulundu, konum: " << (it - v.begin()) << "\n";
+
+    // count_if: kosulu saglayanlari say
+    int evenCount = std::count_if(v.begin(), v.end(),
+                                  [](int x){ return x % 2 == 0; });
+    std::cout << "Cift sayi adedi: " << evenCount << "\n";   // 2
+
+    // transform: her elemani donustur (karesini al)
+    std::vector<int> squares(v.size());
+    std::transform(v.begin(), v.end(), squares.begin(),
+                   [](int x){ return x * x; });
+
+    // accumulate: hepsini birlestir (topla)
+    int total = std::accumulate(v.begin(), v.end(), 0);
+    std::cout << "Toplam: " << total << "\n";   // 28
+
+    // max_element / min_element
+    auto maxIt = std::max_element(v.begin(), v.end());
+    std::cout << "En buyuk: " << *maxIt << "\n";  // 9
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{``Ham döngü yazmadan önce bir STL algoritması var mı?'' diye sorun.
+\code{std::sort}, \code{std::find}, \code{std::accumulate}, \code{std::transform},
+\code{std::count\_if}, \code{std::any\_of}/\code{all\_of} gibi algoritmalar
+niyetinizi net ifade eder ve hata olasılığını azaltır. C++20 ile gelen
+\emph{ranges} (\code{std::ranges::sort(v)}) bunları daha da kısaltır ---
+artık \code{begin()/end()} çifti yazmanıza bile gerek kalmaz.}
+
+% #####################################################################
+\gpart{8}{Lambda ve Fonksiyonel Programlama}
+% #####################################################################
+
+% =====================================================================
+\gsec{Lambda İfadeleri}
+
+Lambda ifadeleri, kod içinde \emph{yerinde} isimsiz fonksiyonlar
+tanımlamanızı sağlar. STL algoritmalarına ölçüt geçmek, geri çağırmalar
+ve kısa yardımcı işlemler için idealdir. Genel biçim:
+\code{[yakalama](parametreler) \{ gövde \}}.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    // En basit lambda
+    auto greet = []{ std::cout << "Merhaba lambda!\n"; };
+    greet();
+
+    // Parametreli ve donusluu
+    auto add = [](int a, int b) { return a + b; };
+    std::cout << add(3, 4) << "\n";     // 7
+
+    // YAKALAMA (capture): disaridaki degiskenleri kullan
+    int factor = 10;
+    auto multiply = [factor](int x) { return x * factor; };  // deger ile yakala
+    std::cout << multiply(5) << "\n";   // 50
+
+    // Referansla yakalama: disaridaki degiskeni DEGISTIR
+    int counter = 0;
+    auto increment = [&counter]{ ++counter; };
+    increment(); increment(); increment();
+    std::cout << "Sayac: " << counter << "\n";   // 3
+
+    // [=] tumunu degerle, [&] tumunu referansla yakalar
+    int a = 1, b = 2;
+    auto sumAll = [=]{ return a + b; };      // a,b kopyalanir
+    std::cout << sumAll() << "\n";           // 3
+
+    // mutable: deger-yakalanan kopyayi lambda icinde degistirmeye izin ver
+    auto gen = [n = 0]() mutable { return ++n; };   // baslatmali yakalama (C++14)
+    std::cout << gen() << gen() << gen() << "\n";    // 123
+
+    // Jenerik lambda (C++14): auto parametre
+    auto genericMax = [](auto x, auto y){ return x > y ? x : y; };
+    std::cout << genericMax(3, 7) << " " << genericMax(2.5, 1.5) << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Referansla yakalamada (\code{[\&]}) ömür yönetimine dikkat edin:
+lambda, yakaladığı referanstan \emph{daha uzun} yaşarsa (örneğin bir
+fonksiyondan döndürülüp sonra çağrılırsa), sarkan referans oluşur ve
+tanımsız davranışa yol açar. Bir lambda'yı içinde tanımlandığı kapsamdan
+dışarı taşıyacaksanız, referans yerine \emph{değerle} (\code{[=]} veya
+açık kopya) yakalayın.}
+
+% =====================================================================
+\gsec{std::function ve Fonksiyon Nesneleri}
+
+\code{std::function}, herhangi bir çağrılabilir nesneyi (lambda, serbest
+fonksiyon, functor, üye fonksiyon) tek tip bir sarmalayıcıda tutan
+genel amaçlı bir tiptir. Çağrılabilir nesneleri veri gibi saklamak,
+geçirmek ve kaydetmek (örneğin geri çağırma tabloları) için kullanılır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <functional>
+#include <vector>
+#include <map>
+
+int freeFunction(int x) { return x + 1; }
+
+int main() {
+    // std::function farkli cagrilabilirleri AYNI tipte tutar
+    std::function<int(int)> f;
+
+    f = freeFunction;                        // serbest fonksiyon
+    std::cout << f(10) << "\n";              // 11
+
+    f = [](int x){ return x * x; };          // lambda
+    std::cout << f(5) << "\n";               // 25
+
+    // Cagrilabilirleri bir kapta sakla
+    std::vector<std::function<int(int)>> operations = {
+        [](int x){ return x + 1; },
+        [](int x){ return x * 2; },
+        [](int x){ return x * x; }
+    };
+    for (auto& op : operations)
+        std::cout << op(5) << " ";           // 6 10 25
+    std::cout << "\n";
+
+    // Komut tablosu: string -> islev (dispatch table deseni)
+    std::map<std::string, std::function<double(double,double)>> calc = {
+        {"topla",   [](double a, double b){ return a + b; }},
+        {"cikar",   [](double a, double b){ return a - b; }},
+        {"carp",    [](double a, double b){ return a * b; }}
+    };
+    std::cout << "3 carp 4 = " << calc["carp"](3, 4) << "\n";   // 12
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{\code{std::function} esnektir ama küçük bir çalışma zamanı maliyeti
+(tip silme, olası yığın tahsisi, dolaylı çağrı) taşır. Performans kritik
+sıcak döngülerde, tipi bilinen bir lambda'yı doğrudan (veya bir şablon
+parametresi olarak) kullanmak daha hızlıdır. \code{std::function}'ı asıl
+gücü olan \emph{heterojen çağrılabilirleri saklama} senaryolarında
+(geri çağırma listeleri, komut tabloları) kullanın.}
+
+% #####################################################################
+\gpart{9}{İstisna Yönetimi (Exceptions)}
+% #####################################################################
+
+% =====================================================================
+\gsec{try, catch ve throw}
+
+İstisnalar (exceptions), çalışma zamanı hatalarını --- fonksiyonun normal
+dönüş değerini kirletmeden --- bildirmenin ve ele almanın yapılandırılmış
+bir yoludur. Bir hata oluştuğunda \code{throw} ile istisna \emph{fırlatılır};
+çağrı yığını, onu yakalayacak bir \code{catch} bulunana kadar \emph{çözülür}
+(stack unwinding) --- bu sırada tüm yerel nesnelerin yıkıcıları çalışır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+double divide(double a, double b) {
+    if (b == 0)
+        throw std::invalid_argument("Sifira bolme!");   // istisna firlat
+    return a / b;
+}
+
+int main() {
+    try {
+        std::cout << divide(10, 2) << "\n";   // 5
+        std::cout << divide(10, 0) << "\n";   // istisna firlatir
+        std::cout << "Bu satir CALISMAZ\n";
+    }
+    catch (const std::invalid_argument& e) {  // ozel istisna tipini yakala
+        std::cout << "Gecersiz arguman: " << e.what() << "\n";
+    }
+    catch (const std::exception& e) {          // genel taban: her std istisnasi
+        std::cout << "Genel hata: " << e.what() << "\n";
+    }
+    catch (...) {                              // her seyi yakalayan son savunma
+        std::cout << "Bilinmeyen hata\n";
+    }
+
+    std::cout << "Program devam ediyor\n";     // catch sonrasi normal akis
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{catch} blokları \emph{en özelden en genele} sıralanmalıdır:
+önce \code{std::invalid\_argument}, sonra taban sınıfı \code{std::exception},
+en sonda \code{catch(...)}. İstisnaları \textbf{her zaman referansla}
+(\code{const std::exception\&}) yakalayın; değerle yakalamak nesne
+kırpılmasına (slicing) yol açar ve polimorfik \code{what()} mesajını
+kaybettirir. \code{<stdexcept>} başlığı hazır istisna tipleri sunar:
+\code{logic\_error}, \code{runtime\_error}, \code{out\_of\_range},
+\code{invalid\_argument} vb.}
+
+% =====================================================================
+\gsec{Özel İstisnalar ve İstisna Güvenliği}
+
+Kendi istisna tiplerinizi \code{std::exception}'dan türeterek tanımlayın.
+Ayrıca, istisnalar RAII ile birlikte kullanıldığında (Kısım 4) kod
+\emph{istisna güvenli} olur: bir istisna atıldığında kaynaklar otomatik
+temizlenir.
+
+\begin{lstlisting}
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <memory>
+
+// Ozel istisna tipi: std::runtime_error'dan turet
+class NetworkError : public std::runtime_error {
+    int errorCode_;
+public:
+    NetworkError(const std::string& message, int code)
+        : std::runtime_error(message), errorCode_(code) {}
+    int code() const { return errorCode_; }
+};
+
+void connect(bool fail) {
+    // RAII kaynagi: istisna atilsa BILE otomatik temizlenir
+    auto resource = std::make_unique<int>(42);
+
+    if (fail)
+        throw NetworkError("Baglanti reddedildi", 503);
+
+    std::cout << "Baglanti basarili, kaynak = " << *resource << "\n";
+}   // 'resource' kapsam disinda otomatik silinir (istisna olsa da olmasa da)
+
+int main() {
+    try {
+        connect(false);   // basarili
+        connect(true);    // istisna firlatir
+    }
+    catch (const NetworkError& e) {
+        std::cout << "Ag hatasi [" << e.code() << "]: " << e.what() << "\n";
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{\textbf{Yıkıcılardan istisna atmayın.} C++11'den beri yıkıcılar
+örtük olarak \code{noexcept}'tir; bir yıkıcı istisna atarsa (özellikle
+yığın çözülürken başka bir istisna zaten aktifse) program \code{std::terminate}
+ile derhal sonlanır. Ayrıca istisnaları normal akış kontrolü için
+kullanmayın; onlar \emph{istisnai} (beklenmedik hata) durumlar içindir.
+Sık gerçekleşen ``hata'' durumları için \code{std::optional} veya C++23
+\code{std::expected} daha uygundur.}
+
+% #####################################################################
+\gpart{10}{Önemli Anahtar Kelimeler}
+% #####################################################################
+
+% =====================================================================
+\gsec{explicit: İstenmeyen Dönüşümleri Engelleme}
+
+Tek argümanlı bir yapıcı, C++'ta \emph{örtük (implicit) dönüşüm} olarak
+kullanılabilir --- bu genellikle istenmeyen ve şaşırtıcı sonuçlar doğurur.
+\code{explicit} anahtar kelimesi bu örtük dönüşümü yasaklar.
+
+\begin{lstlisting}
+#include <iostream>
+
+class Meter {
+    double value_;
+public:
+    // explicit OLMASAYDI: 'Metre m = 5.0;' ve hatta fonksiyona '5.0'
+    // gecmek sessizce Metre'ye donusurdu -- tehlikeli.
+    explicit Meter(double d) : value_(d) {}
+    double value() const { return value_; }
+};
+
+void print(Meter m) { std::cout << m.value() << " metre\n"; }
+
+int main() {
+    Meter a(5.0);            // OK: dogrudan baslatma
+    // Meter b = 5.0;        // HATA (explicit): ortuk donusum yasak
+    Meter c = Meter(5.0);    // OK: acik donusum
+    // print(10.0);         // HATA: 10.0 sessizce Metre'ye donmez
+    print(Meter(10.0));     // OK: acik
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{\textbf{Kural:} Tek argümanla çağrılabilen yapıcıları --- özellikle
+bir birim/tip sarmalayıcısıysa --- neredeyse her zaman \code{explicit} yapın.
+Örtük dönüşümü yalnızca gerçekten istediğinizde (örneğin \code{std::string}'in
+\code{const char*}'tan dönüşümü) açık bırakın. C++'ta ``varsayılan olarak
+\code{explicit}'' iyi bir alışkanlıktır.}
+
+% =====================================================================
+\gsec{const ve constexpr}
+
+\code{const}, ``bu değer değiştirilemez'' der (çalışma zamanı sabiti).
+\code{constexpr}, ``bu değer/fonksiyon derleme zamanında hesaplanabilir''
+der. \code{constexpr} çok daha güçlüdür ve performans için değerlidir.
+
+\begin{lstlisting}
+#include <iostream>
+#include <array>
+
+// constexpr fonksiyon: derleme zamanInda hesaplanabilir
+constexpr int factorial(int n) {
+    return (n <= 1) ? 1 : n * factorial(n - 1);
+}
+
+class Circle {
+    double radius_;
+public:
+    constexpr Circle(double r) : radius_(r) {}
+
+    // const uye fonksiyon: nesneyi DEGISTIRMEZ (this uzerinden yazamaz)
+    double area() const { return 3.14159 * radius_ * radius_; }
+};
+
+int main() {
+    const int x = 10;              // calisma zamanI sabiti
+    // x = 20;                     // HATA: const
+
+    constexpr int f5 = factorial(5);   // DERLEME zamanInda hesaplanIr: 120
+    std::array<int, factorial(4)> arr; // constexpr, sablon argumanI olabilir (24)
+    std::cout << "5! = " << f5 << ", dizi boyutu = " << arr.size() << "\n";
+
+    const Circle d(2.0);
+    std::cout << "Alan = " << d.area() << "\n";   // const nesnede const uye cagrIlIr
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{const üye fonksiyon} (\code{alan() const}), o fonksiyonun
+nesnenin durumunu değiştirmeyeceğine söz verir; bu sayede \code{const}
+nesneler üzerinde çağrılabilir. Nesnenin durumunu değiştirmeyen \emph{her}
+üye fonksiyonu \code{const} yapmak (``const doğruluğu'', const-correctness)
+iyi bir tasarım disiplinidir. C++20'de \code{consteval} (mutlaka derleme
+zamanı) ve \code{constinit} de eklendi.}
+
+% =====================================================================
+\gsec{noexcept: İstisna Atmama Garantisi}
+
+\code{noexcept}, bir fonksiyonun istisna \emph{atmayacağını} bildirir. Bu
+hem bir optimizasyon ipucudur hem de --- daha önce gördüğümüz gibi ---
+taşıma semantiği için kritik bir sözleşmedir. \code{noexcept} bir fonksiyon
+yine de istisna atarsa, program derhal \code{std::terminate} ile sonlanır.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+
+int safe_add(int a, int b) noexcept {   // asla istisna atmaz
+    return a + b;
+}
+
+// Tasima islemleri noexcept OLMALI (vector optimizasyonu icin)
+struct Movable {
+    int* data;
+    Movable(Movable&& d) noexcept : data(d.data) { d.data = nullptr; }
+    Movable& operator=(Movable&&) noexcept = default;
+    ~Movable() { delete data; }
+    Movable() : data(new int(0)) {}
+};
+
+int main() {
+    // noexcept operatoru: bir ifadenin noexcept olup olmadIgInI sorgular
+    std::cout << std::boolalpha
+              << noexcept(safe_add(1, 2)) << "\n";   // true
+
+    // vector, noexcept tasIma yapIcIsI olan tipleri buyurken TASIR (kopyalamaz)
+    std::vector<Movable> v;
+    v.reserve(2);
+    v.emplace_back();
+    v.emplace_back();   // yeniden tahsiste noexcept tasIma kullanIlIr
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Bir fonksiyonu \code{noexcept} işaretleyip sonra istisna atarsanız,
+\code{catch} ile yakalayamazsınız --- program \code{std::terminate}
+çağırarak anında ölür. Bu yüzden \code{noexcept}'i yalnızca gerçekten
+istisna atmayacağından \emph{emin} olduğunuz fonksiyonlarda kullanın.
+Yıkıcılar C++11'den beri örtük olarak \code{noexcept}'tir; yıkıcıdan
+istisna atmak neredeyse her zaman bir tasarım hatasıdır.}
+
+% =====================================================================
+\gsec{static, mutable ve friend}
+
+\gsub{static Üyeler}
+
+\begin{lstlisting}
+#include <iostream>
+
+class Counter {
+    static int total_;      // TUM nesneler icin ORTAK tek bir degisken
+    int id_;
+public:
+    Counter() : id_(++total_) {}
+    static int count() { return total_; }   // static uye fonksiyon (this yok)
+    int id() const { return id_; }
+};
+int Counter::total_ = 0;      // static uye sInIf dISInda TANIMLANMALI
+
+int main() {
+    Counter a, b, c;
+    std::cout << "Toplam nesne: " << Counter::count() << "\n";  // 3
+    std::cout << "c'nin id'si: " << c.id() << "\n";             // 3
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{mutable Üyeler}
+
+\code{mutable}, bir üyenin \code{const} bir nesnede bile değiştirilebilmesini
+sağlar. Genellikle önbellekleme, kilit veya sayaç gibi ``mantıksal durumu''
+değiştirmeyen yardımcı üyeler için kullanılır.
+
+\begin{lstlisting}
+#include <iostream>
+
+class Calculator {
+    mutable int callCount_ = 0;   // const uyede bile degisebilir
+    int value_;
+public:
+    Calculator(int d) : value_(d) {}
+
+    // const fonksiyon ama mutable uyeyi degistirebilir
+    int square() const {
+        ++callCount_;             // mutable sayesinde OK
+        return value_ * value_;
+    }
+    int callCount() const { return callCount_; }
+};
+
+int main() {
+    const Calculator h(5);         // const NESNE
+    std::cout << h.square() << " " << h.square() << "\n";
+    std::cout << "Cagri: " << h.callCount() << "\n";   // 2
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{friend Fonksiyonlar}
+
+\code{friend}, bir fonksiyona veya sınıfa, başka bir sınıfın \code{private}
+üyelerine erişim ayrıcalığı verir. En yaygın kullanımı, birazdan göreceğimiz
+akış operatörünü (\code{operator<<}) aşırı yüklemektir.
+
+\begin{lstlisting}
+#include <iostream>
+
+class Point {
+    int x_, y_;      // private
+public:
+    Point(int x, int y) : x_(x), y_(y) {}
+    // friend: bu serbest fonksiyon private uyelere erisebilir
+    friend std::ostream& operator<<(std::ostream& os, const Point& p);
+};
+
+std::ostream& operator<<(std::ostream& os, const Point& p) {
+    return os << "(" << p.x_ << ", " << p.y_ << ")";   // private erisim
+}
+
+int main() {
+    Point p(3, 4);
+    std::cout << p << "\n";     // (3, 4)
+    return 0;
+}
+\end{lstlisting}
+
+% #####################################################################
+\gpart{11}{Operatör Aşırı Yükleme}
+% #####################################################################
+
+% =====================================================================
+\gsec{Operatör Aşırı Yüklemenin Temelleri}
+
+C++, kendi tiplerinizin \code{+}, \code{==}, \code{[]}, \code{<<} gibi
+operatörlerle nasıl davranacağını tanımlamanıza izin verir. Bu, kendi
+tiplerinizi yerleşik tipler kadar doğal kullanmanızı sağlar. Ancak
+\emph{dikkatli} kullanılmalıdır: operatörler sezgisel anlamlarını korumalıdır
+(\code{+} toplama gibi davranmalı, sürpriz yapmamalı).
+
+Bir matematiksel vektör (2B) sınıfı üzerinden operatörlerin çoğunu görelim:
+
+\begin{lstlisting}
+#include <iostream>
+
+class Vec2 {
+    double x_, y_;
+public:
+    Vec2(double x = 0, double y = 0) : x_(x), y_(y) {}
+    double x() const { return x_; }
+    double y() const { return y_; }
+
+    // --- Bilesik atama (uye fonksiyon olarak yazmak GELENEKTIR) ---
+    Vec2& operator+=(const Vec2& r) { x_ += r.x_; y_ += r.y_; return *this; }
+    Vec2& operator-=(const Vec2& r) { x_ -= r.x_; y_ -= r.y_; return *this; }
+    Vec2& operator*=(double s)      { x_ *= s;    y_ *= s;    return *this; }
+
+    // --- Birli (unary) operatorler ---
+    Vec2 operator-() const { return Vec2(-x_, -y_); }   // negatif
+
+    // --- Karsilastirma (uye) ---
+    bool operator==(const Vec2& r) const { return x_ == r.x_ && y_ == r.y_; }
+    bool operator!=(const Vec2& r) const { return !(*this == r); }
+
+    friend std::ostream& operator<<(std::ostream&, const Vec2&);
+};
+
+// --- Ikili aritmetik: SERBEST fonksiyon olarak yazmak GELENEKTIR ---
+// (Simetri icin: 'a + b' ve donusumler her iki operand icin de calIsIr)
+Vec2 operator+(Vec2 l, const Vec2& r) { return l += r; }   // l KOPYA -> += -> don
+Vec2 operator-(Vec2 l, const Vec2& r) { return l -= r; }
+Vec2 operator*(Vec2 v, double s)      { return v *= s; }
+Vec2 operator*(double s, Vec2 v)      { return v *= s; }   // s * v de calIssIn
+
+std::ostream& operator<<(std::ostream& os, const Vec2& v) {
+    return os << "(" << v.x_ << ", " << v.y_ << ")";
+}
+
+int main() {
+    Vec2 a(1, 2), b(3, 4);
+    std::cout << "a + b   = " << (a + b) << "\n";     // (4, 6)
+    std::cout << "b - a   = " << (b - a) << "\n";     // (2, 2)
+    std::cout << "a * 2   = " << (a * 2) << "\n";     // (2, 4)
+    std::cout << "3 * a   = " << (3 * a) << "\n";     // (3, 6)
+    std::cout << "-a      = " << (-a) << "\n";        // (-1, -2)
+    std::cout << "a == b? " << std::boolalpha << (a == b) << "\n"; // false
+
+    a += b;                                           // bilesik atama
+    std::cout << "a += b  -> " << a << "\n";          // (4, 6)
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\textbf{Üye mi, serbest fonksiyon mu?} Genel kurallar: bileşik atama
+(\code{+=}, \code{-=}) ve nesnenin durumunu değiştiren operatörler
+\textbf{üye} olmalıdır. Simetrik ikili operatörler (\code{+}, \code{-}, \code{==})
+\textbf{serbest fonksiyon} olmalıdır --- böylece sol operand da örtük
+dönüşüme uğrayabilir. Kalıplaşmış deyim: \code{operator+}'yı, üye
+\code{operator+=} cinsinden yazın (yukarıdaki gibi). Bu, kod tekrarını
+önler ve tutarlılığı garanti eder.}
+
+% =====================================================================
+\gsec{Karşılaştırma ve Uzay Gemisi Operatörü (C++20)}
+
+C++20 öncesinde, bir tipi tam sıralanabilir yapmak için altı operatörü
+(\code{==}, \code{!=}, \code{<}, \code{<=}, \code{>}, \code{>=}) elle
+yazmanız gerekiyordu. C++20'nin \textbf{üç yönlü karşılaştırma operatörü}
+(\code{<=>}, ``spaceship'') bunların hepsini tek satırda üretir.
+
+\begin{lstlisting}
+#include <compare>
+#include <iostream>
+
+struct Version {
+    int major, minor, patch;
+
+    // Tek satIr: derleyici ==, !=, <, <=, >, >= HEPSINI uretir
+    // Uyeler sIrayla (once ana, sonra ara, sonra yama) karsIlastIrIlIr
+    auto operator<=>(const Version&) const = default;
+};
+
+int main() {
+    Version a{1, 2, 0}, b{1, 3, 0};
+
+    std::cout << std::boolalpha;
+    std::cout << "a < b : " << (a < b) << "\n";    // true (ara: 2 < 3)
+    std::cout << "a == b: " << (a == b) << "\n";   // false
+    std::cout << "a >= b: " << (a >= b) << "\n";   // false
+
+    // <=> dogrudan kullanImI: sIralama sonucu doner
+    auto result = a <=> b;
+    if (result < 0)      std::cout << "a kucuk\n";
+    else if (result > 0) std::cout << "a buyuk\n";
+    else                std::cout << "esit\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++20 spaceship.cpp -o spaceship
+\end{lstlisting}
+
+\ipucu{\code{auto operator<=>(const T\&) const = default;} tek satırı, tipi
+tam sıralanabilir yapar ve \code{std::sort}, \code{std::set}, \code{std::map}
+ile doğrudan kullanılabilir hale getirir. Dönüş tipi karşılaştırma kategorisini
+belirtir: \code{std::strong\_ordering} (tam sıra), \code{std::weak\_ordering}
+(eşdeğerlik), \code{std::partial\_ordering} (örn. \code{NaN} içeren float).
+\code{= default} ile derleyici en uygununu seçer.}
+
+% =====================================================================
+\gsec{Özel Operatörler: [], (), ve Dönüşüm}
+
+\gsub{Alt Simge Operatörü []}
+
+\begin{lstlisting}
+#include <iostream>
+#include <stdexcept>
+
+class Array {
+    int* data_;
+    std::size_t size_;
+public:
+    Array(std::size_t n) : data_(new int[n]{}), size_(n) {}
+    ~Array() { delete[] data_; }
+    Array(const Array&) = delete;             // basitlik icin kopyayI kapat
+    Array& operator=(const Array&) = delete;
+
+    // Iki asIrI yukleme: degistirilebilir ve salt-okunur (const) erisim
+    int& operator[](std::size_t i) {
+        if (i >= size_) throw std::out_of_range("indeks");
+        return data_[i];                    // referans dondurur -> a[i] = 5 calIsIr
+    }
+    const int& operator[](std::size_t i) const {
+        if (i >= size_) throw std::out_of_range("indeks");
+        return data_[i];
+    }
+    std::size_t size() const { return size_; }
+};
+
+int main() {
+    Array a(5);
+    for (std::size_t i = 0; i < a.size(); ++i)
+        a[i] = static_cast<int>(i * i);     // operator[] (non-const) -> atama
+    for (std::size_t i = 0; i < a.size(); ++i)
+        std::cout << a[i] << " ";           // 0 1 4 9 16
+    std::cout << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\gsub{Fonksiyon Çağrı Operatörü () --- Fonksiyon Nesneleri}
+
+\code{operator()} aşırı yüklendiğinde, nesne bir fonksiyon gibi
+\emph{çağrılabilir} (functor / function object) hale gelir. STL algoritmaları
+ve lambdaların temelinde bu yatar.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+// Durum tutabilen bir fonksiyon nesnesi (functor)
+class Multiplier {
+    int coefficient_;
+public:
+    explicit Multiplier(int k) : coefficient_(k) {}
+    int operator()(int x) const { return x * coefficient_; }   // cagrIlabilir
+};
+
+int main() {
+    Multiplier triple(3);
+    std::cout << triple(10) << "\n";     // 30 -- nesneyi fonksiyon gibi cagIr
+
+    std::vector<int> v = {1, 2, 3, 4};
+    // Functor'u STL algoritmasIna gec
+    std::transform(v.begin(), v.end(), v.begin(), Multiplier(10));
+    for (int x : v) std::cout << x << " ";  // 10 20 30 40
+    std::cout << "\n";
+
+    // Lambda: aslInda derleyicinin urettigi isimsiz bir functor'dur
+    auto add = [addend = 100](int x) { return x + addend; };
+    std::cout << add(5) << "\n";           // 105
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{Bir lambda ifadesi, aslında derleyicinin arka planda ürettiği,
+\code{operator()} aşırı yüklenmiş isimsiz bir sınıftır. Yakalama listesi
+(\code{[topla = 100]}) o sınıfın üye değişkenlerine dönüşür. Bu yüzden
+functor'ları anlamak, lambdaların nasıl çalıştığını anlamaktır.}
+
+\gsub{Dönüşüm Operatörü}
+
+Bir sınıfı başka bir tipe \emph{örtük veya açık} dönüştürmek için dönüşüm
+operatörü tanımlanır. \code{explicit} ile açık dönüşüm zorunlu kılınabilir.
+
+\begin{lstlisting}
+#include <iostream>
+
+class Fraction {
+    int numerator_, denominator_;
+public:
+    Fraction(int p, int q) : numerator_(p), denominator_(q) {}
+
+    // double'a ORTUK donusum operatoru
+    operator double() const {
+        return static_cast<double>(numerator_) / denominator_;
+    }
+    // Bir sInIfIn 'bool baglamI'nda kullanIlmasI icin explicit tercih edilir
+    explicit operator bool() const { return denominator_ != 0; }
+};
+
+int main() {
+    Fraction half(1, 2);
+    double d = half;                       // ortuk donusum -> 0.5
+    std::cout << "double: " << d << "\n";
+    std::cout << "1.5 + yarim = " << (1.5 + half) << "\n";  // 2.0
+
+    if (half) std::cout << "gecerli kesir\n";   // explicit operator bool
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Örtük dönüşüm operatörleri (\code{operator double()} gibi) güçlüdür
+ama tehlikelidir: beklenmedik yerlerde sessizce devreye girip belirsizliğe
+ve hatalara yol açabilirler. Özellikle \code{operator bool()}'u neredeyse
+her zaman \code{explicit} yapın; aksi halde sınıfınız kazara tam sayı
+aritmetiğine veya karşılaştırmalara karışabilir. Genel tavsiye: dönüşüm
+operatörlerini idareli ve mümkünse \code{explicit} kullanın.}
+
+% #####################################################################
+\gpart{12}{Modern C++ (C++17 / C++20)}
+% #####################################################################
+
+% =====================================================================
+\gsec{Yapısal Bağlama, if-init ve Yararlı Tipler}
+
+Modern C++, günlük kodu belirgin biçimde kısaltan ve güvenlileştiren pek
+çok özellik getirdi. Bunlardan bazılarını (\code{auto}, range-for) zaten
+kullandık; burada en pratik olanları toplu görelim.
+
+\begin{lstlisting}
+#include <iostream>
+#include <map>
+#include <tuple>
+#include <optional>
+#include <string>
+#include <string_view>
+
+// std::optional: "deger olmayabilir" durumunu tip guvenli ifade et
+std::optional<int> parsePositive(int x) {
+    if (x > 0) return x;      // deger var
+    return std::nullopt;      // deger yok
+}
+
+// string_view: kopyalamadan string'e salt-okunur bakis (ucuz)
+void printLength(std::string_view sv) {   // ne string kopyasi ne const char*
+    std::cout << "\"" << sv << "\" -> " << sv.size() << " karakter\n";
+}
+
+int main() {
+    // YAPISAL BAGLAMA (C++17): pair/tuple/struct'i tek satirda parcala
+    std::map<std::string, int> scores{{"Ada", 90}, {"Alan", 85}};
+    for (const auto& [name, score] : scores)     // .first/.second yerine
+        std::cout << name << " = " << score << "\n";
+
+    std::tuple<int, double, std::string> record{1, 3.14, "pi"};
+    auto [id, value, label] = record;            // ucunu birden ac
+    std::cout << id << " " << value << " " << label << "\n";
+
+    // IF-INIT (C++17): kosul icinde degisken tanimla (kapsami dar tut)
+    if (auto result = parsePositive(42); result.has_value())
+        std::cout << "Pozitif: " << *result << "\n";
+
+    if (auto result = parsePositive(-5); !result)
+        std::cout << "Deger yok, varsayilan: " << result.value_or(0) << "\n";
+
+    // string_view: gecici string, string literal, hepsi kopyasiz calisir
+    std::string s = "merhaba dunya";
+    printLength(s);
+    printLength("sabit metin");
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{\code{std::string\_view}, bir string'i \emph{kopyalamadan} okumak
+için idealdir; fonksiyon parametrelerinde \code{const std::string\&} yerine
+sıkça tercih edilir çünkü string literalleri ve alt-dizeleri de kopyasız
+kabul eder. Ancak dikkat: \code{string\_view} veriye \emph{sahip değildir};
+gösterdiği string'ten daha uzun yaşarsa sarkan görünüm oluşur. Sahiplik
+gerekiyorsa \code{std::string} kullanın.}
+
+% =====================================================================
+\gsec{Concepts: Şablonlara Kısıt (C++20)}
+
+C++20 \emph{concepts}, şablon parametrelerine \emph{kısıtlar} koyar: ``bu
+şablon yalnızca sayısal tiplerle çalışır'' gibi. Bu, hem niyeti belgeler
+hem de yanlış tip kullanıldığında okunması imkânsız şablon hataları yerine
+\emph{net} hata mesajları verir.
+
+\begin{lstlisting}
+#include <iostream>
+#include <concepts>
+
+// Concept tanimi: T aritmetik (sayisal) bir tip olmali
+template <typename T>
+concept Numeric = std::integral<T> || std::floating_point<T>;
+
+// Yalnizca Numeric tipleri kabul eden sablon
+template <Numeric T>
+T square(T x) {
+    return x * x;
+}
+
+// Alternatif kisit sozdizimi: requires ile
+template <typename T>
+    requires std::floating_point<T>
+T average(T a, T b) {
+    return (a + b) / 2;
+}
+
+int main() {
+    std::cout << square(5) << "\n";        // int -> 25
+    std::cout << square(2.5) << "\n";      // double -> 6.25
+    // square("metin");  // DERLEME HATASI: net mesaj -> "Numeric saglanmadi"
+
+    std::cout << average(3.0, 5.0) << "\n";  // 4.0
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++20 concepts.cpp -o concepts
+\end{lstlisting}
+
+\bilgi{Concepts, C++ şablon programlamasının en büyük kalite sıçramalarından
+biridir. \code{Numeric}, \code{std::integral}, \code{std::floating\_point},
+\code{std::sortable} gibi kısıtlar sayesinde derleyici, bir şablonu yanlış
+tiple kullandığınızda \emph{tam olarak hangi kısıtın sağlanmadığını}
+söyler --- eski günlerin yüzlerce satırlık anlaşılmaz şablon hatalarına
+son verir.}
+
+% =====================================================================
+\gsec{Ranges: Bileştirilebilir Algoritmalar (C++20)}
+
+C++20 \emph{ranges} kütüphanesi, STL algoritmalarını hem daha kısa
+(\code{begin()/end()} yazmadan) hem de \emph{bileştirilebilir} (composable)
+hale getirir. ``Görünümler'' (views) sayesinde filtreleme, dönüştürme gibi
+işlemleri bir boru hattı (pipeline) gibi zincirleyebilirsiniz --- üstelik
+tembel (lazy) değerlendirmeyle.
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <ranges>
+#include <algorithm>
+
+int main() {
+    std::vector<int> numbers{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    // Klasik algoritma: begin()/end() gerekmez
+    std::ranges::sort(numbers);
+
+    // Boru hatti: cift sayilari al -> karesini al (tembel degerlendirme)
+    auto pipeline = numbers
+        | std::views::filter([](int x){ return x % 2 == 0; })   // 2,4,6,8,10
+        | std::views::transform([](int x){ return x * x; });     // 4,16,36,64,100
+
+    std::cout << "Cift karelar: ";
+    for (int x : pipeline) std::cout << x << " ";
+    std::cout << "\n";
+
+    // views::take, views::reverse gibi baska gorunumler
+    std::cout << "Ilk 3 (tersten): ";
+    for (int x : numbers | std::views::reverse | std::views::take(3))
+        std::cout << x << " ";              // 10 9 8
+    std::cout << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+g++ -std=c++20 ranges.cpp -o ranges
+\end{lstlisting}
+
+\ipucu{Ranges'in \code{|} boru hattı sözdizimi, veri dönüşümlerini son
+derece okunur kılar: ``filtrele, sonra dönüştür, sonra ilk 3'ünü al''
+niyetini doğrudan ifade eder. Görünümler \emph{tembeldir}: ara diziler
+oluşturmaz, elemanlar yalnızca gezinirken hesaplanır --- bu hem bellek hem
+hız açısından verimlidir. Modern C++ kodunda döngü ve ara vektör
+yığınlarının yerini giderek ranges alıyor.}
+
+% =====================================================================
+\gsec{Kapanış ve Altın Kurallar}
+
+Bu rehber, C++'ı temellerinden modern özelliklerine kadar kapsadı:
+sözdizimi, nesne yönelimi, bellek ve kaynak yönetimi, şablonlar, STL,
+lambda, istisnalar ve C++20 yenilikleri. Aşağıda, özellikle kaynak yönetimi
+ve sınıf tasarımı için özet altın kurallar --- günlük kodda en çok fark
+yaratanlar:
+
+\begin{center}
+\begin{tabular}{@{}c>{\raggedright\arraybackslash}p{11.0cm}@{}}
+\toprule
+\# & \textbf{Altın Kural} \\
+\midrule
+1 & \textbf{Sıfır Kuralını} hedefleyin: kaynağı \code{unique\_ptr}/konteynerlere
+sarın, özel üye fonksiyonları hiç yazmayın. \\
+2 & Çıplak \code{new}/\code{delete} kullanmayın; \code{make\_unique}/\code{make\_shared} tercih edin. \\
+3 & \textbf{Varsayılan olarak \code{unique\_ptr}}; sahiplik gerçekten
+paylaşılmalıysa \code{shared\_ptr}; döngüyü kırmak için \code{weak\_ptr}. \\
+4 & Beşin Kuralını uygularsanız \emph{beşini de} bilinçli tanımlayın; taşımaları
+\code{noexcept} yapın. \\
+5 & Kopya atama için \textbf{copy-and-swap} deyimini kullanın. \\
+6 & Tek argümanlı yapıcıları ve \code{operator bool}'u \code{explicit} yapın. \\
+7 & Durumu değiştirmeyen üye fonksiyonları \code{const} yapın (const-correctness). \\
+8 & \code{nullptr} kullanın (\code{NULL}/\code{0} değil); sildikten sonra işaretçiyi \code{nullptr}'a atayın. \\
+9 & Operatörleri sezgisel anlamlarına sadık kalarak aşırı yükleyin;
+\code{operator+}'yı \code{operator+=} cinsinden yazın. \\
+10 & Derleyici uyarılarını açın: \code{-Wall -Wextra}; bellek hataları için
+\code{-fsanitize=address}. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bilgi{\textbf{Bellek hatalarını yakalama:} Bu rehberdeki manuel kaynak
+yöneten örnekleri test ederken AddressSanitizer'ı kullanın; sızıntıları,
+sarkan işaretçileri ve ikili silmeleri anında yakalar:}
+
+\begin{lstlisting}[style=shstyle]
+# AddressSanitizer + tum uyarilar ile derleme (gelistirme sirasinda)
+g++ -std=c++20 -Wall -Wextra -g -fsanitize=address,undefined \
+    program.cpp -o program
+./program        # bellek hatalari calisirken raporlanIr
+
+# Valgrind ile sizinti kontrolu (alternatif)
+g++ -std=c++20 -g program.cpp -o program
+valgrind --leak-check=full ./program
+\end{lstlisting}
+
+\vspace{1cm}
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.8pt}}\\[6pt]
+{\color{anaMavi}\large\bfseries Rehberin Sonu}\\[4pt]
+{\color{ortaGri}\small C++17/20 \textbullet\ RAII \textbullet\ Beşin \& Sıfırın Kuralı \textbullet\ İyi kodlamalar!}
+\end{center}
+
+\end{document}
