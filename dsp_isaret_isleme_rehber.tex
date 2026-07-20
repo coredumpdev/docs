@@ -1,0 +1,3208 @@
+\documentclass[11pt,a4paper]{article}
+
+% ==================== TEMEL PAKETLER (pdflatex) ====================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,top=2.4cm,bottom=2.4cm]{geometry}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% ==================== RENK PALETİ ====================
+\definecolor{anaMavi}{HTML}{132C4A}
+\definecolor{vurguMavi}{HTML}{2E6DA4}
+\definecolor{acikMavi}{HTML}{EAF2F9}
+\definecolor{turuncu}{HTML}{D9701E}
+\definecolor{yesil}{HTML}{2E7D32}
+\definecolor{acikYesil}{HTML}{E8F5E9}
+\definecolor{kirmizi}{HTML}{C0392B}
+\definecolor{mor}{HTML}{6C3483}
+\definecolor{acikMor}{HTML}{F3E9F7}
+\definecolor{acikGri}{HTML}{F4F5F7}
+\definecolor{ortaGri}{HTML}{6B7280}
+\definecolor{koyuGri}{HTML}{2D2D2D}
+\definecolor{kodArka}{HTML}{FBFBFA}
+
+% ==================== HYPERREF ====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor={[HTML]{2E6DA4}},
+  urlcolor={[HTML]{2E6DA4}},
+  pdftitle={C++ ile Sayısal İşaret İşleme, Modülasyon ve Demodülasyon},
+  pdfauthor={DSP Rehberi},
+  bookmarksnumbered=true
+}
+
+% ==================== BAŞLIK STİLLERİ (titlesec olmadan) ====================
+\setcounter{secnumdepth}{0}
+\newcounter{secc}
+\newcounter{subsecc}[secc]
+\newcounter{subsubsecc}[subsecc]
+\newcommand{\gsec}[1]{\par\phantomsection\stepcounter{secc}%
+  \setcounter{subsecc}{0}%
+  \vspace{18pt}{\color{anaMavi}\Large\bfseries\thesecc.\hspace{0.5em}#1}\par
+  \vspace{2pt}{\color{turuncu}\rule{\linewidth}{1.6pt}}\par\vspace{8pt}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesecc}#1}\markboth{#1}{#1}}
+\newcommand{\gsub}[1]{\par\phantomsection\stepcounter{subsecc}%
+  \setcounter{subsubsecc}{0}%
+  \vspace{11pt}{\color{vurguMavi}\large\bfseries\thesecc.\thesubsecc\hspace{0.5em}#1}\par\vspace{4pt}%
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesecc.\thesubsecc}#1}}
+\newcommand{\gsubsub}[1]{\par\phantomsection\stepcounter{subsubsecc}%
+  \vspace{7pt}{\color{koyuGri}\normalsize\bfseries #1}\par\vspace{2pt}}
+
+% Kısım (Part) başlığı
+\newcommand{\gpart}[2]{\clearpage
+  \begin{center}\vspace*{1.5cm}
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+  {\color{ortaGri}\Large KISIM #1}\\[8pt]
+  {\color{anaMavi}\Huge\bfseries #2}\\[10pt]
+  {\color{turuncu}\rule{0.7\linewidth}{1.5pt}}
+  \end{center}\vspace{1cm}}
+
+% ==================== BAŞLIK / ALTBİLGİ ====================
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{ortaGri}C++ ile Sayısal İşaret İşleme}
+\fancyhead[R]{\small\color{ortaGri}\leftmark}
+\fancyfoot[C]{\small\color{ortaGri}\thepage}
+
+% ==================== KOD LİSTELEME (C++) ====================
+\lstdefinestyle{cppstyle}{
+  language=C++,
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{vurguMavi}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  numberstyle=\tiny\color{ortaGri},
+  numbers=left,
+  numbersep=8pt,
+  backgroundcolor=\color{kodArka},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{ortaGri!40},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1{’}{{'}}1{“}{{"}}1{”}{{"}}1,
+  morekeywords={complex,vector,array,size_t,uint32_t,int32_t,uint16_t,int16_t,
+    uint8_t,int8_t,uint64_t,int64_t,nullptr,constexpr,noexcept,override,final,
+    auto,std,string,ifstream,ofstream,ios,M_PI,real,imag,norm,arg,conj,abs,
+    Complex,Cplx,Signal,cf32,cf64}
+}
+\lstset{style=cppstyle}
+
+% Kabuk/terminal stili
+\lstdefinestyle{shstyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  backgroundcolor=\color{koyuGri!6},
+  frame=single,framesep=6pt,rulecolor=\color{ortaGri!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1{—}{{-{}-}}2{–}{{-}}1,
+}
+
+% CMake stili
+\lstdefinestyle{cmakestyle}{
+  basicstyle=\ttfamily\small\color{koyuGri},
+  keywordstyle=\color{mor}\bfseries,
+  commentstyle=\color{yesil}\itshape,
+  stringstyle=\color{turuncu},
+  backgroundcolor=\color{acikMor!35},
+  frame=single,framesep=6pt,rulecolor=\color{mor!40},
+  breaklines=true,showstringspaces=false,tabsize=4,columns=fullflexible,
+  keepspaces=true,
+  morekeywords={cmake_minimum_required,project,add_executable,add_subdirectory,
+    target_link_libraries,target_include_directories,find_package,set,
+    add_library,target_compile_features,add_compile_options,foreach,endforeach,
+    include,option,if,endif,PRIVATE,PUBLIC,VERSION,REQUIRED,LANGUAGES},
+  literate={ı}{{\i}}1{İ}{{\.I}}1{ş}{{\c s}}1{Ş}{{\c S}}1{ğ}{{\u g}}1{Ğ}{{\u G}}1{ç}{{\c c}}1{Ç}{{\c C}}1{ö}{{\"o}}1{Ö}{{\"O}}1{ü}{{\"u}}1{Ü}{{\"U}}1,
+}
+
+% ==================== ÖZEL KUTULAR (tcolorbox olmadan) ====================
+\newcommand{\callout}[4]{\par\smallskip\noindent\begingroup
+  \setlength{\fboxsep}{8pt}\setlength{\fboxrule}{0.8pt}%
+  \fcolorbox{#1}{#2}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+    {\bfseries\color{#1}#3}\par\smallskip #4}}\endgroup\par\smallskip}
+\newcommand{\bilgi}[1]{\callout{vurguMavi}{acikMavi}{Bilgi}{#1}}
+\newcommand{\ipucu}[1]{\callout{yesil}{acikYesil}{İpucu}{#1}}
+\newcommand{\uyari}[1]{\callout{kirmizi}{kirmizi!7}{Dikkat}{#1}}
+\newcommand{\ornek}[2][Örnek]{\callout{ortaGri!90!black}{acikGri}{#1}{#2}}
+\newcommand{\notk}[2][Not]{\callout{mor}{acikMor}{#1}{#2}}
+
+% Yardımcı komutlar
+\newcommand{\code}[1]{\texttt{\color{koyuGri}#1}}
+\renewcommand{\arraystretch}{1.35}
+
+% ==================== BAŞLANGIÇ ====================
+\begin{document}
+
+% ---------- KAPAK ----------
+\begin{titlepage}
+\centering
+\vspace*{1.4cm}
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[8pt]
+{\color{anaMavi}\Huge\bfseries Sayısal İşaret İşleme}\\[8pt]
+{\color{vurguMavi}\LARGE Modülasyon, Demodülasyon ve IQ İşleme}\\[8pt]
+{\color{ortaGri}\large C++ ile Sıfırdan: DFT/FFT, Filtreler, AM/FM, PSK/QAM ve Tam Bir SDR Alıcısı}\\[6pt]
+{\color{turuncu}\rule{\textwidth}{2pt}}\\[1.4cm]
+
+\begin{center}
+\fcolorbox{vurguMavi}{acikMavi}{\parbox{0.86\textwidth}{\centering\large
+Bu belge önce \textbf{örnekleme, Nyquist ve karmaşık sayılar} gibi temelleri;
+sonra \textbf{DFT/FFT ile frekans analizini}; ardından \textbf{FIR/IIR filtreleri};
+sonra işin kalbi olan \textbf{IQ (karmaşık bant temeli)} kavramını; en sonda ise
+\textbf{AM, FM, PM ve sayısal modülasyonların} tam modem örneklerini anlatır.
+Kapanışta gerçek bir \textbf{FM radyo alıcısının} (RTL-SDR IQ akışından sese) uçtan
+uca hattı yazılır. Tüm kod örnekleri İngilizce isimlendirmeyle, standart C++17 ile,
+harici kütüphaneye ihtiyaç duymadan derlenecek şekilde yazılmıştır.\vspace{4pt}}}
+\end{center}
+
+\vspace{0.7cm}
+\begin{center}
+\fcolorbox{ortaGri!50}{acikGri}{\parbox{0.86\textwidth}{\small
+\textbf{Kapsam --- Kısım 1 (Temeller):} işaret nedir \textbullet\ analog vs sayısal
+\textbullet\ örnekleme \& Nyquist \textbullet\ aliasing \textbullet\ kuantalama \& ADC
+\textbullet\ karmaşık sayılar \& fazörler \textbullet\ sinyal üretimi \& WAV G/Ç.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 2 (Frekans Analizi):} Fourier fikri \textbullet\ DFT
+\textbullet\ FFT (radix-2, özyinelemeli \& yinelemeli) \textbullet\ pencereleme
+\textbullet\ genlik/faz spektrumu \textbullet\ güç spektral yoğunluğu.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 3 (Filtreler):} konvolüsyon \textbullet\ FIR \& doğrusal faz
+\textbullet\ pencere yöntemiyle tasarım \textbullet\ IIR \& biquad \textbullet\ kutup-sıfır
+\textbullet\ hareketli ortalama \& CIC.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 4 (IQ \& Bant Temeli):} analitik işaret \& Hilbert
+\textbullet\ I/Q anlamı \textbullet\ NCO \& mikser ile frekans kaydırma
+\textbullet\ desimasyon/interpolasyon \textbullet\ takım yıldızı (constellation).\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 5 (Modülasyon):} AM (zarf \& senkron) \textbullet\ FM (IQ diskriminatör)
+\textbullet\ PM \textbullet\ ASK/FSK/PSK/QAM \textbullet\ QPSK modem \textbullet\ Costas \& PLL
+\textbullet\ zamanlama kurtarma.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 6 (Uçtan Uca Alıcı):} IQ dosya formatları \textbullet\ RTL-SDR akışı
+\textbullet\ tam WBFM radyo hattı \textbullet\ stereo \& de-emphasis \textbullet\ performans notları.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 7 (İleri):} stereo FM çözücü \textbullet\ AGC
+\textbullet\ uçtan uca QPSK modem \textbullet\ OFDM (IFFT/FFT) \textbullet\ konvolüsyonel kod \& Viterbi.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 8 (Projeler):} DTMF çözücü (Goertzel) \textbullet\ ses üzerinden FSK veri iletimi
+\textbullet\ terminal spektrum analizörü \textbullet\ enstrüman akort cihazı \textbullet\ CMake ile derleme.\vspace{3pt}
+
+\textbf{Kapsam --- Kısım 9 (Matematik):} diklik \& Euler \textbullet\ Fourier zinciri (FS/FT/DTFT/DFT)
+\textbullet\ FFT ispatı \textbullet\ örnekleme teoreminin türetimi \textbullet\ konvolüsyon \& modülasyon
+teoremleri \textbullet\ Parseval \textbullet\ Bessel \& Carson \textbullet\ analitik işaret \& anlık frekans.\vspace{3pt}}}
+\end{center}
+
+\vfill
+{\color{ortaGri}\large Hazırlanma Tarihi: 20 Temmuz 2026}\\[4pt]
+{\color{ortaGri} C++17 \textbullet\ \code{<complex>} \& \code{<vector>} \textbullet\ Nyquist--Shannon \textbullet\ RTL-SDR \textbullet\ CMake}
+\vspace*{0.4cm}
+\end{titlepage}
+
+% ---------- İÇİNDEKİLER ----------
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% #####################################################################
+\gpart{1}{İşaret İşlemenin Temelleri}
+% #####################################################################
+
+% =====================================================================
+\gsec{İşaret Nedir? Analogdan Sayısala}
+% =====================================================================
+
+Bir \textbf{işaret} (signal), bilgi taşıyan ve zamana (veya uzaya) göre değişen
+bir büyüklüktür. Bir mikrofonun zara çarpan hava basıncını gerilime çevirmesi,
+bir antenin havadaki elektromanyetik alanı akıma çevirmesi, bir sıcaklık
+sensörünün ısıyı volta çevirmesi --- hepsi işaret üretir. İşaret işleme, bu
+büyüklükleri \emph{ölçmek, dönüştürmek, filtrelemek, analiz etmek ve yeniden
+üretmek} sanatıdır.
+
+İşaretleri iki eksende sınıflandırırız:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi} & \color{anaMavi}\textbf{Zaman ekseni} & \color{anaMavi}\textbf{Genlik ekseni}\\
+\midrule
+\textbf{Analog} & sürekli ($t \in \mathbb{R}$) & sürekli (her değeri alabilir)\\
+\textbf{Ayrık-zamanlı} & kesikli ($n \in \mathbb{Z}$) & sürekli\\
+\textbf{Sayısal (dijital)} & kesikli & kesikli (kuantalanmış)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Gerçek dünya analogdur; bilgisayarlar ise sayısaldır. Aradaki köprü iki
+bileşendir: \textbf{ADC} (Analog-to-Digital Converter) analog işareti belirli
+aralıklarla ölçüp sayıya çevirir; \textbf{DAC} (Digital-to-Analog Converter) ise
+sayı dizisini tekrar sürekli bir gerilime çevirir.
+
+\bilgi{Sayısal işaret işlemenin (DSP) tüm gücü şu basit gerçekten gelir: Bir
+işareti sayı dizisine çevirdiğimizde, onun üzerinde \emph{aritmetik} yapabiliriz.
+Filtreleme bir çarpma-toplama, modülasyon bir çarpma, frekans analizi bir matris
+dönüşümü hâline gelir. Analogda pahalı devrelerle yapılan her şey, sayısalda
+birkaç satır koda dönüşür.}
+
+\gsub{Ayrık-Zamanlı İşaretin Gösterimi}
+
+Ayrık bir işareti $x[n]$ ile gösteririz; burada $n$ tamsayı örnek indeksidir.
+Eğer örnekler $T_s$ saniye aralıkla alınıyorsa, \textbf{örnekleme frekansı}
+$f_s = 1/T_s$'dir ve $n$'inci örnek gerçek zamanda $t = n\,T_s = n/f_s$ anına
+karşılık gelir. C++'ta bir işaret çoğunlukla bir dizidir:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Gerçek-değerli bir işaret genelde float/double vektörüdür.
+using Signal = std::vector<float>;
+
+// fs Hz örnekleme hızıyla, f Hz'lik saf bir sinüs üret.
+// x[n] = A * sin(2*pi*f*n/fs + phi)
+Signal makeSine(double freqHz, double fs, double durationSec,
+                double amplitude = 1.0, double phaseRad = 0.0) {
+    const size_t N = static_cast<size_t>(durationSec * fs);
+    Signal x(N);
+    const double w = 2.0 * M_PI * freqHz / fs;   // örnek başına faz artışı (rad)
+    for (size_t n = 0; n < N; ++n)
+        x[n] = static_cast<float>(amplitude * std::sin(w * n + phaseRad));
+    return x;
+}
+\end{lstlisting}
+
+\notk{Buradaki $w = 2\pi f/f_s$ niceliğine \emph{sayısal açısal frekans} denir
+ve birimi ``radyan/örnek''tir. DSP'de neredeyse her formül $f_s$'e göre
+normalize edilmiş bu $w$ cinsinden yazılır; çünkü algoritma açısından önemli olan
+mutlak frekans değil, örnekleme hızına \emph{oranıdır}.}
+
+% =====================================================================
+\gsec{Örnekleme, Nyquist ve Aliasing}
+% =====================================================================
+
+DSP'nin en temel teoremi \textbf{Nyquist--Shannon örnekleme teoremidir}:
+bant genişliği $B$ olan (yani en yüksek frekans bileşeni $B$ Hz olan) bir işareti
+kayıpsız temsil etmek için örnekleme frekansı en az $2B$ olmalıdır:
+\[
+f_s > 2 f_{\max} \qquad(\text{Nyquist kriteri})
+\]
+$f_s/2$ değerine \textbf{Nyquist frekansı} denir ve sayısal dünyada temsil
+edebileceğimiz en yüksek frekanstır.
+
+\gsub{Aliasing: Kimlik Değiştiren Frekanslar}
+
+Nyquist kriterini ihlal edersek --- yani $f_{\max}$'tan daha düşük bir hızla
+örnekleme yaparsak --- yüksek frekanslar düşük frekanslar gibi \emph{kılık
+değiştirir}. Buna \textbf{aliasing} (örtüşme) denir. Matematiksel olarak,
+$f$ ve $f + k f_s$ frekansları (herhangi bir tamsayı $k$) örneklendiğinde
+\emph{tamamen aynı} örnek dizisini üretir:
+\[
+\sin\!\big(2\pi (f + k f_s)\, n/f_s\big) = \sin\!\big(2\pi f\, n/f_s + 2\pi k n\big)
+= \sin\!\big(2\pi f\, n/f_s\big)
+\]
+çünkü $2\pi k n$ terimi tam bir tur katıdır. Aşağıdaki kod bunu deneysel olarak
+gösterir: $f_s = 1000$~Hz'te örneklenen 300~Hz ve 700~Hz'lik sinüsler bit-bit
+aynı örnekleri verir (700 = 1000 $-$ 300, yani 700 Hz, $-300$ Hz'in aliasıdır).
+
+\begin{lstlisting}
+#include <cstdio>
+#include <cmath>
+
+int main() {
+    const double fs = 1000.0;          // örnekleme frekansı
+    const double f1 = 300.0, f2 = 700.0;
+    printf(" n |   300 Hz   |   700 Hz   | fark\n");
+    for (int n = 0; n < 8; ++n) {
+        double a = std::sin(2*M_PI*f1*n/fs);
+        double b = std::sin(2*M_PI*f2*n/fs);
+        printf("%2d | %+.6f | %+.6f | %.1e\n", n, a, b, std::fabs(a-b));
+    }
+    // fark ~ 1e-16: iki farklı frekans, ayırt edilemez örnekler üretir!
+    return 0;
+}
+\end{lstlisting}
+
+\uyari{Aliasing geri döndürülemez bir bilgi kaybıdır. Örnekleme yapıldıktan
+\emph{sonra} hangi frekansın ``gerçek'' olduğunu bilmenin yolu yoktur. Bu yüzden
+her gerçek ADC'nin önünde, Nyquist üstü frekansları örneklemeden \emph{önce}
+kesen bir analog \textbf{anti-aliasing (kıvrım önleyici) filtre} bulunur.}
+
+\gsub{Aliasing'i Sese Çevirmek}
+
+Aliasing'i somutlaştırmak için, $f_s/2$'yi aşan bir frekansın nereye
+katlandığını hesaplayan küçük bir yardımcı yazalım. Katlanan frekans
+$f_{\text{alias}} = |f - k f_s|$ olup, sonucu $[0, f_s/2]$ aralığına indirir:
+
+\begin{lstlisting}
+#include <cmath>
+
+// Bir f frekansının fs ile örneklendiğinde nereye "alias" olacağını verir.
+double aliasedFrequency(double f, double fs) {
+    double folded = std::fmod(f, fs);           // [0, fs) aralığına indir
+    if (folded < 0) folded += fs;
+    if (folded > fs / 2.0) folded = fs - folded; // Nyquist'in üstünü katla
+    return folded;
+}
+
+// Örnek: fs = 48 kHz
+//   aliasedFrequency(1000,  48000) -> 1000  (sorun yok)
+//   aliasedFrequency(47000, 48000) -> 1000  (47 kHz, 1 kHz gibi duyulur!)
+//   aliasedFrequency(25000, 48000) -> 23000 (Nyquist'in hemen üstü katlanır)
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Kuantalama ve ADC}
+% =====================================================================
+
+Örnekleme zaman eksenini kesikli yapar; \textbf{kuantalama} ise genlik eksenini
+kesikli yapar. Bir $B$-bitlik ADC, giriş aralığını $2^B$ seviyeye böler. Örneğin
+16-bit bir ADC, gerilim aralığını $65536$ basamağa böler. Her örnek en yakın
+basamağa yuvarlanır; aradaki fark \textbf{kuantalama gürültüsüdür}.
+
+Bir ideal kuantalayıcının sinyal-gürültü oranı (SNR) yaklaşık şudur:
+\[
+\text{SNR}_{\text{dB}} \approx 6{,}02\,B + 1{,}76
+\]
+Yani her ek bit yaklaşık 6~dB dinamik aralık kazandırır. 16-bit $\approx 98$~dB,
+12-bit (tipik SDR) $\approx 74$~dB.
+
+\begin{lstlisting}
+#include <cmath>
+#include <cstdint>
+
+// [-1, 1] aralığındaki float'ı B-bit işaretli tamsayıya kuantala.
+int32_t quantize(float x, int bits) {
+    const int32_t levels = (1 << (bits - 1)) - 1;   // örn. 16-bit -> 32767
+    float clamped = std::fmax(-1.0f, std::fmin(1.0f, x));
+    return static_cast<int32_t>(std::lround(clamped * levels));
+}
+
+// Kuantalanmış değeri geri float'a çevir (DAC'ın yaptığı).
+float dequantize(int32_t q, int bits) {
+    const int32_t levels = (1 << (bits - 1)) - 1;
+    return static_cast<float>(q) / levels;
+}
+\end{lstlisting}
+
+\ipucu{RTL-SDR gibi ucuz alıcılar 8-bit örnekler verir (her I ve Q için bir
+bayt, \code{0..255}, orta nokta 127.5). Bu yüzden bir SDR programının ilk adımı
+neredeyse her zaman bu baytları $[-1, 1]$ aralığına ölçekleyip \code{float}'a
+çevirmektir. Bunun kodunu Kısım 6'da göreceğiz.}
+
+% =====================================================================
+\gsec{Karmaşık Sayılar ve Fazörler}
+% =====================================================================
+
+Modülasyon ve IQ işlemenin dilini konuşabilmek için \textbf{karmaşık sayılar}
+şarttır. Bir karmaşık sayı $z = a + jb$'dir; burada $j = \sqrt{-1}$ (mühendisler
+$i$ yerine $j$ kullanır, çünkü $i$ akımı temsil eder). Gerçek kısım $a =
+\Re\{z\}$, sanal kısım $b = \Im\{z\}$'dir.
+
+En kritik ilişki \textbf{Euler formülüdür}:
+\[
+e^{j\theta} = \cos\theta + j\sin\theta
+\]
+Bu, birim çember üzerinde $\theta$ açısındaki bir noktadır. Zamanla dönen bir
+karmaşık üstel $e^{j 2\pi f t}$'ye \textbf{fazör} denir ve $f$ frekansında dönen
+bir vektör olarak düşünülür. İşte modülasyonun tüm geometrisi budur: bilgiyi bu
+dönen vektörün \emph{genliğine}, \emph{açısına} veya \emph{dönme hızına}
+gömeriz.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Büyüklük} & \color{anaMavi}\textbf{Anlamı ve C++ karşılığı}\\
+\midrule
+Genlik (magnitude) & $|z| = \sqrt{a^2+b^2}$ --- \code{std::abs(z)}. AM'de bilgi burada.\\
+Faz (argument) & $\angle z = \operatorname{atan2}(b,a)$ --- \code{std::arg(z)}. PM/PSK'de bilgi burada.\\
+Anlık frekans & fazın türevi $\frac{d}{dt}\angle z$. FM'de bilgi burada.\\
+Eşlenik & $z^* = a - jb$ --- \code{std::conj(z)}. Frekans kaydırmada kullanılır.\\
+Güç & $|z|^2 = a^2+b^2$ --- \code{std::norm(z)} (dikkat: karekök \emph{yok}).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\uyari{C++ standart kütüphanesinde \code{std::norm(z)} matematiksel normu
+(uzunluğu) \emph{değil}, uzunluğun \emph{karesini} ($|z|^2$) döndürür. Uzunluk
+için \code{std::abs(z)} kullanın. Bu, DSP kodunda sık yapılan bir hatadır.}
+
+\gsub{C++'ta \code{std::complex} ile Çalışmak}
+
+Standart \code{<complex>} başlığı bize hazır bir karmaşık aritmetik verir. SDR
+dünyasında yaygın olarak \code{std::complex<float>} kullanılır (bellek ve hız
+için); GNU Radio'daki \code{gr\_complex} de tam olarak budur.
+
+\begin{lstlisting}
+#include <complex>
+#include <cstdio>
+
+using cf32 = std::complex<float>;   // I = real, Q = imag
+
+int main() {
+    cf32 z(3.0f, 4.0f);             // 3 + 4j  (I=3, Q=4)
+
+    printf("z        = %.1f + %.1fj\n", z.real(), z.imag());
+    printf("|z|      = %.4f\n", std::abs(z));    // 5.0 (genlik)
+    printf("|z|^2    = %.4f\n", std::norm(z));   // 25.0 (guc, karekoksuz!)
+    printf("faz      = %.4f rad\n", std::arg(z)); // atan2(4,3) = 0.9273
+    printf("eslenik  = %.1f + %.1fj\n",
+           std::conj(z).real(), std::conj(z).imag()); // 3 - 4j
+
+    // Euler: bir birim fazor uret (45 derece)
+    cf32 p = std::polar(1.0f, 3.14159265f / 4.0f);  // e^(j*pi/4)
+    printf("polar    = %.4f + %.4fj\n", p.real(), p.imag()); // ~0.707 + 0.707j
+
+    // Iki fazoru carpmak aci'larini TOPLAR (frekans kaydirmanin ozu)
+    cf32 a = std::polar(1.0f, 0.3f);
+    cf32 b = std::polar(1.0f, 0.5f);
+    printf("carpim aci = %.4f (=0.8?)\n", std::arg(a * b));  // 0.8
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{Neden karmaşık sayılar? Çünkü \textbf{çarpım açıları toplar}: $e^{j\alpha}
+\cdot e^{j\beta} = e^{j(\alpha+\beta)}$. Bir işareti $e^{-j 2\pi f_0 t/f_s}$ ile
+çarpmak, onu frekans ekseninde $-f_0$ kadar kaydırır --- işte tüm mikserlerin,
+kanal seçicilerin ve demodülatörlerin çalışma prensibi budur. Gerçek sinüslerle
+bunu yapmaya çalışsaydık, çarpım hem toplam hem fark frekansını üretir ve
+istenmeyen bileşeni filtrelememiz gerekirdi.}
+
+% =====================================================================
+\gsec{Sinyal Üretimi ve WAV Dosyaları}
+% =====================================================================
+
+Sonuçlarımızı duyabilmek ve grafiklemek için sinyalleri diske yazmak
+gerekir. En yaygın format \textbf{WAV}'dır (RIFF konteyneri, PCM veri).
+Aşağıda harici kütüphane olmadan 16-bit mono/stereo WAV yazan tam bir yardımcı
+var --- bu belge boyunca üretilen sesleri kaydetmek için kullanacağız.
+
+\begin{lstlisting}
+#include <cstdint>
+#include <cstdio>
+#include <fstream>
+#include <vector>
+#include <cmath>
+
+// 16-bit PCM WAV yazici. samples: [-1,1] araligindaki interleaved kanallar.
+void writeWav(const std::string& path, const std::vector<float>& samples,
+              uint32_t sampleRate, uint16_t channels = 1) {
+    std::ofstream f(path, std::ios::binary);
+    const uint32_t nSamples = static_cast<uint32_t>(samples.size());
+    const uint16_t bitsPerSample = 16;
+    const uint16_t blockAlign = channels * bitsPerSample / 8;
+    const uint32_t byteRate = sampleRate * blockAlign;
+    const uint32_t dataBytes = nSamples * sizeof(int16_t);
+
+    auto put32 = [&](uint32_t v){ f.write(reinterpret_cast<char*>(&v), 4); };
+    auto put16 = [&](uint16_t v){ f.write(reinterpret_cast<char*>(&v), 2); };
+
+    f.write("RIFF", 4);  put32(36 + dataBytes);  f.write("WAVE", 4);
+    f.write("fmt ", 4);  put32(16);              // fmt yigin boyutu
+    put16(1);                                     // PCM
+    put16(channels);     put32(sampleRate);       put32(byteRate);
+    put16(blockAlign);   put16(bitsPerSample);
+    f.write("data", 4);  put32(dataBytes);
+
+    for (float s : samples) {
+        float c = std::fmax(-1.0f, std::fmin(1.0f, s));   // kirp (clip)
+        int16_t q = static_cast<int16_t>(std::lround(c * 32767.0f));
+        f.write(reinterpret_cast<char*>(&q), sizeof(q));
+    }
+}
+
+int main() {
+    const double fs = 48000.0;
+    std::vector<float> tone;
+    // 2 saniye, 440 Hz (La notasi), yavasca sonlanan zarfla
+    for (int n = 0; n < static_cast<int>(2 * fs); ++n) {
+        double t = n / fs;
+        double env = std::exp(-1.5 * t);                 // ussel sonumlenme
+        tone.push_back(static_cast<float>(0.6 * env * std::sin(2*M_PI*440*t)));
+    }
+    writeWav("la440.wav", tone, 48000, 1);
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Ürettiğiniz herhangi bir işaretin frekans içeriğini hızlıca görmek için
+onu WAV'a yazıp Audacity veya \code{sox} ile spektrogramına bakabilirsiniz:
+\code{sox sinyal.wav -n spectrogram}. Bir demodülatörü hata ayıklarken
+``kulakla dinlemek'' şaşırtıcı derecede güçlü bir araçtır.}
+
+% #####################################################################
+\gpart{2}{Frekans Alanı: DFT ve FFT}
+% #####################################################################
+
+% =====================================================================
+\gsec{Fourier Fikri}
+% =====================================================================
+
+İşaret işlemenin en derin fikri şudur: \textbf{her işaret, farklı frekanslardaki
+sinüslerin toplamı olarak yazılabilir}. Zaman alanında karmaşık görünen bir
+sinyal, frekans alanında birkaç basit tepe hâline gelebilir. Filtreleme,
+modülasyon, sıkıştırma --- çoğu işlem frekans alanında düşünüldüğünde apaçık
+olur.
+
+\textbf{Ayrık Fourier Dönüşümü (DFT)}, $N$ örneklik bir işareti $N$ frekans
+bileşenine dönüştürür:
+\[
+X[k] = \sum_{n=0}^{N-1} x[n]\, e^{-j 2\pi k n / N}, \qquad k = 0,1,\dots,N-1
+\]
+Buradaki $X[k]$ karmaşıktır: büyüklüğü $|X[k]|$ o frekanstaki bileşenin gücünü,
+açısı $\angle X[k]$ ise fazını verir. $k$'ıncı bileşenin karşılık geldiği gerçek
+frekans $f_k = k f_s / N$'dir.
+
+\gsub{DFT'nin Doğrudan Uygulaması}
+
+Tanımı olduğu gibi koda dökmek $O(N^2)$'lik bir algoritma verir --- yavaştır ama
+her zaman doğrudur ve FFT'yi doğrulamak için harika bir referanstır:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cmath>
+
+using cf64 = std::complex<double>;
+
+// Dogrudan DFT: O(N^2). Girdi gercek veya karmasik olabilir.
+std::vector<cf64> dft(const std::vector<cf64>& x) {
+    const size_t N = x.size();
+    std::vector<cf64> X(N);
+    for (size_t k = 0; k < N; ++k) {
+        cf64 sum(0.0, 0.0);
+        for (size_t n = 0; n < N; ++n) {
+            double angle = -2.0 * M_PI * k * n / N;
+            sum += x[n] * cf64(std::cos(angle), std::sin(angle));
+        }
+        X[k] = sum;
+    }
+    return X;
+}
+
+// Ters DFT (IDFT): frekanstan zamana geri don.
+std::vector<cf64> idft(const std::vector<cf64>& X) {
+    const size_t N = X.size();
+    std::vector<cf64> x(N);
+    for (size_t n = 0; n < N; ++n) {
+        cf64 sum(0.0, 0.0);
+        for (size_t k = 0; k < N; ++k) {
+            double angle = +2.0 * M_PI * k * n / N;   // isaret ters, +
+            sum += X[k] * cf64(std::cos(angle), std::sin(angle));
+        }
+        x[n] = sum / static_cast<double>(N);          // 1/N normalizasyonu
+    }
+    return x;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{FFT: Hızlı Fourier Dönüşümü}
+% =====================================================================
+
+DFT'nin $O(N^2)$ maliyeti büyük $N$ için dayanılmaz olur ($N = 10^6$ için
+$10^{12}$ işlem). \textbf{FFT}, Cooley--Tukey algoritmasıyla bunu
+$O(N \log N)$'e düşürür --- $N = 10^6$ için milyon kat hızlanma. Fikir
+\emph{böl ve fethet}: $N$ noktalı DFT'yi çift ve tek indeksli örneklerin iki
+adet $N/2$ noktalı DFT'sine ayır, sonra ``kelebek'' (butterfly) işlemleriyle
+birleştir.
+
+\gsub{Özyinelemeli Radix-2 FFT}
+
+En anlaşılır uygulama özyinelemelidir. $N$'in 2'nin kuvveti olması gerekir:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cmath>
+
+using cf64 = std::complex<double>;
+
+// Ozyinelemeli radix-2 DIT FFT. x.size() 2'nin kuvveti olmali.
+void fftRecursive(std::vector<cf64>& x) {
+    const size_t N = x.size();
+    if (N <= 1) return;
+
+    // Cift ve tek indeksleri ayir
+    std::vector<cf64> even(N/2), odd(N/2);
+    for (size_t i = 0; i < N/2; ++i) {
+        even[i] = x[2*i];
+        odd[i]  = x[2*i + 1];
+    }
+    fftRecursive(even);
+    fftRecursive(odd);
+
+    // Kelebek birlestirme
+    for (size_t k = 0; k < N/2; ++k) {
+        double angle = -2.0 * M_PI * k / N;
+        cf64 tw = std::polar(1.0, angle) * odd[k];   // twiddle carpani
+        x[k]        = even[k] + tw;
+        x[k + N/2]  = even[k] - tw;
+    }
+}
+\end{lstlisting}
+
+\gsub{Yerinde (In-Place) Yinelemeli FFT}
+
+Üretim kodu özyineleme yerine, bit-ters (bit-reversal) permütasyon + iç içe
+döngü kullanır. Bellek tahsisi yapmaz, önbellek dostudur ve çok daha hızlıdır:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cmath>
+
+using cf64 = std::complex<double>;
+
+// Yinelemeli, yerinde radix-2 FFT. invert=true ise ters FFT (1/N'siz).
+void fft(std::vector<cf64>& a, bool invert = false) {
+    const size_t n = a.size();
+    if (n <= 1) return;
+
+    // 1) Bit-ters permutasyon
+    for (size_t i = 1, j = 0; i < n; ++i) {
+        size_t bit = n >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) std::swap(a[i], a[j]);
+    }
+
+    // 2) Kelebekleri katman katman uygula (len = 2, 4, 8, ...)
+    for (size_t len = 2; len <= n; len <<= 1) {
+        double ang = (invert ? +2.0 : -2.0) * M_PI / len;
+        cf64 wlen(std::cos(ang), std::sin(ang));
+        for (size_t i = 0; i < n; i += len) {
+            cf64 w(1.0, 0.0);
+            for (size_t k = 0; k < len/2; ++k) {
+                cf64 u = a[i + k];
+                cf64 v = a[i + k + len/2] * w;
+                a[i + k]         = u + v;
+                a[i + k + len/2] = u - v;
+                w *= wlen;
+            }
+        }
+    }
+
+    if (invert)
+        for (cf64& x : a) x /= static_cast<double>(n);  // ters icin 1/N
+}
+\end{lstlisting}
+
+\ornek[Kullanım: Bir Frekansı Tespit Et]{Aşağıdaki program, 8000~Hz'te
+örneklenmiş ve içinde 1000~Hz'lik bir ton bulunan bir işaretin FFT'sini alıp en
+güçlü frekans binini bulur.}
+
+\begin{lstlisting}
+#include <cstdio>
+
+int main() {
+    const double fs = 8000.0;
+    const size_t N = 1024;                       // 2'nin kuvveti
+    std::vector<cf64> x(N);
+    for (size_t n = 0; n < N; ++n)
+        x[n] = std::sin(2*M_PI*1000.0*n/fs);     // gercek girdi, Q=0
+
+    fft(x);                                       // yerinde donusum
+
+    // En buyuk buyuklukteki bin'i bul (yalniz ilk yariya bak: gercek girdi)
+    size_t peak = 0; double best = 0;
+    for (size_t k = 0; k < N/2; ++k) {
+        double mag = std::abs(x[k]);
+        if (mag > best) { best = mag; peak = k; }
+    }
+    printf("Tepe bin = %zu -> %.1f Hz\n", peak, peak * fs / N); // ~1000 Hz
+    return 0;
+}
+\end{lstlisting}
+
+\notk[Frekans çözünürlüğü]{FFT'nin bin aralığı $\Delta f = f_s / N$'dir. Daha ince
+frekans çözünürlüğü için ya daha uzun kayıt alırsınız (büyük $N$) ya da işareti
+sıfırlarla doldurursunuz (zero-padding). Bin çözünürlüğü zamanla ters
+orantılıdır: 1~Hz çözünürlük için en az 1 saniyelik kayıt gerekir.}
+
+% =====================================================================
+\gsec{Pencereleme (Windowing)}
+% =====================================================================
+
+DFT, işaretin \emph{periyodik} olduğunu varsayar. Ama biz sonlu bir parça
+kesip aldığımızda, kesme noktalarındaki süreksizlik frekans alanında
+\textbf{spektral sızıntıya} (spectral leakage) yol açar: keskin bir tepe olması
+gereken yerde, yanlara yayılan yan loblar (sidelobes) oluşur. Çözüm, işareti
+kenarlarda yumuşakça sıfıra indiren bir \textbf{pencere fonksiyonuyla} çarpmaktır.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Pencere} & \color{anaMavi}\textbf{Özelliği}\\
+\midrule
+Dikdörtgen (yok) & En dar ana lob, en kötü sızıntı. Geçici olayları ölçmek için.\\
+Hann & İyi genel amaçlı denge; yumuşak, $-31$~dB yan lob.\\
+Hamming & Hann'a benzer, ilk yan lobu bastırır ($-43$~dB).\\
+Blackman & Çok düşük yan lob ($-58$~dB), daha geniş ana lob. Zayıf tonları görmek için.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Hann penceresi: w[n] = 0.5 * (1 - cos(2*pi*n/(N-1)))
+std::vector<double> hannWindow(size_t N) {
+    std::vector<double> w(N);
+    for (size_t n = 0; n < N; ++n)
+        w[n] = 0.5 * (1.0 - std::cos(2.0 * M_PI * n / (N - 1)));
+    return w;
+}
+
+// Blackman penceresi: daha iyi yan-lob bastirma
+std::vector<double> blackmanWindow(size_t N) {
+    std::vector<double> w(N);
+    for (size_t n = 0; n < N; ++n) {
+        double t = 2.0 * M_PI * n / (N - 1);
+        w[n] = 0.42 - 0.5 * std::cos(t) + 0.08 * std::cos(2 * t);
+    }
+    return w;
+}
+
+// Spektrum almadan once pencereyi uygula.
+void applyWindow(std::vector<cf64>& x, const std::vector<double>& w) {
+    for (size_t n = 0; n < x.size(); ++n) x[n] *= w[n];
+}
+\end{lstlisting}
+
+\gsub{Güç Spektral Yoğunluğu (PSD)}
+
+Bir işaretin gücünün frekansa nasıl dağıldığını görmek için PSD hesaplarız.
+Pratikte pencerelenmiş FFT'nin büyüklük karesini alıp desibele çeviririz. SDR
+programlarındaki ``şelale'' (waterfall) görüntüsünün altında yatan hesap budur:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Tek bir kare icin dB cinsinden guc spektrumu.
+std::vector<double> powerSpectrumDb(std::vector<cf64> x,
+                                    const std::vector<double>& win) {
+    const size_t N = x.size();
+    applyWindow(x, win);
+    fft(x);                              // (onceki bolumdeki FFT)
+
+    // Pencere kazancini telafi et
+    double winSum = 0; for (double w : win) winSum += w;
+
+    std::vector<double> psd(N);
+    for (size_t k = 0; k < N; ++k) {
+        double mag = std::abs(x[k]) / winSum;
+        psd[k] = 20.0 * std::log10(mag + 1e-12);  // +eps: log(0)'dan kacin
+    }
+    return psd;
+}
+\end{lstlisting}
+
+% #####################################################################
+\gpart{3}{Filtreler: FIR ve IIR}
+% #####################################################################
+
+% =====================================================================
+\gsec{Konvolüsyon ve FIR Filtreler}
+% =====================================================================
+
+Bir \textbf{filtre}, işaretin belli frekanslarını geçirip diğerlerini
+zayıflatan bir sistemdir. En temel yapı taşı \textbf{konvolüsyondur}: çıktı,
+girdinin filtre \emph{dürtü yanıtı} $h[n]$ ile konvolüsyonudur:
+\[
+y[n] = \sum_{k=0}^{M-1} h[k]\, x[n-k]
+\]
+Dürtü yanıtı sonlu uzunluktaysa (yani $h$ sonlu bir katsayı dizisiyse) buna
+\textbf{FIR} (Finite Impulse Response) filtre denir. FIR filtreler her zaman
+kararlıdır ve \textbf{tam doğrusal faz} sağlayabilir (tüm frekansları aynı
+gecikmeyle geciktirir; ses ve haberleşmede kritik).
+
+\gsub{Temel FIR Uygulaması}
+
+\begin{lstlisting}
+#include <vector>
+
+// Zamanla akan bir FIR filtresi. Katsayilar (taps) sabit; her ornek icin
+// gecmis M orneklik pencereyi bir dairesel tampon (ring buffer) ile tutar.
+class FirFilter {
+    std::vector<float> taps_;    // h[k] katsayilari
+    std::vector<float> buf_;     // gecmis ornekler (dairesel)
+    size_t pos_ = 0;
+public:
+    explicit FirFilter(std::vector<float> taps)
+        : taps_(std::move(taps)), buf_(taps_.size(), 0.0f) {}
+
+    // Bir ornek isle, bir ornek dondur.
+    float process(float x) {
+        buf_[pos_] = x;
+        float acc = 0.0f;
+        size_t idx = pos_;
+        for (size_t k = 0; k < taps_.size(); ++k) {
+            acc += taps_[k] * buf_[idx];
+            idx = (idx == 0) ? taps_.size() - 1 : idx - 1;  // geriye sar
+        }
+        pos_ = (pos_ + 1) % taps_.size();
+        return acc;
+    }
+
+    void reset() { std::fill(buf_.begin(), buf_.end(), 0.0f); pos_ = 0; }
+};
+\end{lstlisting}
+
+\gsub{Pencere Yöntemiyle Alçak Geçiren FIR Tasarımı}
+
+Peki katsayıları nereden buluruz? İdeal bir alçak geçiren filtrenin dürtü yanıtı
+bir \textbf{sinc} fonksiyonudur. Onu sonlu uzunlukta kesip bir pencereyle
+yumuşatarak pratik bir filtre elde ederiz:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Pencere-sinc yontemiyle alcak geciren FIR tasarla.
+//   cutoffHz : -6 dB kesim frekansi
+//   fs       : ornekleme frekansi
+//   numTaps  : katsayi sayisi (tek sayi onerilir -> simetrik, tam dogrusal faz)
+std::vector<float> designLowpass(double cutoffHz, double fs, size_t numTaps) {
+    std::vector<float> h(numTaps);
+    const double fc = cutoffHz / fs;          // normalize kesim (0..0.5)
+    const double mid = (numTaps - 1) / 2.0;
+    double sum = 0.0;
+
+    for (size_t n = 0; n < numTaps; ++n) {
+        double m = n - mid;
+        // Ideal alcak geciren dPurtu yaniti: sinc
+        double sinc = (m == 0.0) ? 2.0 * fc
+                                 : std::sin(2.0 * M_PI * fc * m) / (M_PI * m);
+        // Hamming penceresi
+        double win = 0.54 - 0.46 * std::cos(2.0 * M_PI * n / (numTaps - 1));
+        h[n] = static_cast<float>(sinc * win);
+        sum += h[n];
+    }
+    // DC'de birim kazanc icin normalize et
+    for (float& c : h) c /= static_cast<float>(sum);
+    return h;
+}
+
+// Yuksek geciren = all-pass eksi alcak geciren (spektral tersleme)
+std::vector<float> designHighpass(double cutoffHz, double fs, size_t numTaps) {
+    auto h = designLowpass(cutoffHz, fs, numTaps);
+    for (float& c : h) c = -c;                 // isaretini ters cevir
+    h[(numTaps - 1) / 2] += 1.0f;              // merkeze birim dPurtu ekle
+    return h;
+}
+\end{lstlisting}
+
+\ornek[Uygulama: Gürültülü Sinyali Temizle]{500~Hz'lik yararlı tonu 5000~Hz'lik
+gürültüden ayıralım.}
+
+\begin{lstlisting}
+int main() {
+    const double fs = 44100.0;
+    // 500 Hz sinyal + 5000 Hz gurultu
+    std::vector<float> in;
+    for (int n = 0; n < 4410; ++n) {
+        double t = n / fs;
+        in.push_back(0.5*std::sin(2*M_PI*500*t) + 0.5*std::sin(2*M_PI*5000*t));
+    }
+    // 1500 Hz'te kesen 101-tap alcak geciren filtre
+    FirFilter lp(designLowpass(1500.0, fs, 101));
+    std::vector<float> out;
+    for (float x : in) out.push_back(lp.process(x));
+    // out: yalnizca 500 Hz kalir; 5000 Hz ~40 dB bastirilmis olur.
+    return 0;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{IIR Filtreler ve Biquad}
+% =====================================================================
+
+\textbf{IIR} (Infinite Impulse Response) filtreler geri besleme kullanır: çıktı
+hem geçmiş girdilere hem geçmiş \emph{çıktılara} bağlıdır. Bu sayede çok az
+katsayıyla çok keskin filtreler kurulabilir --- ama kararlılık artık garanti
+değildir ve faz doğrusal olmaz. En yaygın yapı taşı \textbf{biquad}'dır (ikinci
+dereceden bölüm):
+\[
+y[n] = b_0 x[n] + b_1 x[n\!-\!1] + b_2 x[n\!-\!2]
+       - a_1 y[n\!-\!1] - a_2 y[n\!-\!2]
+\]
+
+\begin{lstlisting}
+#include <cmath>
+
+// Transpoze Direct Form II biquad (sayisal olarak daha kararli).
+struct Biquad {
+    float b0=1, b1=0, b2=0, a1=0, a2=0;   // katsayilar (a0=1'e normalize)
+    float z1=0, z2=0;                     // durum degiskenleri
+
+    float process(float x) {
+        float y = b0 * x + z1;
+        z1 = b1 * x - a1 * y + z2;
+        z2 = b2 * x - a2 * y;
+        return y;
+    }
+    void reset() { z1 = z2 = 0; }
+
+    // RBJ "Audio EQ Cookbook" katsayilariyla alcak geciren biquad kur.
+    static Biquad lowpass(double freqHz, double fs, double Q = 0.7071) {
+        Biquad bq;
+        double w0 = 2.0 * M_PI * freqHz / fs;
+        double cw = std::cos(w0), sw = std::sin(w0);
+        double alpha = sw / (2.0 * Q);
+        double a0 = 1 + alpha;
+        bq.b0 = (1 - cw) / 2 / a0;
+        bq.b1 = (1 - cw)     / a0;
+        bq.b2 = (1 - cw) / 2 / a0;
+        bq.a1 = (-2 * cw)    / a0;
+        bq.a2 = (1 - alpha)  / a0;
+        return bq;
+    }
+    // Band geciren (tepe kazancli) biquad
+    static Biquad bandpass(double freqHz, double fs, double Q = 5.0) {
+        Biquad bq;
+        double w0 = 2.0 * M_PI * freqHz / fs;
+        double cw = std::cos(w0), sw = std::sin(w0);
+        double alpha = sw / (2.0 * Q);
+        double a0 = 1 + alpha;
+        bq.b0 =  alpha / a0;  bq.b1 = 0;  bq.b2 = -alpha / a0;
+        bq.a1 = (-2 * cw) / a0;  bq.a2 = (1 - alpha) / a0;
+        return bq;
+    }
+};
+\end{lstlisting}
+
+\uyari{IIR filtreler tasarımı kolay ama tuzaklıdır. Katsayılar kutupları
+(poles) birim çemberin \emph{dışına} taşırsa filtre patlar (kararsız olur).
+Yüksek dereceli IIR'ları tek bir denklemle değil, art arda bağlı biquad'larla
+(cascade) uygulayın --- bu, sayısal hata birikimini ve kararsızlığı ciddi
+biçimde azaltır.}
+
+\gsub{Hareketli Ortalama ve CIC: Ucuz Filtreler}
+
+En ucuz alçak geçiren filtre \textbf{hareketli ortalamadır}. Onu bir toplam-tut
+(running sum) ile $O(1)$'de uygulayabiliriz --- SDR'da desimasyon öncesi kaba
+filtreleme için idealdir:
+
+\begin{lstlisting}
+#include <vector>
+
+// O(1) hareketli ortalama filtresi (kutu filtre / boxcar).
+class MovingAverage {
+    std::vector<float> buf_;
+    size_t pos_ = 0, count_ = 0;
+    float sum_ = 0.0f;
+public:
+    explicit MovingAverage(size_t window) : buf_(window, 0.0f) {}
+    float process(float x) {
+        sum_ -= buf_[pos_];              // pencereden cikani cikar
+        buf_[pos_] = x;
+        sum_ += x;                       // yeni gireni ekle
+        pos_ = (pos_ + 1) % buf_.size();
+        if (count_ < buf_.size()) ++count_;
+        return sum_ / count_;
+    }
+};
+\end{lstlisting}
+
+% #####################################################################
+\gpart{4}{IQ ve Karmaşık Bant Temeli}
+% #####################################################################
+
+% =====================================================================
+\gsec{IQ Nedir? Analitik İşaret}
+% =====================================================================
+
+Şimdi tüm modern haberleşmenin kalbine geliyoruz. \textbf{IQ}, ``In-phase''
+(I, eş-fazlı) ve ``Quadrature'' (Q, dik-fazlı, $90^\circ$ kaymış) bileşenlerin kısa
+adıdır. Bir IQ örneği aslında bir \textbf{karmaşık sayıdır}: $z = I + jQ$.
+
+Neden gerçek bir sinüs yerine karmaşık bir sayı? Çünkü gerçek bir sinüs
+$\cos(2\pi f t)$, frekans alanında hem $+f$ hem $-f$'te iki tepe içerir --- yani
+pozitif ve negatif frekansı ayırt edemez. Oysa karmaşık üstel $e^{j 2\pi f t}$
+yalnızca $+f$'te tek bir tepe içerir. Bu ``tek taraflılık'' sayesinde:
+
+\begin{itemize}
+\item Bir sinyalin frekansının \emph{işaretini} (yönünü) bilebiliriz.
+\item Frekansı yukarı/aşağı kaydırırken görüntü (image) frekansı oluşmaz.
+\item Genlik, faz ve frekansı aynı anda, ayrı ayrı çekebiliriz.
+\end{itemize}
+
+\bilgi{Bir SDR alıcısı antenden gelen yüksek frekanslı gerçek işareti, donanımda
+iki mikserle (biri $\cos$, biri $\sin$ ile) çarpıp $I$ ve $Q$ akışlarını üretir.
+Yazılıma ulaşan şey artık taşıyıcıdan arındırılmış, \textbf{karmaşık bant
+temeli} (complex baseband) işaretidir: $0$~Hz civarına indirilmiş, hem pozitif
+hem negatif frekansları temsil edebilen bir \code{complex<float>} akışı.}
+
+\gsub{Analitik İşaret ve Hilbert Dönüşümü}
+
+Elimizde yalnızca gerçek bir işaret varsa (örneğin bir ses kaydı), onun
+karmaşık ``analitik'' karşılığını üretebiliriz. Analitik işaret, negatif
+frekansları sıfırlanmış hâlidir: $x_a[n] = x[n] + j\,\hat{x}[n]$, burada
+$\hat{x}$ işaretin \textbf{Hilbert dönüşümüdür} ($90^\circ$ faz kaymış hâli).
+Bunun en temiz yolu FFT üzerinden gider:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf64 = std::complex<double>;
+
+// Gercek bir isaretin analitik (karmasik) karsiligini uret.
+// Negatif frekanslari sifirlayip pozitifleri 2'yle carparak.
+std::vector<cf64> analyticSignal(const std::vector<double>& x) {
+    const size_t N = x.size();
+    std::vector<cf64> X(N);
+    for (size_t n = 0; n < N; ++n) X[n] = cf64(x[n], 0.0);
+
+    fft(X);                                   // frekans alanina gec
+
+    // Hilbert filtresi: DC ve Nyquist ayni; pozitif frekanslar x2; negatifler 0
+    for (size_t k = 1; k < N/2; ++k)         X[k]     *= 2.0;
+    for (size_t k = N/2 + 1; k < N; ++k)     X[k]      = 0.0;
+
+    fft(X, /*invert=*/true);                  // zamana geri don
+    return X;                                 // artik analitik (karmasik)
+}
+\end{lstlisting}
+
+\ipucu{Analitik işaretin büyüklüğü $|x_a[n]|$ işaretin \textbf{anlık zarfını}
+(envelope), açısı ise \textbf{anlık fazını} verir. Zarf, AM demodülasyonunun;
+fazın türevi ise FM demodülasyonunun temelidir. Yani bir kez karmaşık bant
+temeline geçtiğinizde, tüm demodülatörler birkaç satır kalır.}
+
+% =====================================================================
+\gsec{NCO, Mikser ve Frekans Kaydırma}
+% =====================================================================
+
+Bir işareti frekans ekseninde kaydırmak (mikslemek), onu bir karmaşık üstel ile
+çarpmaktır. Bu üsteli üreten yapıya \textbf{NCO} (Numerically Controlled
+Oscillator) denir. Bir işareti $-f_0$ kadar kaydırmak (yani $f_0$'daki bir
+kanalı DC'ye indirmek) için $e^{-j 2\pi f_0 n / f_s}$ ile çarparız:
+\[
+y[n] = x[n]\cdot e^{-j 2\pi f_0 n / f_s}
+\]
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cmath>
+
+using cf32 = std::complex<float>;
+
+// Sayisal kontrollu osilator (NCO). Her cagrida bir sonraki fazor ornegini verir.
+// Faz'i tamsayi bir birikimle degil, kayan noktali ama sarmalanmis tutar.
+class Nco {
+    double phase_ = 0.0;         // anlik faz (rad)
+    double phaseInc_;            // ornek basina faz artisi
+public:
+    Nco(double freqHz, double fs)
+        : phaseInc_(2.0 * M_PI * freqHz / fs) {}
+
+    void setFrequency(double freqHz, double fs) {
+        phaseInc_ = 2.0 * M_PI * freqHz / fs;
+    }
+
+    cf32 next() {
+        cf32 out(std::cos(phase_), std::sin(phase_));
+        phase_ += phaseInc_;
+        // Fazi [-pi, pi] araliginda tut (sayisal hata birikimini onle)
+        if (phase_ >  M_PI) phase_ -= 2.0 * M_PI;
+        if (phase_ < -M_PI) phase_ += 2.0 * M_PI;
+        return out;
+    }
+};
+
+// Bir karmasik bant temeli akisini freqHz kadar kaydir (mikser).
+void frequencyShift(std::vector<cf32>& iq, double freqHz, double fs) {
+    Nco lo(freqHz, fs);          // negatif verirsen asagi kaydirir
+    for (cf32& s : iq) s *= lo.next();
+}
+\end{lstlisting}
+
+\ornek[Kanal Seçimi]{Diyelim ki 2.4~MHz genişlikte bir IQ akışında, merkezden
+$+300$~kHz ötede bir istasyon var. Onu tam ortaya (DC'ye) getirmek için akışı
+$-300$~kHz kaydırırız; sonra alçak geçiren filtreleyip yalnız o kanalı bırakırız.}
+
+\begin{lstlisting}
+void tuneToChannel(std::vector<cf32>& iq, double offsetHz, double fs) {
+    frequencyShift(iq, -offsetHz, fs);    // istenen kanali DC'ye getir
+    // Sonrasinda: alcak geciren filtre + desimasyon (asagidaki bolum)
+}
+\end{lstlisting}
+
+\notk[Verimlilik]{Her örnekte \code{sin}/\code{cos} çağırmak pahalıdır. Üretim
+kodunda NCO ya bir arama tablosu (LUT) kullanır ya da bir başlangıç fazörünü her
+adımda sabit bir \code{cf32} çarpanıyla döndürür: \code{osc *= step;}. İkincisi
+çok hızlıdır ama fazörün büyüklüğü zamanla sürüklenir, bu yüzden ara sıra
+\code{osc /= std::abs(osc)} ile yeniden normalize edilir.}
+
+% =====================================================================
+\gsec{Desimasyon ve Örnekleme Hızı Dönüşümü}
+% =====================================================================
+
+Bir SDR akışı genelde 2--10~MHz hızındadır ama biz sonunda 48~kHz'lik ses
+istiyoruz. \textbf{Desimasyon} (decimation), örnekleme hızını $M$ kat düşürmektir:
+önce alçak geçiren filtre (yeni Nyquist üstünü at, yoksa aliasing!), sonra her
+$M$ örnekten birini tut.
+
+\begin{lstlisting}
+#include <vector>
+
+// M kat desimasyon: once anti-alias filtre, sonra her M'inci ornegi al.
+class Decimator {
+    FirFilter aa_;               // anti-aliasing alcak geciren (onceki bolum)
+    size_t M_, phase_ = 0;
+public:
+    Decimator(size_t M, std::vector<float> taps)
+        : aa_(std::move(taps)), M_(M) {}
+
+    // Girdi bloklarini isle; cikti girdinin ~1/M kadar orneginidir.
+    std::vector<float> process(const std::vector<float>& in) {
+        std::vector<float> out;
+        out.reserve(in.size() / M_ + 1);
+        for (float x : in) {
+            float y = aa_.process(x);        // her ornek filtreden gecer
+            if (phase_ == 0) out.push_back(y);
+            phase_ = (phase_ + 1) % M_;      // ama yalniz 1/M'i saklanir
+        }
+        return out;
+    }
+};
+\end{lstlisting}
+
+\bilgi{Verimlilik ipucu: Filtre çıktısının çoğunu atacaksak, onları hesaplamak
+israftır. \emph{Polifaz desimasyon} yalnızca tutulacak örnekleri hesaplayarak
+$M$ kat hızlanma sağlar. Ayrıca çok büyük desimasyon oranları için (örn. $M=100$)
+çarpma içermeyen \textbf{CIC filtreleri} kullanılır --- bunlar SDR donanımının
+FPGA'sında sıkça bulunur.}
+
+\gsub{Karmaşık (IQ) Desimasyon}
+
+Yukarıdaki \code{FirFilter} gerçek örnekler içindi. IQ için I ve Q kanallarını
+ayrı ayrı filtreleriz. Pratikte tek bir karmaşık FIR yazmak daha temizdir:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf32 = std::complex<float>;
+
+// Karmasik girdi, gercek katsayili FIR (kanal filtresi icin tipik).
+class ComplexFir {
+    std::vector<float> taps_;
+    std::vector<cf32> buf_;
+    size_t pos_ = 0;
+public:
+    explicit ComplexFir(std::vector<float> taps)
+        : taps_(std::move(taps)), buf_(taps_.size(), cf32(0,0)) {}
+
+    cf32 process(cf32 x) {
+        buf_[pos_] = x;
+        cf32 acc(0, 0);
+        size_t idx = pos_;
+        for (size_t k = 0; k < taps_.size(); ++k) {
+            acc += taps_[k] * buf_[idx];
+            idx = (idx == 0) ? taps_.size() - 1 : idx - 1;
+        }
+        pos_ = (pos_ + 1) % taps_.size();
+        return acc;
+    }
+};
+\end{lstlisting}
+
+% #####################################################################
+\gpart{5}{Modülasyon ve Demodülasyon}
+% #####################################################################
+
+% =====================================================================
+\gsec{Genel Bakış: Modülasyon Neden Var?}
+% =====================================================================
+
+\textbf{Modülasyon}, taşımak istediğimiz bilgiyi (mesaj işareti) yüksek frekanslı
+bir \emph{taşıyıcıya} (carrier) bindirmektir. Buna neden ihtiyaç var?
+
+\begin{itemize}
+\item \textbf{Anten boyutu:} Verimli bir anten dalga boyunun çeyreği kadardır.
+1~kHz'lik ses için bu $\sim$75~km'lik bir anten demektir --- imkânsız. 100~MHz
+taşıyıcıya bindirirsek anten $\sim$75~cm olur.
+\item \textbf{Çoklama:} Farklı istasyonlar farklı taşıyıcı frekanslarını
+kullanarak aynı havayı paylaşabilir (frekans bölmeli çoklama).
+\item \textbf{Gürültü dayanıklılığı:} FM gibi açı modülasyonları, genlik
+gürültüsüne karşı doğal bir bağışıklık sağlar.
+\end{itemize}
+
+Bilgiyi taşıyıcının hangi özelliğine gömdüğümüze göre üç temel aile vardır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Aile} & \color{anaMavi}\textbf{Değişen özellik} & \color{anaMavi}\textbf{Örnekler}\\
+\midrule
+Genlik & taşıyıcı genliği $A(t)$ & AM, DSB, SSB, ASK, QAM\\
+Frekans & anlık frekans $f(t)$ & FM, FSK\\
+Faz & anlık faz $\phi(t)$ & PM, BPSK, QPSK, PSK\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Karmaşık bant temelinde bir modüle işaret genel olarak şöyle yazılır:
+\[
+s(t) = A(t)\, e^{\,j\phi(t)}
+\]
+Genlik modülasyonu $A(t)$'yi, açı modülasyonları (FM/PM) $\phi(t)$'yi bilgiyle
+oynar. Bütün demodülatörlerin işi, bu karmaşık işaretten $A(t)$ veya $\phi(t)$'yi
+geri çekmektir --- ki bunu Kısım 4'teki \code{std::abs} ve \code{std::arg} ile
+yapacağımızı zaten sezdiniz.
+
+% =====================================================================
+\gsec{AM: Genlik Modülasyonu}
+% =====================================================================
+
+En eski ve en basit modülasyon. Mesaj $m(t)$, taşıyıcının genliğini oynatır:
+\[
+s(t) = \big(1 + \mu\, m(t)\big)\cos(2\pi f_c t)
+\]
+Buradaki $\mu$ \textbf{modülasyon indeksidir} (genelde $\le 1$; aşarsa
+``aşırı modülasyon'' ve bozulma olur). ``$1+$'' terimi taşıyıcının kendisini de
+gönderir --- bu, alıcıda basit bir zarf detektörü kullanmayı mümkün kılar
+(bu yüzden eski radyolar ucuzdu).
+
+\gsubsub{AM'in Spektrumu ve Verimliliği}
+
+Tek tonlu $m(t) = \cos(2\pi f_m t)$ için çarpım terimini açalım. Trigonometrik
+çarpım-toplam özdeşliği $\cos A \cos B = \tfrac12[\cos(A{-}B) + \cos(A{+}B)]$'yi
+kullanırsak:
+\[
+s(t) = \underbrace{\cos(2\pi f_c t)}_{\text{taşıyıcı}}
+     + \underbrace{\tfrac{\mu}{2}\cos\!\big(2\pi (f_c{-}f_m) t\big)}_{\text{alt yan bant}}
+     + \underbrace{\tfrac{\mu}{2}\cos\!\big(2\pi (f_c{+}f_m) t\big)}_{\text{üst yan bant}}
+\]
+Yani AM spektrumu taşıyıcı $f_c$ ile onun $\pm f_m$ yanındaki iki yan banttan
+oluşur. Bant genişliği $B = 2 f_m$'dir --- mesajın iki katı. Bilgi \emph{yalnız}
+yan bantlardadır; taşıyıcı hiçbir bilgi taşımaz ama tüm gücün çoğunu tüketir.
+$\mu = 1$'de bile güç verimliliği sadece $\tfrac{1}{3}$'tür. Bu israfı gidermek
+için taşıyıcı bastırılır (\textbf{DSB-SC}) veya bir yan bant da atılır
+(\textbf{SSB}, yarı bant genişliği) --- ama bunlar alıcıda senkron demodülasyon
+zorunlu kılar.
+
+\gsub{AM Modülatörü}
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Klasik cift yan bantli, tasiyicili AM (DSB-LC).
+std::vector<float> amModulate(const std::vector<float>& msg,
+                              double carrierHz, double fs, double mu = 0.8) {
+    std::vector<float> out(msg.size());
+    for (size_t n = 0; n < msg.size(); ++n) {
+        double carrier = std::cos(2.0 * M_PI * carrierHz * n / fs);
+        out[n] = static_cast<float>((1.0 + mu * msg[n]) * carrier);
+    }
+    return out;
+}
+\end{lstlisting}
+
+\gsub{Zarf (Envelope) Detektörü ile Demodülasyon}
+
+En basit AM demodülasyonu işaretin zarfını takip etmektir. Klasik analog devre
+diyot + RC filtreydi; sayısalda ise ya analitik işaretin büyüklüğünü ($|x_a|$)
+alırız ya da doğrudan tam-dalga doğrultup alçak geçiren filtreleriz:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Yontem 1: Analitik isaretin buyuklugu = anlik zarf (en temiz).
+std::vector<float> amEnvelopeDemod(const std::vector<double>& rf) {
+    auto analytic = analyticSignal(rf);      // Kisim 4'teki fonksiyon
+    std::vector<float> msg(analytic.size());
+    for (size_t n = 0; n < analytic.size(); ++n)
+        msg[n] = static_cast<float>(std::abs(analytic[n]) - 1.0);  // DC'yi cikar
+    return msg;
+}
+
+// Yontem 2: Dogrultma + alcak geciren (klasik "diyot detektor" dijital hali).
+std::vector<float> amRectifierDemod(const std::vector<float>& rf,
+                                    double cutoffHz, double fs) {
+    Biquad lp = Biquad::lowpass(cutoffHz, fs);
+    std::vector<float> msg(rf.size());
+    for (size_t n = 0; n < rf.size(); ++n)
+        msg[n] = lp.process(std::fabs(rf[n]));   // tam-dalga dogrultma
+    // Kalan DC bileseni (tasiyici) ayrica yuksek geciren ile atilabilir.
+    return msg;
+}
+\end{lstlisting}
+
+\gsub{Senkron (Coherent) AM Demodülasyonu}
+
+Zarf detektörü basittir ama gürültüde ve aşırı modülasyonda bozulur. Daha iyisi,
+alıcıda taşıyıcının aynısını üretip işaretle çarpmaktır (product detector).
+Bant temeline inmiş IQ akışında bu, sadece \textbf{I bileşenini almaktır}:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf32 = std::complex<float>;
+
+// IQ bant temelinde AM: mesaj, tasiyici fazina hizalanmis I bilesenidir.
+// (Taban IQ'nun tasiyicisi zaten DC'ye indirilmis kabul edilir.)
+std::vector<float> amCoherentDemod(const std::vector<cf32>& iq) {
+    std::vector<float> msg(iq.size());
+    for (size_t n = 0; n < iq.size(); ++n)
+        msg[n] = iq[n].real();               // I = genlik bilgisi
+    return msg;
+}
+\end{lstlisting}
+
+\uyari{Senkron demodülasyon, alıcının taşıyıcı fazını \emph{tam olarak} bilmesini
+gerektirir. Gerçekte taşıyıcı fazı bilinmez ve sürüklenir; bu yüzden onu bir
+\textbf{PLL} (Faz Kilitlemeli Döngü, Kısım 5.8) ile takip ederiz. PLL kilitlenene
+kadar I ve Q karışır ve ses cılız çıkar. Bu, tüm senkron alıcıların ortak
+sorunudur.}
+
+% =====================================================================
+\gsec{FM: Frekans Modülasyonu}
+% =====================================================================
+
+FM, bilgiyi taşıyıcının \textbf{anlık frekansına} gömer. Anlık frekans, mesajla
+orantılı olarak nominal değerinin etrafında sapar:
+\[
+f_i(t) = f_c + k_f\, m(t)
+\]
+Faz, frekansın integrali olduğundan, modüle işaret:
+\[
+s(t) = A\cos\!\Big(2\pi f_c t + 2\pi k_f \!\int_0^t m(\tau)\,d\tau\Big)
+\]
+$k_f$ \textbf{frekans sapmasını} (deviation) belirler. FM radyo yayınında tepe
+sapma $\pm 75$~kHz'tir; dar bant FM (telsizler) $\pm 2.5$~kHz kullanır.
+
+\gsub{FM'in Matematiği: Modülasyon İndeksi, Bessel ve Carson}
+
+Tek tonlu bir mesaj $m(t) = \cos(2\pi f_m t)$ ele alalım. Tepe frekans sapması
+$\Delta f = k_f$ olsun. Modüle işaret:
+\[
+s(t) = A\cos\!\Big(2\pi f_c t + \underbrace{\tfrac{\Delta f}{f_m}}_{\beta}\sin(2\pi f_m t)\Big)
+\]
+Buradaki boyutsuz $\beta = \Delta f / f_m$ niceliğine \textbf{modülasyon indeksi}
+denir ve FM'in karakterini belirler. İşareti açmak için karmaşık gösterime
+geçelim ve \textbf{Jacobi--Anger açılımını} kullanalım:
+\[
+e^{\,j\beta\sin\theta} = \sum_{k=-\infty}^{\infty} J_k(\beta)\, e^{\,jk\theta}
+\]
+Burada $J_k(\beta)$, birinci tür \textbf{Bessel fonksiyonudur}. Bunu $s(t)$'ye
+uygularsak:
+\[
+s(t) = A\sum_{k=-\infty}^{\infty} J_k(\beta)\, \cos\!\big(2\pi (f_c + k f_m)\, t\big)
+\]
+Bu çarpıcı bir sonuçtur: \emph{tek} bir ton bile FM'de, taşıyıcının etrafında
+$f_m$ aralıklarla dizilmiş \emph{sonsuz} sayıda yan bant üretir. Her yan bandın
+genliği $J_k(\beta)$ ile belirlenir. Pratikte $|k| > \beta + 1$ için $J_k$ hızla
+sıfıra gider, yani bant genişliği sonlu kabul edilebilir. Bu gözlem
+\textbf{Carson kuralını} verir --- FM işaretinin gücünün $\%98$'ini içeren
+yaklaşık bant genişliği:
+\[
+B \approx 2(\Delta f + f_m) = 2 f_m(\beta + 1)
+\]
+FM radyo için $\Delta f = 75$~kHz ve $f_m = 15$~kHz alırsak
+$B \approx 2(75 + 15) = 180$~kHz olur --- FM kanallarının neden 200~kHz
+aralıkla yerleştirildiğinin sebebi budur.
+
+\notk[Genlik gürültüsüne bağışıklık]{FM'in bilgisi \emph{frekansta} (yani fazın
+türevinde) olduğu için, genlik üzerine binen gürültü demodülatörden geçmez ---
+alıcıda önce bir sınırlayıcı (limiter) genliği sabitler. Bu, FM'in AM'e kıyasla
+neden çok daha temiz ses verdiğinin matematiksel kökenidir: SNR, modülasyon
+indeksinin \emph{karesiyle} ($\propto \beta^2$) iyileşir; buna ``FM kazancı''
+denir.}
+
+\gsub{FM Modülatörü}
+
+Anahtar nokta: mesajı \emph{integre edip} faza koymak. Ayrık zamanda integral,
+birikimli toplamdır:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// FM modulator. deviationHz: tepe frekans sapmasi. Mesaj [-1,1] varsayilir.
+std::vector<float> fmModulate(const std::vector<float>& msg,
+                              double carrierHz, double deviationHz, double fs) {
+    std::vector<float> out(msg.size());
+    double phase = 0.0;
+    const double dt = 1.0 / fs;
+    for (size_t n = 0; n < msg.size(); ++n) {
+        double fInst = carrierHz + deviationHz * msg[n];   // anlik frekans
+        phase += 2.0 * M_PI * fInst * dt;                  // fazi biriktir
+        if (phase >  M_PI) phase -= 2.0 * M_PI;
+        if (phase < -M_PI) phase += 2.0 * M_PI;
+        out[n] = static_cast<float>(std::cos(phase));
+    }
+    return out;
+}
+
+// Karmasik bant temeli FM (SDR ureticileri boyle yapar): tasiyicisiz.
+std::vector<cf32> fmModulateBaseband(const std::vector<float>& msg,
+                                     double deviationHz, double fs) {
+    std::vector<cf32> out(msg.size());
+    double phase = 0.0;
+    for (size_t n = 0; n < msg.size(); ++n) {
+        phase += 2.0 * M_PI * deviationHz * msg[n] / fs;
+        out[n] = cf32(std::cos(phase), std::sin(phase));   // e^(j*phase)
+    }
+    return out;
+}
+\end{lstlisting}
+
+\gsub{FM Demodülasyonu: IQ Diskriminatör}
+
+İşte belgenin başında sorduğunuz kısım --- ama artık tüm altyapı elimizde
+olduğu için nefis derecede basit. FM'de bilgi, fazın \emph{türevindedir} (çünkü
+frekans = fazın türevi). Karmaşık bant temelinde anlık faz $\angle z[n]$'dir;
+onun türevi ardışık iki örneğin faz farkıdır. Bunu hesaplamanın en zarif yolu
+\textbf{polar diskriminatördür}:
+\[
+m[n] \propto \angle\big(z[n]\cdot z^*[n-1]\big)
+\]
+Yani ardışık iki IQ örneğinin, birinin eşleniğiyle çarpımının açısı. Bu çarpım
+açıları çıkardığı için ($\angle z[n] - \angle z[n-1]$) tam da istediğimiz faz
+farkını verir --- üstelik \code{atan2} sarmalanma (wrap) sorunlarını doğal olarak
+halleder:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf32 = std::complex<float>;
+
+// Polar diskriminator FM demodulatoru. Girdi: karmasik bant temeli IQ.
+// Cikti: demodule mesaj (frekans sapmasiyla orantili).
+class FmDemod {
+    cf32 prev_{1.0f, 0.0f};      // z[n-1]
+    float gain_;
+public:
+    // gain, cikti seviyesini normalize eder: fs / (2*pi*deviation)
+    explicit FmDemod(double fs, double deviationHz)
+        : gain_(static_cast<float>(fs / (2.0 * M_PI * deviationHz))) {}
+
+    float process(cf32 z) {
+        cf32 prod = z * std::conj(prev_);        // aci farki = arg(prod)
+        prev_ = z;
+        return std::arg(prod) * gain_;           // atan2 ile faz farki
+    }
+
+    std::vector<float> process(const std::vector<cf32>& iq) {
+        std::vector<float> out(iq.size());
+        for (size_t n = 0; n < iq.size(); ++n) out[n] = process(iq[n]);
+        return out;
+    }
+};
+\end{lstlisting}
+
+\ornek[Neden \code{atan2} değil de eşlenik çarpımı?]{Doğrudan
+$\angle z[n] - \angle z[n-1]$ hesaplamak da mümkündür ama faz $\pm\pi$
+sınırından geçtiğinde $2\pi$'lik sıçramalar oluşur; bunları elle ``unwrap''
+etmek gerekir. Eşlenik çarpım yöntemi bu farkı \emph{tek bir} \code{atan2}
+çağrısıyla, $[-\pi, \pi]$ aralığında, sıçramasız verir. Bu yüzden GNU Radio'nun
+\code{quadrature\_demod} bloğu da tam olarak bunu yapar.}
+
+\notk[Hesaplamadan kaçınmak]{Her örnekte \code{std::arg} (yani \code{atan2})
+çağırmak pahalıdır. Yüksek hızlı alıcılarda bunun yerine yaklaşık formül
+kullanılır: küçük faz farkları için $\angle(I+jQ) \approx Q/|z|$, hatta çarpım
+sonucunun $\frac{I\,\Delta Q - Q\,\Delta I}{I^2+Q^2}$ biçimi. Ama başlangıç için
+\code{std::arg} hem doğru hem okunurdur --- önce çalıştırın, sonra hızlandırın.}
+
+\gsub{De-emphasis: FM'in Son Rötuşu}
+
+FM yayıncılığında, verici tarafta yüksek frekanslar bilerek yükseltilir
+(pre-emphasis) çünkü gürültü orada daha baskındır. Alıcıda bunu tersine çeviren
+bir \textbf{de-emphasis} filtresi (basit bir RC alçak geçiren) uygularız. ABD'de
+zaman sabiti 75~µs, Avrupa'da 50~µs'tir:
+
+\begin{lstlisting}
+#include <cmath>
+
+// Tek kutuplu de-emphasis filtresi (RC alcak geciren).
+class Deemphasis {
+    float alpha_, prev_ = 0.0f;
+public:
+    // tauSec: 75e-6 (ABD) veya 50e-6 (Avrupa/Turkiye)
+    Deemphasis(double tauSec, double fs) {
+        double dt = 1.0 / fs;
+        alpha_ = static_cast<float>(dt / (tauSec + dt));
+    }
+    float process(float x) {
+        prev_ += alpha_ * (x - prev_);           // ussel yumusatma
+        return prev_;
+    }
+};
+\end{lstlisting}
+
+% =====================================================================
+\gsec{PM: Faz Modülasyonu}
+% =====================================================================
+
+Faz modülasyonu, mesajı doğrudan faza koyar (integre etmeden):
+\[
+s(t) = A\cos\!\big(2\pi f_c t + k_p\, m(t)\big)
+\]
+FM ile yakın akrabadır: PM'e $m(t)$'nin türevini verirsek FM elde ederiz, ya da
+FM'e integralini verirsek PM. Demodülasyon FM'e çok benzer ama faz farkını
+\emph{integre etmeyiz} --- doğrudan anlık fazı okuruz:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf32 = std::complex<float>;
+
+// PM modulator (bant temeli): mesaj dogrudan faz.
+std::vector<cf32> pmModulateBaseband(const std::vector<float>& msg, float kp) {
+    std::vector<cf32> out(msg.size());
+    for (size_t n = 0; n < msg.size(); ++n) {
+        float phase = kp * msg[n];
+        out[n] = cf32(std::cos(phase), std::sin(phase));
+    }
+    return out;
+}
+
+// PM demodulator: anlik fazi oku (unwrap gerekebilir).
+std::vector<float> pmDemod(const std::vector<cf32>& iq, float kp) {
+    std::vector<float> msg(iq.size());
+    float prevPhase = 0.0f;
+    for (size_t n = 0; n < iq.size(); ++n) {
+        float phase = std::arg(iq[n]);
+        // Basit unwrap: 2*pi sicramalarini duzelt
+        while (phase - prevPhase >  M_PI) phase -= 2.0f * M_PI;
+        while (phase - prevPhase < -M_PI) phase += 2.0f * M_PI;
+        prevPhase = phase;
+        msg[n] = phase / kp;
+    }
+    return msg;
+}
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Sayısal Modülasyonlar: ASK, FSK, PSK, QAM}
+% =====================================================================
+
+Şimdiye kadar analog mesajları taşıdık. Sayısal haberleşmede ise bit dizileri
+taşırız. Bitleri \textbf{sembollere} eşleyip her sembolü karmaşık düzlemde bir
+noktaya (\textbf{takım yıldızı / constellation}) koyarız.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Şema} & \color{anaMavi}\textbf{Neyi oynatır} & \color{anaMavi}\textbf{Sembol başına bit}\\
+\midrule
+ASK / OOK & genlik (var/yok) & 1\\
+BPSK & faz (0 / $\pi$) & 1\\
+QPSK & faz (4 durum) & 2\\
+FSK & frekans (iki ton) & 1\\
+16-QAM & genlik + faz (16 nokta) & 4\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{BPSK ve QPSK: Faz Kaydırmalı Anahtarlama}
+
+BPSK, biti taşıyıcının fazına koyar: bit 0 $\to$ $0^\circ$, bit 1 $\to$ $180^\circ$.
+QPSK ise her sembolde 2 bit taşır ($4$ faz durumu). Karmaşık bant temelinde bu,
+sembol noktasını doğrudan üretmek kadar kolaydır:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cstdint>
+
+using cf32 = std::complex<float>;
+
+// QPSK: 2 biti bir karmasik sembole esle (Gray kodlu).
+// 00 -> ( 1, 1), 01 -> (-1, 1), 11 -> (-1,-1), 10 -> ( 1,-1), 1/sqrt(2) olcekli
+cf32 qpskMap(uint8_t twoBits) {
+    const float s = 0.70710678f;   // 1/sqrt(2), birim guce normalize
+    switch (twoBits & 0x3) {
+        case 0b00: return { s,  s};
+        case 0b01: return {-s,  s};
+        case 0b11: return {-s, -s};
+        case 0b10: return { s, -s};
+    }
+    return {0, 0};
+}
+
+// Bit dizisini QPSK sembol dizisine cevir.
+std::vector<cf32> qpskModulate(const std::vector<uint8_t>& bits) {
+    std::vector<cf32> syms;
+    for (size_t i = 0; i + 1 < bits.size(); i += 2) {
+        uint8_t sym = (bits[i] << 1) | bits[i+1];
+        syms.push_back(qpskMap(sym));
+    }
+    return syms;
+}
+
+// QPSK karar (demod): en yakin takim yildizi noktasina yuvarla.
+uint8_t qpskDemap(cf32 r) {
+    uint8_t hi = (r.real() < 0) ? 1 : 0;   // I isareti -> ust bit
+    uint8_t lo = (r.imag() < 0) ? 1 : 0;   // Q isareti -> alt bit
+    // Gray esleme geri cozumu
+    uint8_t b0 = hi;
+    uint8_t b1 = hi ^ lo;
+    return (b0 << 1) | b1;
+}
+\end{lstlisting}
+
+\gsub{FSK: Frekans Kaydırmalı Anahtarlama}
+
+FSK, her biti farklı bir tonla gönderir. Aslında sayısal bir FM'dir. Modülatörü
+FM'inkiyle aynı mantıkta, demodülasyonu ise ya iki band-geçiren filtrenin
+enerjisini karşılaştırarak (koherent olmayan) ya da doğrudan FM diskriminatörüyle
+yapılır:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// Ikili FSK modulator. bit 0 -> f0, bit 1 -> f1. sps: sembol basina ornek.
+std::vector<float> fskModulate(const std::vector<uint8_t>& bits,
+                               double f0, double f1, double fs, size_t sps) {
+    std::vector<float> out;
+    double phase = 0.0;
+    for (uint8_t b : bits) {
+        double f = b ? f1 : f0;
+        for (size_t k = 0; k < sps; ++k) {
+            phase += 2.0 * M_PI * f / fs;    // faz surekliligi korunur (CPFSK)
+            out.push_back(static_cast<float>(std::cos(phase)));
+        }
+    }
+    return out;
+}
+
+// Noncoherent FSK demod: iki tonun enerjisini karsilastir (Goertzel benzeri).
+std::vector<uint8_t> fskDemod(const std::vector<float>& rf,
+                              double f0, double f1, double fs, size_t sps) {
+    std::vector<uint8_t> bits;
+    for (size_t i = 0; i + sps <= rf.size(); i += sps) {
+        double i0=0,q0=0,i1=0,q1=0;
+        for (size_t k = 0; k < sps; ++k) {
+            double t = (i + k) / fs, x = rf[i + k];
+            i0 += x*std::cos(2*M_PI*f0*t);  q0 += x*std::sin(2*M_PI*f0*t);
+            i1 += x*std::cos(2*M_PI*f1*t);  q1 += x*std::sin(2*M_PI*f1*t);
+        }
+        double e0 = i0*i0 + q0*q0, e1 = i1*i1 + q1*q1;
+        bits.push_back(e1 > e0 ? 1 : 0);     // hangi ton daha guclu?
+    }
+    return bits;
+}
+\end{lstlisting}
+
+\gsub{QAM: Genlik + Faz Birlikte}
+
+QAM (Quadrature Amplitude Modulation), hem genliği hem fazı kullanarak düzlemde
+bir ızgara oluşturur. 16-QAM her sembolde 4 bit taşır; WiFi ve DVB gibi yüksek
+hızlı sistemlerin temelidir:
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cstdint>
+
+using cf32 = std::complex<float>;
+
+// 16-QAM: 4 biti bir noktaya esle. I ve Q ayri ayri {-3,-1,+1,+3}.
+cf32 qam16Map(uint8_t nibble) {
+    auto level = [](uint8_t twoBits) -> float {
+        switch (twoBits & 0x3) {          // Gray: 00->-3 01->-1 11->+1 10->+3
+            case 0b00: return -3.0f; case 0b01: return -1.0f;
+            case 0b11: return  1.0f; case 0b10: return  3.0f;
+        } return 0;
+    };
+    float I = level((nibble >> 2) & 0x3);
+    float Q = level(nibble & 0x3);
+    return cf32(I, Q) / 3.16227766f;      // ortalama guce normalize (~sqrt(10))
+}
+
+// En yakin komsu karariyla 16-QAM demod (basit dilim/slicer).
+uint8_t qam16Demap(cf32 r) {
+    r *= 3.16227766f;                     // olcegi geri al
+    auto slice = [](float v) -> uint8_t {
+        if (v < -2) return 0b00; if (v < 0) return 0b01;
+        if (v < 2)  return 0b11; return 0b10;
+    };
+    return (slice(r.real()) << 2) | slice(r.imag());
+}
+\end{lstlisting}
+
+\bilgi{Takım yıldızında noktalar birbirine ne kadar yakınsa, gürültüde karışma
+olasılığı o kadar artar. Bu yüzden yüksek dereceli QAM (64, 256, 1024-QAM) daha
+fazla bit/sembol taşır ama daha yüksek sinyal/gürültü oranı (SNR) gerektirir.
+Modern sistemler kanal kalitesine göre şemayı uyarlar (adaptive modulation):
+sinyal iyiyken 256-QAM, kötüyken QPSK'ye düşer.}
+
+% =====================================================================
+\gsec{Darbe Şekillendirme (Pulse Shaping)}
+% =====================================================================
+
+Sembolleri kutu darbe olarak göndermek, spektrumda geniş yan loblar üretir ve
+komşu kanallara taşar. Ayrıca alıcıda \textbf{semboller arası girişim} (ISI)
+oluşur. Çözüm, sembolleri yumuşak bir darbeyle şekillendirmektir. Standart seçim
+\textbf{kök yükseltilmiş kosinüs} (Root-Raised-Cosine, RRC) filtresidir --- yarısı
+vericide, yarısı alıcıda olacak şekilde bölünür:
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+
+// RRC filtre katsayilari. beta: rolloff (0..1), sps: sembol basina ornek.
+std::vector<float> rrcTaps(double beta, size_t sps, size_t numSymbols) {
+    const size_t N = sps * numSymbols + 1;   // tek uzunluk, simetrik
+    std::vector<float> h(N);
+    const double mid = (N - 1) / 2.0;
+    for (size_t i = 0; i < N; ++i) {
+        double t = (i - mid) / sps;          // sembol cinsinden zaman
+        double val;
+        if (std::fabs(t) < 1e-8) {
+            val = 1.0 - beta + 4.0 * beta / M_PI;
+        } else if (std::fabs(std::fabs(4*beta*t) - 1.0) < 1e-8) {
+            // Tekillik noktasi (t = 1/(4*beta))
+            double a = (1 + 2/M_PI) * std::sin(M_PI/(4*beta));
+            double b = (1 - 2/M_PI) * std::cos(M_PI/(4*beta));
+            val = beta / std::sqrt(2.0) * (a + b);
+        } else {
+            double num = std::sin(M_PI*t*(1-beta))
+                       + 4*beta*t*std::cos(M_PI*t*(1+beta));
+            double den = M_PI*t*(1 - (4*beta*t)*(4*beta*t));
+            val = num / den;
+        }
+        h[i] = static_cast<float>(val);
+    }
+    // Enerjiyi normalize et
+    double e = 0; for (float c : h) e += c*c;
+    for (float& c : h) c /= std::sqrt(e);
+    return h;
+}
+\end{lstlisting}
+
+\ipucu{Vericide sembolleri \code{sps} kat upsample edip (araya sıfır koyup) RRC
+ile filtrelersiniz. Alıcıda \emph{aynı} RRC ile eşleşmiş filtreleme (matched
+filter) yaparsınız. İki RRC'nin kaskadı bir ``yükseltilmiş kosinüs'' verir ki bu
+Nyquist ISI kriterini sağlar: sembol anlarında komşu sembollerin katkısı tam
+sıfırdır.}
+
+% =====================================================================
+\gsec{Taşıyıcı ve Zamanlama Kurtarma: PLL, Costas, Timing}
+% =====================================================================
+
+Gerçek bir alıcıda vericinin taşıyıcı frekansı/fazı ve sembol zamanlaması tam
+bilinmez. Bunları işaretin kendisinden kestirmek gerekir. Bu senkronizasyon
+döngüleri, çalışan bir modemin en zor ve en kritik parçasıdır.
+
+\gsub{Faz Kilitlemeli Döngü (PLL)}
+
+Bir PLL, yerel bir osilatörü gelen işaretin fazına kilitler. Faz dedektörü, döngü
+filtresi ve NCO'dan oluşur --- her demodülatörün kalbindeki geri besleme döngüsü:
+
+\begin{lstlisting}
+#include <complex>
+#include <cmath>
+
+using cf32 = std::complex<float>;
+
+// Karmasik bir tona kilitlenen basit ikinci dereceden PLL.
+class Pll {
+    double phase_ = 0.0, freq_ = 0.0;
+    double alpha_, beta_;                    // dongu kazanclari
+public:
+    // loopBw: dongu bant genisligi (ornekleme hizina gore normalize, ~0.01)
+    explicit Pll(double loopBw) {
+        double damping = 0.707;
+        double denom = 1 + 2*damping*loopBw + loopBw*loopBw;
+        alpha_ = 4*damping*loopBw / denom;   // orantili kazanc
+        beta_  = 4*loopBw*loopBw   / denom;  // integral kazanci
+    }
+
+    // Girdiyi tasiyicidan arindir ve fazi kilitle. Dondurdugu: duzeltilmis IQ.
+    cf32 process(cf32 in) {
+        cf32 nco(std::cos(-phase_), std::sin(-phase_));
+        cf32 out = in * nco;                 // yerel osilator ile carp
+        double err = std::arg(out);          // faz hatasi (dedektor)
+        freq_  += beta_  * err;              // frekansi guncelle (integral)
+        phase_ += freq_ + alpha_ * err;      // fazi guncelle (orantili)
+        if (phase_ >  M_PI) phase_ -= 2*M_PI;
+        if (phase_ < -M_PI) phase_ += 2*M_PI;
+        return out;
+    }
+    double frequency() const { return freq_; }
+};
+\end{lstlisting}
+
+\gsub{Costas Döngüsü: PSK için Taşıyıcı Kurtarma}
+
+PSK işaretlerinde taşıyıcı bastırılmıştır (ayrı bir taşıyıcı tepesi yok), bu
+yüzden düz PLL kilitlenemez. \textbf{Costas döngüsü}, faz hatasını modülasyona
+duyarsız biçimde üretir. BPSK için hata $I\cdot Q$, QPSK için ise karar-yönlü
+bir formdur:
+
+\begin{lstlisting}
+#include <complex>
+#include <cmath>
+
+using cf32 = std::complex<float>;
+
+// BPSK/QPSK icin Costas dongusu. Tasiyici faz/frekans ofsetini duzeltir.
+class CostasLoop {
+    double phase_ = 0.0, freq_ = 0.0, alpha_, beta_;
+    bool qpsk_;
+public:
+    CostasLoop(double loopBw, bool qpsk = false) : qpsk_(qpsk) {
+        double d = 0.707;
+        double denom = 1 + 2*d*loopBw + loopBw*loopBw;
+        alpha_ = 4*d*loopBw / denom;
+        beta_  = 4*loopBw*loopBw / denom;
+    }
+
+    cf32 process(cf32 in) {
+        cf32 nco(std::cos(-phase_), std::sin(-phase_));
+        cf32 y = in * nco;                   // fazi duzeltilmis ornek
+
+        // Faz hatasi: BPSK -> I*Q, QPSK -> karar yonlu
+        double err;
+        if (!qpsk_) {
+            err = y.real() * y.imag();
+        } else {
+            float di = (y.real() > 0) ? 1.f : -1.f;   // I karari
+            float dq = (y.imag() > 0) ? 1.f : -1.f;   // Q karari
+            err = dq * y.real() - di * y.imag();
+        }
+        freq_  += beta_  * err;
+        phase_ += freq_ + alpha_ * err;
+        if (phase_ >  M_PI) phase_ -= 2*M_PI;
+        if (phase_ < -M_PI) phase_ += 2*M_PI;
+        return y;
+    }
+};
+\end{lstlisting}
+
+\gsub{Sembol Zamanlama Kurtarma (Gardner)}
+
+Alıcı, her sembolü tam ortasından örneklemelidir; yoksa ISI ve hatalar artar.
+\textbf{Gardner zamanlama dedektörü} örnekleme anını ayarlar ve simge hızının
+tam bilinmesini gerektirmez (karar-öncesi çalışır):
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf32 = std::complex<float>;
+
+// Gardner TED ile sembol zamanlama kurtarma (sps ornek/sembol, tipik 2+).
+// Basitlestirilmis: her sembol icin orta ve tam noktalari kullanir.
+std::vector<cf32> gardnerSync(const std::vector<cf32>& x, double sps,
+                              double loopGain = 0.01) {
+    std::vector<cf32> syms;
+    double mu = 0.0;                         // kesirli ornek konumu
+    double idx = 0.0;
+    cf32 prevSym(0,0), prevMid(0,0);
+    while (idx + sps < x.size() - 1) {
+        size_t i = static_cast<size_t>(idx);
+        cf32 cur = x[i];                     // (pratikte lineer/polifaz interp.)
+        cf32 mid = x[static_cast<size_t>(idx - sps/2)];
+        // Gardner hatasi: orta ornek, iki sembol gecisini "yakalar"
+        double e = (mid.real() * (cur.real() - prevSym.real())
+                  + mid.imag() * (cur.imag() - prevSym.imag()));
+        mu -= loopGain * e;                  // zamanlamayi ayarla
+        syms.push_back(cur);
+        prevSym = cur;
+        idx += sps + mu;                     // bir sonraki sembole ilerle
+        mu *= 0.9;                           // hatayi sonumle
+    }
+    return syms;
+}
+\end{lstlisting}
+
+\uyari{Bu senkronizasyon döngüleri pedagojik olarak sadeleştirilmiştir; kesirli
+gecikme için gerçek bir interpolatör (Farrow/polifaz), döngü kazançları için
+dikkatli ayar ve kilitlenme tespiti gerçek sistemlerde şarttır. Yine de temel
+geri besleme yapısı --- \emph{hata üret, filtrele, düzelt} --- her birinde
+aynıdır; bu iskeleti kavramak yeter.}
+
+% #####################################################################
+\gpart{6}{Uçtan Uca: Tam Bir FM Radyo Alıcısı}
+% #####################################################################
+
+% =====================================================================
+\gsec{IQ Dosya Formatları ve RTL-SDR}
+% =====================================================================
+
+Tüm parçaları bir araya getirip gerçek bir alıcı kuralım. Girdimiz bir SDR'dan
+gelen ham IQ akışıdır. En yaygın formatlar:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Format} & \color{anaMavi}\textbf{Açıklama}\\
+\midrule
+\code{cu8} / \code{u8} & RTL-SDR ham çıktısı: I,Q,I,Q\dots\ her biri işaretsiz bayt (0--255).\\
+\code{cs8} & işaretli 8-bit (HackRF).\\
+\code{cs16} & işaretli 16-bit (Airspy, SDRplay). Yüksek dinamik aralık.\\
+\code{cf32} & 32-bit float, $[-1,1]$. GNU Radio'nun iç formatı.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{RTL-SDR Baytlarını Karmaşık Bant Temeline Çevirme}
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cstdint>
+#include <fstream>
+
+using cf32 = std::complex<float>;
+
+// RTL-SDR cu8 baytlarini normalize karmasik ornege cevir.
+// 0..255 -> [-1, 1], orta nokta 127.5.
+std::vector<cf32> loadRtlSdrIq(const std::string& path) {
+    std::ifstream f(path, std::ios::binary);
+    std::vector<uint8_t> raw((std::istreambuf_iterator<char>(f)),
+                              std::istreambuf_iterator<char>());
+    std::vector<cf32> iq(raw.size() / 2);
+    for (size_t i = 0; i < iq.size(); ++i) {
+        float I = (raw[2*i]     - 127.5f) / 127.5f;
+        float Q = (raw[2*i + 1] - 127.5f) / 127.5f;
+        iq[i] = cf32(I, Q);
+    }
+    return iq;
+}
+\end{lstlisting}
+
+\ipucu{RTL-SDR'dan komut satırıyla ham IQ kaydetmek için:
+\code{rtl\_sdr -f 100000000 -s 2400000 -g 40 kayit.iq} --- bu, 100~MHz merkez
+frekansta, 2.4~MHz örnekleme hızında, 40~dB kazançla \code{cu8} formatında bir
+dosya üretir. Yukarıdaki fonksiyon tam da bu dosyayı okur.}
+
+% =====================================================================
+\gsec{Tam WBFM Alıcı Hattı}
+% =====================================================================
+
+Şimdi geniş bant FM (WBFM, yani normal FM radyo) için uçtan uca sinyal işleme
+hattını kuralım. Adımlar şunlar:
+
+\begin{enumerate}
+\item \textbf{Tune:} İstenen istasyonu merkeze (DC) kaydır (NCO mikser).
+\item \textbf{Kanal filtresi + desimasyon:} 2.4~MHz'i $\sim$240~kHz'e indir
+(FM kanalı $\pm$100~kHz civarı).
+\item \textbf{FM demod:} Polar diskriminatörle sesi çek.
+\item \textbf{Ses desimasyonu:} 240~kHz'i 48~kHz'e indir.
+\item \textbf{De-emphasis:} 50/75~µs RC filtresi.
+\item \textbf{WAV'a yaz} veya ses kartına gönder.
+\end{enumerate}
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cmath>
+
+using cf32 = std::complex<float>;
+
+// Onceki bolumlerdeki bilesenleri varsayar:
+//   Nco, ComplexFir, FirFilter, FmDemod, Deemphasis, designLowpass, writeWav
+
+class WbfmReceiver {
+    double sdrRate_;         // ornegin 2.4e6
+    double channelRate_;     // ornegin 240e3  (M1 = 10 desimasyon)
+    double audioRate_;       // 48e3           (M2 = 5 desimasyon)
+    double tuneOffset_;      // istasyonun merkezden ofseti (Hz)
+
+    Nco lo_;
+    ComplexFir channelFilter_;
+    FmDemod demod_;
+    FirFilter audioFilter_;
+    Deemphasis deemph_;
+    size_t decim1_, decim2_;
+public:
+    WbfmReceiver(double sdrRate, double tuneOffsetHz)
+      : sdrRate_(sdrRate), channelRate_(sdrRate/10.0), audioRate_(48000.0),
+        tuneOffset_(tuneOffsetHz),
+        lo_(-tuneOffsetHz, sdrRate),                        // asagi kaydir
+        channelFilter_(designLowpass(100e3, sdrRate, 65)),  // FM kanal BW
+        demod_(channelRate_, 75e3),                         // sapma 75 kHz
+        audioFilter_(designLowpass(15e3, channelRate_, 65)),// ses BW 15 kHz
+        deemph_(50e-6, audioRate_),                         // Avrupa 50 us
+        decim1_(10), decim2_(5) {}
+
+    // Ham IQ blogunu isle -> [-1,1] ses ornekleri (48 kHz mono).
+    std::vector<float> process(const std::vector<cf32>& iq) {
+        std::vector<float> audio;
+        size_t ph1 = 0, ph2 = 0;
+        for (cf32 raw : iq) {
+            // 1) Tune: istasyonu DC'ye getir
+            cf32 shifted = raw * lo_.next();
+            // 2) Kanal filtresi (her ornek), desimasyon 1
+            cf32 filt = channelFilter_.process(shifted);
+            if (ph1++ % decim1_ != 0) continue;
+            // 3) FM demodulasyon (artik channelRate_ hizinda)
+            float d = demod_.process(filt);
+            // 4) Ses filtresi + desimasyon 2
+            float a = audioFilter_.process(d);
+            if (ph2++ % decim2_ != 0) continue;
+            // 5) De-emphasis
+            audio.push_back(deemph_.process(a));
+        }
+        return audio;
+    }
+};
+
+int main() {
+    // 100.0 MHz'te kayit yapildi; 100.3 MHz istasyonunu dinle -> +300 kHz ofset
+    auto iq = loadRtlSdrIq("kayit.iq");
+    WbfmReceiver rx(2.4e6, +300e3);
+    std::vector<float> audio = rx.process(iq);
+
+    // Normalize ve WAV'a yaz
+    float peak = 1e-6f;
+    for (float s : audio) peak = std::max(peak, std::fabs(s));
+    for (float& s : audio) s *= 0.9f / peak;
+    writeWav("radyo.wav", audio, 48000, 1);
+    return 0;
+}
+\end{lstlisting}
+
+\ornek[Stereo FM]{FM stereo yayınında sol+sağ (L+R) ses 0--15~kHz'te
+gönderilirken, sol$-$sağ (L$-$R) farkı 38~kHz'lik bir alt taşıyıcıda DSB-SC
+olarak modüle edilir. 19~kHz'te de bir pilot ton bulunur. Stereo çözmek için:
+demod çıktısından 19~kHz pilotu bir PLL ile yakala, frekansını ikiye katla
+(38~kHz), L$-$R'yi bu tonla çarparak alçağa indir, sonra $L = (L{+}R)+(L{-}R)$ ve
+$R = (L{+}R)-(L{-}R)$ ile iki kanalı ayır. Yukarıdaki hattı mono bıraktık;
+stereo, aynı IQ diskriminatör çıktısına eklenen bir DSP katmanıdır.}
+
+% =====================================================================
+\gsec{Performans ve Sonraki Adımlar}
+% =====================================================================
+
+\gsub{Optimizasyon Notları}
+
+\begin{itemize}
+\item \textbf{atan2'den kaçının:} FM demodda her örnekte \code{std::arg}
+çağırmak yerine yaklaşık faz-farkı formülleri veya bir CORDIC kullanın.
+\item \textbf{Polifaz filtreler:} Desimasyonda atacağınız örnekleri hiç
+hesaplamayın --- $M$ kat hızlanma.
+\item \textbf{SIMD:} FIR konvolüsyonu, çarpma-toplama ağırlıklıdır; AVX/NEON ile
+4--8 kat hızlanır. Modern derleyiciler \code{-O3 -march=native} ile çoğunu
+otomatik yapar.
+\item \textbf{Blok işleme:} Örnek örnek değil, blok blok çalışın; önbellek ve
+dallanma tahmini çok daha verimli olur.
+\item \textbf{FFT tabanlı konvolüsyon:} Uzun FIR'lar için (100+ tap),
+overlap-add/overlap-save yöntemiyle FFT üzerinden konvolüsyon $O(N\log N)$
+verir.
+\end{itemize}
+
+\gsub{Üretimde Kullanılan Kütüphaneler}
+
+Bu belge her şeyi sıfırdan yazdı ki mekanizmayı anlayın. Gerçek projelerde ise
+olgun kütüphaneleri tercih edin:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Araç} & \color{anaMavi}\textbf{Ne için}\\
+\midrule
+FFTW / KissFFT & Endüstri standardı, çok hızlı FFT (kendi FFT'niz yerine).\\
+Liquid-DSP & C ile yazılmış kapsamlı SDR/modem kütüphanesi (filtre, modem, sync).\\
+GNU Radio & Blok tabanlı görsel/akış SDR çatısı; prototipleme için mükemmel.\\
+VOLK & Vektörize (SIMD) DSP çekirdekleri; GNU Radio'nun altında çalışır.\\
+SoapySDR & Donanım-bağımsız SDR sürücü katmanı (RTL, HackRF, Airspy\dots).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Nereye Bakmalı}
+
+Buradan devam etmek için doğal yollar: \textbf{sayısal alıcı zinciri} (AGC,
+eşleşmiş filtre, senkron, çözücü), \textbf{kanal kodlaması} (Hamming, konvolüsyon,
+Viterbi, LDPC, Turbo), \textbf{OFDM} (WiFi/LTE/5G'nin çok taşıyıcılı temeli),
+\textbf{spektrum kestirimi} (Welch, MUSIC), ve \textbf{uyarlamalı filtreler}
+(LMS, RLS ile ekolayzasyon ve gürültü giderme).
+
+\bilgi{Öğrenmenin en hızlı yolu \emph{dinlemek} ve \emph{görmektir}. Her
+demodülatör aşamasının çıktısını WAV'a yazıp dinleyin, FFT'sini alıp spektrumuna
+bakın. Bir FM alıcısını çalıştırıp gerçek bir istasyonu duyduğunuz an, bu
+belgedeki tüm parçalar --- örnekleme, IQ, mikser, filtre, diskriminatör --- tek
+bir bütün olarak yerine oturur.}
+
+% #####################################################################
+\gpart{7}{İleri Konular}
+% #####################################################################
+
+% =====================================================================
+\gsec{Stereo FM Çözücü (Tam Uygulama)}
+% =====================================================================
+
+Kısım 6'da mono FM alıcısını kurmuş, stereo'yu ise kavramsal bırakmıştık. Şimdi
+onu tam koda dökelim. FM stereo yayınında demodülatör çıktısı (\textbf{MPX} ya da
+kompozit işaret) şu katmanlardan oluşur:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Bileşen} & \color{anaMavi}\textbf{Frekans bandı}\\
+\midrule
+L+R (mono uyumlu) & 0--15 kHz (bant temeli)\\
+Pilot ton & 19 kHz (saf sinüs, faz referansı)\\
+L$-$R (DSB-SC) & 23--53 kHz, 38 kHz alt taşıyıcı etrafında\\
+RDS (opsiyonel) & 57 kHz (pilotun 3. harmoniği)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Sol ve sağ kanalı ayırmak için: (1) 19~kHz pilotu bir PLL ile yakala, (2)
+frekansını ikiye katlayıp 38~kHz üret, (3) L$-$R'yi bu tonla çarpıp bant temeline
+indir, (4) matris işlemiyle $L = (L{+}R) + (L{-}R)$ ve $R = (L{+}R) - (L{-}R)$
+hesapla.
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cmath>
+
+// Kompozit (MPX) FM cikisindan stereo L/R cozer.
+// Girdi: FM demod cikisi (Kisim 6'daki FmDemod), ~240 kHz hizinda.
+// Cikti: interleaved stereo (L,R,L,R...) 48 kHz'e desime edilmis.
+class StereoDecoder {
+    double mpxRate_;                 // MPX ornekleme hizi (orn. 240 kHz)
+    Pll pilotPll_;                   // 19 kHz pilota kilitlenir (Kisim 5)
+    Biquad pilotBpf_;                // 19 kHz band geciren
+    FirFilter lprLpf_, lmrLpf_;      // her iki kanal icin 15 kHz alcak geciren
+    Deemphasis deL_, deR_;
+    size_t decim_, phase_ = 0;
+public:
+    StereoDecoder(double mpxRate, double audioRate)
+      : mpxRate_(mpxRate),
+        pilotPll_(0.001),                                  // dar dongu BW
+        pilotBpf_(Biquad::bandpass(19000.0, mpxRate, 20)),
+        lprLpf_(designLowpass(15000.0, mpxRate, 65)),
+        lmrLpf_(designLowpass(15000.0, mpxRate, 65)),
+        deL_(50e-6, audioRate), deR_(50e-6, audioRate),
+        decim_(static_cast<size_t>(mpxRate / audioRate)) {}
+
+    std::vector<float> process(const std::vector<float>& mpx) {
+        std::vector<float> stereo;
+        for (float x : mpx) {
+            // 1) 19 kHz pilotu izole et ve PLL'e ver
+            float pilot = pilotBpf_.process(x);
+            // PLL'i gercek pilota kilitle; kilitli fazi al
+            cf32 locked = pilotPll_.process(cf32(pilot, 0.0f));
+            double ph = std::arg(pilotPll_.phaseState());  // 19 kHz fazi
+
+            // 2) 38 kHz alt tasiyici = pilot fazinin 2 kati
+            float sub38 = std::cos(2.0 * ph);
+
+            // 3) Kanallari ayir
+            float lpr = lprLpf_.process(x);           // L+R (bant temeli)
+            float lmr = lmrLpf_.process(x * sub38 * 2.0f); // L-R (asagi mixle)
+
+            // 4) Desimasyon
+            if (phase_++ % decim_ != 0) continue;
+
+            // 5) Matris + de-emphasis
+            float L = deL_.process(lpr + lmr);
+            float R = deR_.process(lpr - lmr);
+            stereo.push_back(L);
+            stereo.push_back(R);
+        }
+        return stereo;
+    }
+};
+\end{lstlisting}
+
+\notk[PLL'e küçük bir ekleme]{Yukarıdaki kod, Kısım 5'teki \code{Pll} sınıfına
+anlık fazı dışarı veren bir yardımcı ekler:
+\code{cf32 phaseState() const \{ return \{std::cos(phase\_), std::sin(phase\_)\}; \}}
+Böylece pilotun fazını okuyup ikiye katlayarak 38~kHz üretiriz. Pilot yoksa
+(zayıf sinyal) PLL kilitlenemez; bu durumda yalnız L+R kullanılıp otomatik olarak
+mono'ya düşülür --- gerçek alıcıların yaptığı budur.}
+
+\ipucu{Stereo çözmenin başarısı tamamen pilot PLL'in kilidine bağlıdır. 19~kHz'e
+$\pm$2~Hz'ten fazla sapma stereo ayrımını (separation) bozar. Bu yüzden döngü
+bant genişliğini dar (0.001 civarı) tutarız: yavaş kilitlenir ama gürültüye
+karşı çok kararlıdır.}
+
+% =====================================================================
+\gsec{Otomatik Kazanç Kontrolü (AGC)}
+% =====================================================================
+
+Gerçek sinyallerin gücü sürekli değişir (sönümlenme/fading, mesafe, anten yönü).
+Demodülatörlerin çoğu \emph{sabit genlik} bekler --- özellikle QAM gibi genlik
+taşıyan şemalar. \textbf{AGC}, işareti hedef bir güç seviyesine sürekli
+ölçekleyerek bunu sağlar:
+
+\begin{lstlisting}
+#include <complex>
+#include <cmath>
+
+using cf32 = std::complex<float>;
+
+// Karmasik AGC: cikis gucunu hedef seviyeye kilitler.
+class Agc {
+    float gain_ = 1.0f;
+    float target_, rate_;
+public:
+    // target: istenen cikis genligi (orn. 1.0), rate: uyum hizi (0..1, ~1e-3)
+    Agc(float target = 1.0f, float rate = 1e-3f)
+        : target_(target), rate_(rate) {}
+
+    cf32 process(cf32 x) {
+        cf32 out = x * gain_;
+        float mag = std::abs(out);
+        // Hata: hedef ile olculen arasindaki fark -> kazanci ayarla
+        gain_ += rate_ * (target_ - mag) * gain_;
+        if (gain_ < 1e-6f) gain_ = 1e-6f;    // patlamayi onle
+        return out;
+    }
+    float gain() const { return gain_; }
+};
+\end{lstlisting}
+
+\uyari{AGC hızı (\code{rate}) kritik bir dengedir. Çok hızlıysa, işaretin kendi
+genlik modülasyonunu (AM/QAM bilgisi!) ``düzleştirip'' bilgiyi siler. Çok
+yavaşsa, ani sönümlenmelere yetişemez. Kural: AGC, sembol hızından çok daha yavaş
+ama fading'den çok daha hızlı olmalıdır.}
+
+% =====================================================================
+\gsec{Uçtan Uca Sayısal Modem: QPSK Vericiden Alıcıya}
+% =====================================================================
+
+Şimdi Kısım 5'teki tüm parçaları --- QPSK eşleme, RRC şekillendirme, kanal, AGC,
+Costas ve zamanlama --- tek bir çalışan modemde birleştirelim. Bu, gerçek bir
+sayısal haberleşme zincirinin iskeletidir.
+
+\gsub{Verici (Modülatör)}
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cstdint>
+
+using cf32 = std::complex<float>;
+
+// Bitler -> QPSK sembol -> upsample -> RRC sekillendirme -> baseband IQ
+std::vector<cf32> qpskTransmit(const std::vector<uint8_t>& bits,
+                               size_t sps, double beta) {
+    // 1) Bitleri QPSK sembollere esle (Kisim 5)
+    std::vector<cf32> syms = qpskModulate(bits);
+
+    // 2) sps kat upsample: her sembol arasina sps-1 sifir koy
+    std::vector<cf32> up(syms.size() * sps, cf32(0, 0));
+    for (size_t i = 0; i < syms.size(); ++i) up[i * sps] = syms[i];
+
+    // 3) RRC filtre ile darbe sekillendir (Kisim 5'teki rrcTaps)
+    ComplexFir shaper(rrcTaps(beta, sps, 6));
+    std::vector<cf32> tx(up.size());
+    for (size_t i = 0; i < up.size(); ++i) tx[i] = shaper.process(up[i]);
+    return tx;
+}
+\end{lstlisting}
+
+\gsub{Kanal Modeli}
+
+Alıcıyı test etmek için gerçekçi bozulmalar ekleyen bir kanal yazalım: frekans
+ofseti, faz kayması ve Gauss gürültüsü. (\code{std::mt19937} ile deterministik.)
+
+\begin{lstlisting}
+#include <random>
+
+// Kanal: frekans ofseti + faz + AWGN gurultusu ekler.
+std::vector<cf32> channel(const std::vector<cf32>& tx, double freqOffset,
+                          double phase, double noiseStd, uint32_t seed = 42) {
+    std::mt19937 rng(seed);
+    std::normal_distribution<float> noise(0.0f, noiseStd);
+    std::vector<cf32> rx(tx.size());
+    double ph = phase;
+    for (size_t i = 0; i < tx.size(); ++i) {
+        cf32 rot(std::cos(ph), std::sin(ph));         // tasiyici ofseti
+        rx[i] = tx[i] * rot + cf32(noise(rng), noise(rng));
+        ph += 2.0 * M_PI * freqOffset;
+    }
+    return rx;
+}
+\end{lstlisting}
+
+\gsub{Alıcı (Demodülatör)}
+
+Alıcı zinciri: AGC $\to$ eşleşmiş RRC filtre $\to$ zamanlama kurtarma $\to$
+Costas ile taşıyıcı kurtarma $\to$ karar (slicer) $\to$ bitler.
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+#include <cstdint>
+
+using cf32 = std::complex<float>;
+
+std::vector<uint8_t> qpskReceive(std::vector<cf32> rx, size_t sps, double beta) {
+    // 1) AGC ile genligi normalize et
+    Agc agc(1.0f, 1e-3f);
+    for (cf32& s : rx) s = agc.process(s);
+
+    // 2) Eslesmis filtre (verici ile ayni RRC) -> ISI'yi minimize eder
+    ComplexFir matched(rrcTaps(beta, sps, 6));
+    std::vector<cf32> filt(rx.size());
+    for (size_t i = 0; i < rx.size(); ++i) filt[i] = matched.process(rx[i]);
+
+    // 3) Sembol zamanlama kurtarma (Kisim 5'teki Gardner) -> sembol hizina in
+    std::vector<cf32> syms = gardnerSync(filt, static_cast<double>(sps));
+
+    // 4) Costas dongusu ile tasiyici faz/frekans kurtar (QPSK modu)
+    CostasLoop costas(0.01, /*qpsk=*/true);
+    std::vector<uint8_t> bits;
+    for (cf32 s : syms) {
+        cf32 corrected = costas.process(s);
+        // 5) Karar: en yakin QPSK noktasi -> 2 bit (Kisim 5'teki qpskDemap)
+        uint8_t sym = qpskDemap(corrected);
+        bits.push_back((sym >> 1) & 1);
+        bits.push_back(sym & 1);
+    }
+    return bits;
+}
+
+// Uctan uca test: gonder -> kanaldan gecir -> al -> bit hata oranini (BER) olc.
+#include <cstdio>
+int main() {
+    std::vector<uint8_t> tx_bits;
+    std::mt19937 rng(1);
+    for (int i = 0; i < 2000; ++i) tx_bits.push_back(rng() & 1);
+
+    auto tx  = qpskTransmit(tx_bits, /*sps=*/8, /*beta=*/0.35);
+    auto rx  = channel(tx, /*freqOff=*/1e-4, /*phase=*/0.7, /*noise=*/0.1);
+    auto out = qpskReceive(rx, 8, 0.35);
+
+    // BER: senkron gecikmesi nedeniyle hizalanmis kismi karsilastir
+    size_t errors = 0, compared = 0;
+    size_t offset = 40;   // filtre/sync gecikmesi (deneysel)
+    for (size_t i = 0; i + offset < out.size() && i < tx_bits.size(); ++i) {
+        errors += (out[i + offset] != tx_bits[i]);
+        ++compared;
+    }
+    printf("BER = %.4f (%zu/%zu)\n", (double)errors/compared, errors, compared);
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{Gerçek bir modemde ek olarak: \textbf{çerçeve senkronizasyonu} (bilinen
+bir önsöz/preamble dizisiyle bit hizalaması), \textbf{faz belirsizliği çözümü}
+(QPSK $90^\circ$'lik dört olası dönüşten hangisinde kilitlendiğini bilmez ---
+diferansiyel kodlama veya bilinen semboller çözer) ve \textbf{kanal
+denkleştirme} (equalization) bulunur. Yukarıdaki iskelet bu eklemeler için
+sağlam bir temeldir.}
+
+% =====================================================================
+\gsec{OFDM: Çok Taşıyıcılı Modülasyon}
+% =====================================================================
+
+WiFi, LTE, 5G, DVB-T ve DAB'ın temelinde \textbf{OFDM} (Orthogonal
+Frequency-Division Multiplexing) yatar. Fikir zarif: yüksek hızlı bir bit
+akışını, her biri kendi dar taşıyıcısında düşük hızla giden \emph{binlerce}
+paralel alt kanala böl. Bu alt taşıyıcılar dik seçilir, öyle ki bir \textbf{IFFT}
+ile hepsi tek adımda üretilir --- OFDM'in tüm sihri budur.
+
+\begin{lstlisting}
+#include <complex>
+#include <vector>
+
+using cf64 = std::complex<double>;
+
+// OFDM verici: her alt tasiyiciya bir QAM sembolu koy, IFFT ile zamana don,
+// arkasina dongusel onek (cyclic prefix) ekle.
+std::vector<cf64> ofdmModulate(const std::vector<cf64>& qamSymbols,
+                               size_t nfft, size_t cpLen) {
+    std::vector<cf64> out;
+    for (size_t base = 0; base < qamSymbols.size(); base += nfft) {
+        // 1) Bir FFT-blogu doldur (alt tasiyicilar = frekans binleri)
+        std::vector<cf64> freq(nfft, cf64(0, 0));
+        for (size_t k = 0; k < nfft && base + k < qamSymbols.size(); ++k)
+            freq[k] = qamSymbols[base + k];
+
+        // 2) IFFT -> zaman alani OFDM sembolu (Kisim 2'deki fft, invert=true)
+        fft(freq, /*invert=*/true);
+
+        // 3) Dongusel onek: son cpLen ornegi basa kopyala
+        //    -> cok yollu yayilima (multipath) karsi bagisiklik saglar
+        for (size_t i = nfft - cpLen; i < nfft; ++i) out.push_back(freq[i]);
+        for (size_t i = 0; i < nfft; ++i)            out.push_back(freq[i]);
+    }
+    return out;
+}
+
+// OFDM alici: dongusel oneki at, FFT ile alt tasiyicilari geri cek.
+std::vector<cf64> ofdmDemodulate(const std::vector<cf64>& rx,
+                                 size_t nfft, size_t cpLen) {
+    std::vector<cf64> symbols;
+    const size_t symLen = nfft + cpLen;
+    for (size_t base = 0; base + symLen <= rx.size(); base += symLen) {
+        // 1) Dongusel oneki atla
+        std::vector<cf64> block(rx.begin() + base + cpLen,
+                                rx.begin() + base + cpLen + nfft);
+        // 2) FFT -> her bin bir alt tasiyicinin QAM sembolu
+        fft(block, /*invert=*/false);
+        for (cf64 s : block) symbols.push_back(s);
+    }
+    return symbols;
+}
+\end{lstlisting}
+
+\notk[Döngüsel önek neden işe yarar?]{Çok yollu bir kanalda işaretin gecikmeli
+kopyaları üst üste biner (semboller arası girişim). Döngüsel önek, her OFDM
+sembolünün kuyruğunu başına kopyalayarak lineer konvolüsyonu \emph{dairesel}
+konvolüsyona çevirir. Dairesel konvolüsyon frekans alanında basit bir
+\emph{çarpmaya} dönüştüğü için (konvolüsyon teoremi, Kısım 8), her alt taşıyıcı
+kanalı tek bir karmaşık katsayıyla düzeltilebilir --- OFDM'in çok yollu kanallara
+karşı efsanevi dayanıklılığı buradan gelir.}
+
+% =====================================================================
+\gsec{Kanal Kodlaması: Konvolüsyonel Kod ve Viterbi}
+% =====================================================================
+
+Gürültü kaçınılmaz olarak bit hatası üretir. \textbf{İleri hata düzeltme} (FEC),
+gönderilen veriye fazlalık ekleyerek alıcının hataları \emph{düzeltmesini}
+sağlar. En klasik yöntem, \textbf{konvolüsyonel kod} + \textbf{Viterbi
+çözücüdür} (uydu, WiFi, GSM'de kullanılır).
+
+\gsub{Konvolüsyonel Kodlayıcı}
+
+Kısıt uzunluğu $K=3$, oran $1/2$ bir kodlayıcı: her giriş biti için, kaydırma
+yazmacındaki son 3 bitten iki çıkış biti üretilir (üreteç çokterlileri
+$G_1 = 111_2 = 7$, $G_2 = 101_2 = 5$).
+
+\begin{lstlisting}
+#include <vector>
+#include <cstdint>
+
+// Oran 1/2, K=3 konvolusyonel kodlayici. Her giris biti -> 2 cikis biti.
+std::vector<uint8_t> convEncode(const std::vector<uint8_t>& bits) {
+    uint8_t state = 0;                       // 2 bitlik kaydirma yazmaci
+    std::vector<uint8_t> out;
+    for (uint8_t b : bits) {
+        uint8_t reg = ((b & 1) << 2) | state; // 3 bit: [yeni, s1, s0]
+        // Parite: G1=7 (111), G2=5 (101) -> XOR ile bit sayimi
+        uint8_t o1 = __builtin_parity(reg & 0b111);
+        uint8_t o2 = __builtin_parity(reg & 0b101);
+        out.push_back(o1);
+        out.push_back(o2);
+        state = reg & 0b11;                  // yeni durum (son 2 bit)
+    }
+    return out;
+}
+\end{lstlisting}
+
+\gsub{Viterbi Çözücü}
+
+Viterbi, tüm olası durum dizileri (trellis) arasından, alınan bitlere en yakın
+yolu \emph{en olası gönderilen dizi} olarak bulur --- dinamik programlamayla
+verimli biçimde:
+
+\begin{lstlisting}
+#include <vector>
+#include <cstdint>
+#include <limits>
+#include <algorithm>
+
+// Oran 1/2, K=3 icin sert-karar (hard-decision) Viterbi cozucu.
+std::vector<uint8_t> viterbiDecode(const std::vector<uint8_t>& recv) {
+    const int NS = 4;                        // durum sayisi (2^(K-1))
+    const int INF = std::numeric_limits<int>::max() / 2;
+    size_t steps = recv.size() / 2;
+
+    // Her adimda: her durumun en dusuk maliyeti ve gelinen yol
+    std::vector<std::vector<int>> cost(steps + 1, std::vector<int>(NS, INF));
+    std::vector<std::vector<int>> prev(steps + 1, std::vector<int>(NS, -1));
+    std::vector<std::vector<uint8_t>> inBit(steps + 1, std::vector<uint8_t>(NS));
+    cost[0][0] = 0;                          // baslangic durumu 0
+
+    // Ileri gecis: trellis'i doldur (Hamming mesafesi = dal metrigi)
+    for (size_t t = 0; t < steps; ++t) {
+        uint8_t r1 = recv[2*t], r2 = recv[2*t + 1];
+        for (int s = 0; s < NS; ++s) {
+            if (cost[t][s] == INF) continue;
+            for (uint8_t b = 0; b < 2; ++b) {          // olasi giris biti
+                uint8_t reg = (b << 2) | s;
+                uint8_t e1 = __builtin_parity(reg & 0b111);
+                uint8_t e2 = __builtin_parity(reg & 0b101);
+                int metric = (e1 != r1) + (e2 != r2);  // Hamming mesafesi
+                int ns = reg & 0b11;
+                int nc = cost[t][s] + metric;
+                if (nc < cost[t+1][ns]) {
+                    cost[t+1][ns] = nc;
+                    prev[t+1][ns] = s;
+                    inBit[t+1][ns] = b;
+                }
+            }
+        }
+    }
+
+    // En dusuk maliyetli son durumu bul, geriye iz surerek bitleri kurtar
+    int best = 0;
+    for (int s = 1; s < NS; ++s) if (cost[steps][s] < cost[steps][best]) best = s;
+
+    std::vector<uint8_t> decoded(steps);
+    int s = best;
+    for (size_t t = steps; t > 0; --t) {
+        decoded[t-1] = inBit[t][s];
+        s = prev[t][s];
+    }
+    return decoded;
+}
+\end{lstlisting}
+
+\ornek[Hata düzeltmeyi görmek]{Kodla, birkaç biti bilerek boz, çöz --- Viterbi
+onları düzeltir:}
+
+\begin{lstlisting}
+#include <cstdio>
+int main() {
+    std::vector<uint8_t> msg = {1,0,1,1,0,0,1,0,1,1};
+    auto enc = convEncode(msg);
+    enc[3] ^= 1;  enc[10] ^= 1;              // 2 kanal hatasi enjekte et
+    auto dec = viterbiDecode(enc);
+
+    int errs = 0;
+    for (size_t i = 0; i < msg.size(); ++i) errs += (dec[i] != msg[i]);
+    printf("Kanal hatasi vardi ama cozum sonrasi hata = %d\n", errs); // 0
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Yukarıdaki ``sert karar'' Viterbi, bitleri 0/1'e yuvarlanmış alır.
+\textbf{Yumuşak karar} (soft-decision) Viterbi ise demodülatörün ham güven
+değerlerini (örneğin Costas çıkışındaki mesafeleri) kullanır ve $\sim$2~dB daha
+iyi başarım verir. Modern sistemler bunu bir adım öteye taşıyıp \textbf{Turbo} ve
+\textbf{LDPC} kodları kullanır --- Shannon sınırına çok yaklaşırlar.}
+
+% #####################################################################
+\gpart{8}{Projeler}
+% #####################################################################
+
+Bu kısım, önceki bölümlerdeki yapı taşlarını birleştiren dört \emph{tam,
+derlenip çalışan} projeyi adım adım kurar. Her proje kendi başına bir dosyadır;
+bu belgedeki yardımcıları (WAV G/Ç, FFT, filtreler) yeniden kullanır. En sonda
+hepsini derleyen bir CMake dosyası var.
+
+% =====================================================================
+\gsec{Proje 1 --- DTMF (Telefon Tuşu) Çözücü}
+% =====================================================================
+
+Telefon tuşlarının çıkardığı ``tuu-tuu'' sesleri \textbf{DTMF}'dir (Dual-Tone
+Multi-Frequency): her tuş, biri düşük biri yüksek gruptan iki sinüsün toplamıdır.
+Örneğin ``5'' tuşu 770~Hz + 1336~Hz'tir. Çözmek için, bu 8 frekansın her birinin
+enerjisini ölçüp en güçlü düşük+yüksek çifti buluruz. Tek bir frekansın enerjisini
+tüm FFT'yi hesaplamadan bulan \textbf{Goertzel algoritması} tam bu iş içindir.
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+#include <cstdio>
+#include <array>
+
+// Goertzel: tek bir hedef frekansin enerjisini O(N)'de, FFT'siz olcer.
+double goertzel(const std::vector<float>& x, double targetHz, double fs) {
+    const size_t N = x.size();
+    double k = 0.5 + (N * targetHz) / fs;
+    double w = 2.0 * M_PI * static_cast<int>(k) / N;
+    double coeff = 2.0 * std::cos(w);
+    double s0 = 0, s1 = 0, s2 = 0;
+    for (size_t n = 0; n < N; ++n) {
+        s0 = x[n] + coeff * s1 - s2;
+        s2 = s1;  s1 = s0;
+    }
+    return s1*s1 + s2*s2 - coeff*s1*s2;    // enerji (buyukluk karesi)
+}
+
+// Bir ses blogundan DTMF tusunu coz. Tanimsizsa 0 doner.
+char decodeDtmf(const std::vector<float>& block, double fs) {
+    static const double lowF[4]  = {697, 770, 852, 941};
+    static const double highF[4] = {1209, 1336, 1477, 1633};
+    static const char keys[4][4] = {
+        {'1','2','3','A'}, {'4','5','6','B'},
+        {'7','8','9','C'}, {'*','0','#','D'}
+    };
+    // En guclu dusuk ve yuksek grup frekansini bul
+    int lo = 0, hi = 0; double bestLo = 0, bestHi = 0;
+    for (int i = 0; i < 4; ++i) {
+        double eL = goertzel(block, lowF[i],  fs);
+        double eH = goertzel(block, highF[i], fs);
+        if (eL > bestLo) { bestLo = eL; lo = i; }
+        if (eH > bestHi) { bestHi = eH; hi = i; }
+    }
+    // Esik: iki ton da yeterince guclu mu? (basit sessizlik reddi)
+    double avg = 0; for (float v : block) avg += v*v;
+    avg /= block.size();
+    if (bestLo < avg * block.size() * 0.5 ||
+        bestHi < avg * block.size() * 0.5) return 0;
+    return keys[lo][hi];
+}
+
+int main() {
+    const double fs = 8000.0;   // telefon standardi
+    // Test: "5" tusunu sentezle (770 + 1336 Hz), sonra coz
+    std::vector<float> tone;
+    for (int n = 0; n < 400; ++n) {       // 50 ms blok
+        double t = n / fs;
+        tone.push_back(0.5f*std::sin(2*M_PI*770*t)
+                     + 0.5f*std::sin(2*M_PI*1336*t));
+    }
+    printf("Cozulen tus: %c\n", decodeDtmf(tone, fs));   // '5'
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Gerçek bir telefon kaydını çözmek için sesi 40--50~ms'lik bloklara bölüp
+her bloğu \code{decodeDtmf}'e verin; ardışık aynı tuşları teke indirin (debounce).
+Bir \code{.wav} kaydı okumak için Kısım 1'deki WAV okuyucuyu ekleyin --- gerçek
+bir çağrı merkezinin IVR sistemi tam olarak böyle çalışır.}
+
+% =====================================================================
+\gsec{Proje 2 --- Ses Üzerinden Veri İletimi (FSK Modem)}
+% =====================================================================
+
+Bu proje, iki bilgisayarın hoparlör ve mikrofonla veri alışverişi yapmasını
+sağlayan minik bir modem kurar --- ``ggwave'' ve eski telefon modemlerinin
+prensibi. Metni bitlere çevirip FSK (Kısım 5) ile ses tonlarına, sonra tekrar
+metne dönüştürürüz. Senkronizasyon için başa bilinen bir önsöz (preamble) tonu
+koyarız.
+
+\begin{lstlisting}
+#include <vector>
+#include <string>
+#include <cstdint>
+#include <cmath>
+
+// --- VERICI: metin -> ses ornekleri ---
+std::vector<float> encodeText(const std::string& text, double fs) {
+    const double f0 = 1200.0, f1 = 2200.0;   // Bell 202 benzeri tonlar
+    const size_t sps = static_cast<size_t>(fs / 300.0);  // 300 baud
+    // Metni bit dizisine ac (her karakter 8 bit, MSB once)
+    std::vector<uint8_t> bits;
+    // Onsoz: senkron icin 16 adet 1-0 gecisi
+    for (int i = 0; i < 16; ++i) { bits.push_back(1); bits.push_back(0); }
+    for (char c : text)
+        for (int b = 7; b >= 0; --b) bits.push_back((c >> b) & 1);
+
+    // FSK modulasyon (surekli faz)
+    std::vector<float> out;
+    double phase = 0.0;
+    for (uint8_t bit : bits) {
+        double f = bit ? f1 : f0;
+        for (size_t k = 0; k < sps; ++k) {
+            phase += 2.0 * M_PI * f / fs;
+            out.push_back(0.6f * static_cast<float>(std::sin(phase)));
+        }
+    }
+    return out;
+}
+
+// --- ALICI: ses ornekleri -> metin ---
+std::string decodeText(const std::vector<float>& audio, double fs) {
+    const double f0 = 1200.0, f1 = 2200.0;
+    const size_t sps = static_cast<size_t>(fs / 300.0);
+
+    // Her sembol icin iki tonun enerjisini Goertzel ile karsilastir
+    std::vector<uint8_t> bits;
+    for (size_t i = 0; i + sps <= audio.size(); i += sps) {
+        std::vector<float> block(audio.begin() + i, audio.begin() + i + sps);
+        double e0 = goertzel(block, f0, fs);   // Proje 1'deki goertzel
+        double e1 = goertzel(block, f1, fs);
+        bits.push_back(e1 > e0 ? 1 : 0);
+    }
+
+    // Onsozden sonraki veriyi bul: 32 bitlik gecis desenini atla
+    size_t start = 32;
+    // Bitleri baytlara topla
+    std::string text;
+    for (size_t i = start; i + 8 <= bits.size(); i += 8) {
+        uint8_t c = 0;
+        for (int b = 0; b < 8; ++b) c = (c << 1) | bits[i + b];
+        if (c == 0) break;
+        text.push_back(static_cast<char>(c));
+    }
+    return text;
+}
+
+#include <cstdio>
+int main() {
+    const double fs = 44100.0;
+    std::string msg = "MERHABA DSP";
+    auto audio = encodeText(msg, fs);
+    writeWav("modem.wav", audio, 44100, 1);      // Kisim 1'deki writeWav
+    std::string got = decodeText(audio, fs);
+    printf("Gonderilen: %s\nAlinan    : %s\n", msg.c_str(), got.c_str());
+    return 0;
+}
+\end{lstlisting}
+
+\bilgi{\code{modem.wav}'ı bir bilgisayarda çalıp diğerinde mikrofonla kaydederek
+gerçek havadan iletim yapabilirsiniz. Gerçek ortamda çalışması için ekstra:
+bit hatalarına karşı Kısım 7'deki Viterbi kodu, ve önsözden sonra tam bit
+hizası için bir kare senkronizasyon damgası (örn. \code{0x7E} bayrağı) ekleyin.}
+
+% =====================================================================
+\gsec{Proje 3 --- Terminal Spektrum Analizörü}
+% =====================================================================
+
+Bir WAV dosyasını okuyup, kayan pencerelerle FFT alarak terminalde ASCII bir
+spektrum (mini ``şelale'') çizen bir araç. Bir sinyalin frekans içeriğini
+gözle görmenin en hızlı yolu --- hata ayıklarken paha biçilmezdir.
+
+\begin{lstlisting}
+#include <vector>
+#include <complex>
+#include <cstdio>
+#include <cmath>
+#include <algorithm>
+
+using cf64 = std::complex<double>;
+
+// [-1,1] mono ornekleri al, ardisik FFT pencerelerini ASCII bar olarak ciz.
+void spectrumAnalyzer(const std::vector<float>& x, double fs) {
+    const size_t N = 512;                     // FFT boyu
+    auto win = hannWindow(N);                 // Kisim 2'deki pencere
+    const char* ramp = " .:-=+*#%@";          // yogunluk karakterleri (10 kademe)
+    const int nBars = 64;                     // gosterilecek frekans binleri
+
+    for (size_t base = 0; base + N <= x.size(); base += N) {
+        std::vector<cf64> buf(N);
+        for (size_t n = 0; n < N; ++n) buf[n] = x[base + n] * win[n];
+        fft(buf);                             // Kisim 2'deki FFT
+
+        // Ilk nBars bin'i dB'ye cevir ve karaktere esle
+        printf("|");
+        for (int k = 0; k < nBars; ++k) {
+            double mag = std::abs(buf[k]) / N;
+            double db = 20.0 * std::log10(mag + 1e-9);
+            // -80..0 dB araligini 0..9 karakter indeksine esle
+            int level = static_cast<int>((db + 80.0) / 80.0 * 9.0);
+            level = std::max(0, std::min(9, level));
+            putchar(ramp[level]);
+        }
+        double tSec = base / fs;
+        printf("| t=%.2fs\n", tSec);
+    }
+    // Ust eksen: her karakter fs/N * (nBars) Hz'e kadar
+    printf("0 Hz %*s %.0f Hz\n", nBars - 10, "->", nBars * fs / N);
+}
+
+int main() {
+    const double fs = 8000.0;
+    // Test sinyali: zamanla yukselen bir supurme (chirp) 200 -> 3000 Hz
+    std::vector<float> x;
+    double phase = 0.0;
+    for (int n = 0; n < 8000; ++n) {
+        double f = 200.0 + 2800.0 * n / 8000.0;
+        phase += 2.0 * M_PI * f / fs;
+        x.push_back(0.8f * static_cast<float>(std::sin(phase)));
+    }
+    spectrumAnalyzer(x, fs);   // ekranda kosegen bir "cizgi" gorursunuz
+    return 0;
+}
+\end{lstlisting}
+
+\ipucu{Bu araç ürettiğiniz her sinyali gözle doğrulamak için harikadır. Bir
+chirp'te köşegen çizgi, saf tonda tek dikey sütun, gürültüde homojen bir bulut
+görürsünüz. Renkli çıktı için ANSI kaçış kodları (\code{\textbackslash
+033[38;5;...m}) ekleyip gerçek bir şelale (waterfall) elde edebilirsiniz.}
+
+% =====================================================================
+\gsec{Proje 4 --- Enstrüman Akort Cihazı (Pitch Detection)}
+% =====================================================================
+
+Bir gitar veya sesin temel frekansını (pitch) bulup en yakın nota ile kaç
+sent (cent) saptığını gösteren bir akort cihazı. Frekansı, FFT yerine
+\textbf{otokorelasyonla} buluruz --- gürültülü ve harmonik zengini seslerde daha
+güvenilirdir.
+
+\begin{lstlisting}
+#include <vector>
+#include <cmath>
+#include <cstdio>
+#include <string>
+
+// Otokorelasyonla temel frekansi kestir. 0 = perde bulunamadi.
+double detectPitch(const std::vector<float>& x, double fs,
+                   double minHz = 50.0, double maxHz = 1000.0) {
+    const size_t minLag = static_cast<size_t>(fs / maxHz);
+    const size_t maxLag = static_cast<size_t>(fs / minHz);
+    double bestCorr = 0; size_t bestLag = 0;
+
+    // Her olasi periyot (lag) icin otokorelasyonu hesapla
+    for (size_t lag = minLag; lag <= maxLag && lag < x.size(); ++lag) {
+        double corr = 0;
+        for (size_t i = 0; i + lag < x.size(); ++i) corr += x[i] * x[i + lag];
+        if (corr > bestCorr) { bestCorr = corr; bestLag = lag; }
+    }
+    return bestLag ? fs / bestLag : 0.0;
+}
+
+// Frekanstan en yakin nota adi + sent sapmasi.
+std::string nearestNote(double freq, double* centsOut) {
+    static const char* names[] = {"C","C#","D","D#","E","F",
+                                  "F#","G","G#","A","A#","B"};
+    // A4 = 440 Hz referans; yari-ton = 2^(1/12)
+    double midi = 69.0 + 12.0 * std::log2(freq / 440.0);
+    int nearest = static_cast<int>(std::lround(midi));
+    *centsOut = (midi - nearest) * 100.0;     // sent cinsinden sapma
+    int octave = nearest / 12 - 1;
+    return std::string(names[(nearest % 12 + 12) % 12]) + std::to_string(octave);
+}
+
+int main() {
+    const double fs = 44100.0;
+    // Test: hafif akortsuz bir "La" (441.5 Hz) uret
+    std::vector<float> x;
+    for (int n = 0; n < 8192; ++n)
+        x.push_back(0.7f * std::sin(2*M_PI*441.5*n/fs)
+                  + 0.2f * std::sin(2*M_PI*883.0*n/fs));  // + 2. harmonik
+
+    double f = detectPitch(x, fs);
+    double cents;
+    std::string note = nearestNote(f, &cents);
+    printf("Frekans: %.2f Hz -> Nota: %s (%+.1f sent)\n",
+           f, note.c_str(), cents);   // "A4 (+5.9 sent)" -> hafif tiz
+    return 0;
+}
+\end{lstlisting}
+
+\notk[Neden otokorelasyon?]{FFT tepesi temel frekansı verir ama harmonikler
+güçlüyse (gitar, insan sesi) yanlış oktava atlayabilir. Otokorelasyon, işaretin
+\emph{periyodunu} doğrudan arar ve harmoniklere karşı daha gürbüzdür. Daha da
+iyisi \textbf{YIN} ve \textbf{pYIN} algoritmalarıdır (fark fonksiyonu tabanlı);
+profesyonel akort uygulamaları bunları kullanır.}
+
+% =====================================================================
+\gsec{Projeleri Derleme (CMake)}
+% =====================================================================
+
+Dört projeyi de derleyen tek bir CMake dosyası. Her proje bu belgedeki
+yardımcıları (\code{writeWav}, \code{fft}, \code{hannWindow}, \code{goertzel},
+\code{designLowpass}\dots) tek bir \code{dsp.hpp} başlığında toplayıp
+\code{\#include} ettiğinizi varsayar.
+
+\begin{lstlisting}[style=cmakestyle]
+cmake_minimum_required(VERSION 3.15)
+project(dsp_projeler LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Optimizasyon: DSP kodu SIMD'den cok faydalanir
+if(NOT MSVC)
+  add_compile_options(-O3 -march=native)
+endif()
+
+# Her proje bagimsiz bir calistirilabilir
+add_executable(dtmf      proje1_dtmf.cpp)
+add_executable(fsk_modem proje2_modem.cpp)
+add_executable(spektrum  proje3_spektrum.cpp)
+add_executable(akort     proje4_akort.cpp)
+
+# Ortak baslik dizini (dsp.hpp burada)
+foreach(t dtmf fsk_modem spektrum akort)
+  target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+endforeach()
+\end{lstlisting}
+
+\begin{lstlisting}[style=shstyle]
+# Derle ve calistir
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+
+./dtmf                    # -> Cozulen tus: 5
+./fsk_modem               # -> modem.wav uretir, metni geri cozer
+./spektrum                # -> terminalde kosegen chirp spektrumu
+./akort                   # -> A4 (+5.9 sent)
+
+# Uretilen sesleri dinle / spektrogramla:
+sox modem.wav -n spectrogram -o modem.png
+\end{lstlisting}
+
+\ipucu{Bu dört projeyi genişletmek için doğal fikirler: DTMF çözücüye gerçek
+\code{.wav} girişi ve gürültü reddi; FSK modeme Viterbi FEC ve gerçek ses kartı
+G/Ç (PortAudio/RtAudio); spektrum analizörüne ncurses ile canlı kaydırılan
+şelale; akort cihazına mikrofon girişi ve grafik iğne göstergesi. Her biri, bu
+belgedeki yapı taşlarının üstüne birkaç yüz satırla oturur.}
+
+% #####################################################################
+\gpart{9}{Matematiksel Temeller}
+% #####################################################################
+
+Bu kısım, belge boyunca kod hâline getirdiğimiz işlemlerin altındaki matematiği
+adım adım türetir. Amaç, her algoritmanın \emph{neden} çalıştığını sezgiyle
+değil, ispatla görmenizdir. Her sonucu bir önceki koda geri bağlayacağız.
+
+% =====================================================================
+\gsec{Karmaşık Üsteller ve Diklik (Orthogonality)}
+% =====================================================================
+
+Tüm Fourier teorisi tek bir yapı taşına dayanır: karmaşık üstel
+$e^{j\omega t}$. Euler formülü $e^{j\theta} = \cos\theta + j\sin\theta$'dan iki
+temel kimlik çıkar:
+\[
+\cos\theta = \frac{e^{j\theta} + e^{-j\theta}}{2}, \qquad
+\sin\theta = \frac{e^{j\theta} - e^{-j\theta}}{2j}
+\]
+Bu, ``bir kosinüs, biri $+\omega$ diğeri $-\omega$'da dönen iki fazörün
+toplamıdır'' demenin cebirsel hâlidir --- gerçek sinüslerin neden hem pozitif
+hem negatif frekans içerdiğini (Kısım 4) buradan görürüz.
+
+\gsub{Diklik İlişkisi}
+
+Fourier'in işleyebilmesinin sebebi, farklı frekanstaki üstellerin
+\textbf{dik} (birbirine ``bağımsız'') olmasıdır. Sürekli durumda bir $T$
+periyodu üzerinde:
+\[
+\frac{1}{T}\int_0^T e^{j 2\pi m t/T}\, e^{-j 2\pi n t/T}\, dt =
+\begin{cases} 1, & m = n \\ 0, & m \neq n \end{cases}
+\]
+Ayrık durumda ($N$ örnek üzerinde) tam karşılığı:
+\[
+\sum_{n=0}^{N-1} e^{j 2\pi k n/N}\, e^{-j 2\pi l n/N} =
+\begin{cases} N, & k = l \pmod N \\ 0, & \text{diğer} \end{cases}
+\]
+İkincisi bir \textbf{geometrik seri toplamıdır}: $k \neq l$ için ortak çarpan
+$r = e^{j2\pi(k-l)/N} \neq 1$'dir ve $\sum_{n=0}^{N-1} r^n = \frac{r^N - 1}{r - 1}
+= 0$ (çünkü $r^N = e^{j2\pi(k-l)} = 1$). İşte DFT'nin \emph{tersinin} neden var
+olduğunun kanıtı budur --- her frekans bileşenini diğerlerine karışmadan geri
+çekebiliriz.
+
+% =====================================================================
+\gsec{Fourier Zinciri: Seriden DFT'ye}
+% =====================================================================
+
+Dört Fourier gösterimi vardır; hangisini kullanacağımız işaretin zaman ve
+frekansta sürekli mi kesikli mi olduğuna bağlıdır:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{anaMavi}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{acikMavi}\color{anaMavi}\textbf{Dönüşüm} & \color{anaMavi}\textbf{Zaman} & \color{anaMavi}\textbf{Frekans}\\
+\midrule
+Fourier Serisi (FS) & sürekli, periyodik & kesikli, sonsuz\\
+Fourier Dönüşümü (FT) & sürekli, aperiyodik & sürekli, sonsuz\\
+Ayrık-Zaman FT (DTFT) & kesikli, aperiyodik & sürekli, periyodik\\
+Ayrık Fourier Dön. (DFT) & kesikli, periyodik & kesikli, periyodik\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\gsub{Fourier Serisi ve Dönüşümü}
+
+Periyodu $T$ olan bir işaret, harmoniklerin toplamıdır:
+\[
+x(t) = \sum_{k=-\infty}^{\infty} c_k\, e^{j 2\pi k t/T}, \qquad
+c_k = \frac{1}{T}\int_0^T x(t)\, e^{-j 2\pi k t/T}\, dt
+\]
+Katsayı formülü doğrudan yukarıdaki diklikten çıkar: her iki tarafı
+$e^{-j2\pi l t/T}$ ile çarpıp integre edin, dik olmayan tek terim $k=l$ hayatta
+kalır. Periyodu sonsuza götürürsek ($T \to \infty$) toplam integrale, kesikli
+$k/T$ frekansları sürekli $f$'e dönüşür ve \textbf{Fourier dönüşümünü} elde
+ederiz:
+\[
+X(f) = \int_{-\infty}^{\infty} x(t)\, e^{-j 2\pi f t}\, dt, \qquad
+x(t) = \int_{-\infty}^{\infty} X(f)\, e^{j 2\pi f t}\, df
+\]
+
+\gsub{DTFT'den DFT'ye: Kodun Türetimi}
+
+İşareti örnekleyip ($t = nT_s$) kesikli yaparsak DTFT'yi elde ederiz:
+\[
+X(e^{j\omega}) = \sum_{n=-\infty}^{\infty} x[n]\, e^{-j\omega n}
+\]
+Burada $\omega = 2\pi f/f_s$ (radyan/örnek, Kısım 1'deki $w$). Bu hâlâ
+$\omega$'da süreklidir --- bilgisayarda saklanamaz. Son adım, frekans eksenini de
+$N$ noktada örneklemektir: $\omega_k = 2\pi k/N$. Bu bize tam olarak Kısım 2'de
+kodladığımız \textbf{DFT}'yi verir:
+\[
+X[k] = \sum_{n=0}^{N-1} x[n]\, e^{-j 2\pi k n/N}
+\]
+Yani \code{dft()} fonksiyonu, sürekli Fourier dönüşümünün hem zamanda hem
+frekansta örneklenmiş, tam hesaplanabilir hâlidir. Diklik ilişkisi de ters
+dönüşümü (\code{idft()}) ve $1/N$ çarpanını doğrular.
+
+\gsub{FFT'nin Böl-ve-Fethet İspatı}
+
+FFT'nin $O(N\log N)$'i, DFT toplamını çift ve tek indekslere ayırmaktan doğar.
+$W_N = e^{-j2\pi/N}$ yazarsak:
+\[
+X[k] = \sum_{n \text{ çift}} x[n] W_N^{kn} + \sum_{n \text{ tek}} x[n] W_N^{kn}
+     = \underbrace{\sum_{m=0}^{N/2-1} x[2m] W_{N/2}^{km}}_{E[k]}
+     + W_N^k \underbrace{\sum_{m=0}^{N/2-1} x[2m{+}1] W_{N/2}^{km}}_{O[k]}
+\]
+çünkü $W_N^{2km} = W_{N/2}^{km}$. Ayrıca $W_N^{k+N/2} = -W_N^k$ (simetri)
+olduğundan:
+\[
+X[k] = E[k] + W_N^k O[k], \qquad X[k + N/2] = E[k] - W_N^k O[k]
+\]
+İşte \code{fftRecursive} içindeki \emph{kelebek} tam olarak budur: iki yarı-boy
+DFT hesapla, twiddle çarpanı $W_N^k$ ile birleştir. Her katmanda iş yarıya
+inerken $\log_2 N$ katman olması $O(N\log N)$'i verir.
+
+% =====================================================================
+\gsec{Örnekleme Teoreminin Türetimi}
+% =====================================================================
+
+Nyquist teoremini (Kısım 2) artık ispatlayabiliriz. Örnekleme, işareti bir
+\textbf{darbe dizisiyle} (Dirac tarağı) çarpmaktır:
+\[
+x_s(t) = x(t)\cdot \sum_{n=-\infty}^{\infty}\delta(t - nT_s)
+\]
+Dirac tarağının Fourier dönüşümü yine bir Dirac tarağıdır (aralık $f_s = 1/T_s$).
+\textbf{Çarpımın dönüşümü konvolüsyondur} (bir sonraki bölüm) olduğundan,
+örneklenmiş işaretin spektrumu, orijinal spektrumun $f_s$ aralıklarla
+\emph{sonsuz kez kopyalanmış} hâlidir:
+\[
+X_s(f) = f_s \sum_{k=-\infty}^{\infty} X(f - k f_s)
+\]
+İşte aliasing'in kaynağı budur. Eğer $X(f)$'in bant genişliği $B < f_s/2$ ise
+kopyalar üst üste binmez ve orijinali bir alçak geçiren filtreyle kusursuz geri
+alabiliriz. Ama $B > f_s/2$ ise komşu kopyalar örtüşür --- yüksek frekanslar
+düşüklerin üstüne katlanır (Kısım 2'deki \code{aliasedFrequency}). Kritik sınır
+$f_s = 2B$'dir; \textbf{Nyquist oranı} budur.
+
+\notk[İdeal geri çatım]{Örtüşme yoksa, orijinal işaret örneklerden şu
+interpolasyonla \emph{tam} olarak geri gelir:
+$x(t) = \sum_n x[n]\,\operatorname{sinc}\!\big((t - nT_s)/T_s\big)$.
+Bu, kesikli örneklerin neden sürekli işareti eksiksiz temsil edebildiğinin
+matematiksel güvencesidir --- sinc çekirdeği ideal alçak geçiren filtrenin dürtü
+yanıtıdır, ki Kısım 3'te FIR tasarımında tam bunu kullandık.}
+
+% =====================================================================
+\gsec{Konvolüsyon ve Modülasyon Teoremleri}
+% =====================================================================
+
+Filtreleme ve modülasyonun tüm matematiği iki eşleştirmeye dayanır. Bunlar
+Fourier dönüşümünün en güçlü özellikleridir.
+
+\gsub{Konvolüsyon Teoremi}
+
+Zamanda konvolüsyon, frekansta çarpmadır (ve tersi):
+\[
+y(t) = (x * h)(t) \;\Longleftrightarrow\; Y(f) = X(f)\, H(f)
+\]
+İspat, konvolüsyon integralinin dönüşümünü alıp değişken değiştirmektir; $e^{-j2\pi
+f\tau}$ çarpanı ayrışır. Bu teoremin iki büyük sonucu var:
+
+\begin{itemize}
+\item \textbf{Filtrelemenin anlamı:} Kısım 3'teki FIR/IIR bir konvolüsyondur;
+frekans alanında bu, işaretin spektrumunu filtrenin \emph{frekans yanıtı} $H(f)$
+ile çarpmaktır. ``Alçak geçiren'' demek, $H(f)$'in düşük frekanslarda $\approx 1$,
+yüksekte $\approx 0$ olması demektir.
+\item \textbf{Hızlı konvolüsyon:} $O(N^2)$'lik konvolüsyon yerine
+$\text{IFFT}\{\text{FFT}\{x\}\cdot\text{FFT}\{h\}\}$ ile $O(N\log N)$'de sonuç ---
+uzun FIR'lar için overlap-add yönteminin temeli.
+\end{itemize}
+
+\gsub{Modülasyon (Frekans Kaydırma) Teoremi}
+
+Konvolüsyon teoreminin ikizi: zamanda bir üstelle çarpmak, frekansta kaydırmadır:
+\[
+x(t)\, e^{j 2\pi f_0 t} \;\Longleftrightarrow\; X(f - f_0)
+\]
+İşte Kısım 4'teki \code{Nco}/\code{frequencyShift}'in ispatı: bir IQ akışını
+$e^{-j2\pi f_0 n/f_s}$ ile çarpmak, spektrumunu $-f_0$ kadar öteler ve istediğimiz
+kanalı DC'ye getirir. Gerçek bir kosinüsle çarpsaydık ($\cos = \tfrac12(e^{j}
++ e^{-j})$) spektrum \emph{hem} $+f_0$ \emph{hem} $-f_0$'a kopyalanır --- bu
+istenmeyen ``görüntü'' (image) tam olarak IQ'nun (tek taraflı spektrum) neden
+gerekli olduğunu gösterir.
+
+\gsub{Parseval Teoremi}
+
+Enerji, zaman ve frekans alanında korunur:
+\[
+\sum_{n=0}^{N-1} |x[n]|^2 = \frac{1}{N}\sum_{k=0}^{N-1} |X[k]|^2
+\]
+Bu yüzden bir işaretin gücünü spektrumdan ($|X[k]|^2$, yani PSD) hesaplayabiliriz
+--- Kısım 2'deki \code{powerSpectrumDb} ve pencere kazancı telafisi bu eşitliğe
+dayanır.
+
+% =====================================================================
+\gsec{Analitik İşaret ve Anlık Frekans}
+% =====================================================================
+
+Son olarak, tüm açı-demodülatörlerinin (FM/PM) altındaki matematiği kesinleştirelim.
+
+\gsub{Anlık Frekansın Tanımı}
+
+Karmaşık bir işareti kutupsal yazalım: $z(t) = a(t)\, e^{j\phi(t)}$. Buradaki
+$a(t) = |z(t)|$ \textbf{anlık zarf}, $\phi(t) = \angle z(t)$ \textbf{anlık
+fazdır}. \textbf{Anlık frekans}, fazın türevidir:
+\[
+f_i(t) = \frac{1}{2\pi}\frac{d\phi(t)}{dt}
+\]
+Bu tanım FM demodülasyonunu doğrudan açıklar: FM'de $\phi(t) = 2\pi k_f\!\int m$,
+dolayısıyla $\frac{1}{2\pi}\phi'(t) = k_f\, m(t)$ --- yani fazın türevi tam
+olarak mesajdır (bir ölçek dışında).
+
+\gsub{Polar Diskriminatörün Türetimi}
+
+Ayrık zamanda türev, ardışık fazların farkıdır:
+$\phi[n] - \phi[n-1]$. Bunu \code{atan2} sarmalanması olmadan hesaplamanın yolu,
+Kısım 5'teki eşlenik çarpımıdır. $z[n] = a[n]e^{j\phi[n]}$ için:
+\[
+z[n]\, z^*[n-1] = a[n]\,a[n-1]\; e^{\,j(\phi[n] - \phi[n-1])}
+\]
+Genlikler pozitif reel olduğundan bu çarpımın \emph{açısı} tam olarak faz
+farkıdır:
+\[
+\angle\big(z[n]\, z^*[n-1]\big) = \phi[n] - \phi[n-1] \approx 2\pi f_i\, T_s
+\]
+İşte \code{FmDemod::process}'in matematiksel ispatı budur. \code{std::arg} sonucu
+doğal olarak $[-\pi,\pi]$ aralığında verdiği için, faz $\pm\pi$'yi geçse bile
+sonuç sarmalanmadan doğru çıkar --- bu yüzden ayrı bir ``unwrap'' adımına gerek
+kalmaz.
+
+\gsub{Hilbert Dönüşümü ve Analitik İşaretin Türetimi}
+
+Gerçek bir $x(t)$'nin analitik karşılığı $x_a(t) = x(t) + j\hat{x}(t)$'dir;
+burada $\hat{x}$ \textbf{Hilbert dönüşümüdür}. Amaç, negatif frekansları yok edip
+tek taraflı bir spektrum elde etmektir. Frekans alanında Hilbert filtresi
+$H(f) = -j\,\operatorname{sgn}(f)$'dir; bu, tüm pozitif frekansları $-90^\circ$,
+negatifleri $+90^\circ$ döndürür. Bunun sonucunda:
+\[
+X_a(f) = X(f)\big(1 + \operatorname{sgn}(f)\big) =
+\begin{cases} 2X(f), & f > 0 \\ X(0), & f = 0 \\ 0, & f < 0 \end{cases}
+\]
+İşte Kısım 4'teki \code{analyticSignal} fonksiyonunun ``pozitif frekansları 2 ile
+çarp, negatifleri sıfırla'' adımının kaynağı budur. Böylece $|x_a|$ zarfı (AM
+demod) ve $\angle x_a$ fazı (FM/PM demod) doğrudan okunabilir hâle gelir --- tüm
+demodülatörleri birkaç satıra indiren şey bu matematiktir.
+
+\ipucu{Bütün belgeyi tek cümlede özetlersek: \emph{bir işareti karmaşık bant
+temeline taşıdığınızda}, genlik \code{std::abs}, faz \code{std::arg}, frekans ise
+ardışık fazların farkıdır. Modülasyon bu üçünden birine bilgi gömer;
+demodülasyon onu geri okur. Geri kalan her şey --- örnekleme, FFT, filtreler,
+mikser --- bu okumayı temiz ve verimli yapmak içindir.}
+
+\vfill
+\begin{center}
+{\color{ortaGri}\rule{0.5\linewidth}{0.8pt}}\\[6pt]
+{\color{ortaGri}\small Bu rehber C++17 ile, harici bağımlılık olmadan
+derlenebilecek örneklerle hazırlanmıştır.\\
+Sayısal İşaret İşleme, Modülasyon ve Demodülasyon --- 20 Temmuz 2026}
+\end{center}
+
+\end{document}
