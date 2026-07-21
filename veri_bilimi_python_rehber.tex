@@ -449,6 +449,242 @@ veya \code{np.random.seed(42)}). Böylece analizlerin ve model sonuçların
 tekrarlanabilir olur --- kod her çalıştığında aynı ``rastgele'' değerleri
 üretir, bu da hata ayıklamayı ve sonuçları paylaşmayı kolaylaştırır.}
 
+% =====================================================================
+\gsec{NumPy Derinlemesine: Veri Tipleri ve Bellek}
+% =====================================================================
+
+Yukarıdaki temeller günlük işin \%80'ini görür. Ama NumPy'ı gerçekten
+\emph{anlamak} --- neden hızlı olduğunu, neden bazen şaşırtıcı sonuçlar
+verdiğini --- birkaç düşük seviye kavramı bilmeyi gerektirir. Bu bölüm o
+kavramları bol örnekle açar.
+
+\gsub{Veri Tipleri (dtype) Derinlemesine}
+
+Bir NumPy dizisindeki \emph{tüm} elemanlar aynı tiptedir ve her tip bellekte
+sabit sayıda bayt kaplar. Doğru dtype seçmek hem bellek hem hız kazandırır:
+100 milyonluk bir diziyi \code{int64} yerine \code{int8} tutmak belleği 8 kat
+azaltır.
+
+\begin{lstlisting}
+import numpy as np
+
+# Tam sayilar: int8/16/32/64 (isaretli), uint8/... (isaretsiz)
+a = np.array([1, 2, 3], dtype=np.int8)    # her eleman 1 bayt
+a.itemsize                                 # 1  -> eleman basina bayt
+a.nbytes                                   # 3  -> toplam bayt
+
+# Ondalikli: float16/32/64
+b = np.array([1.5, 2.5], dtype=np.float32)
+
+# Bool ve metin
+c = np.array([True, False, True])          # dtype('bool')
+d = np.array(['al', 'sat'])                # dtype('<U3') sabit uzunluk!
+
+# Karisik listeden olusturmada NumPy ortak tip secer (upcasting)
+np.array([1, 2, 3.0]).dtype                # float64 (int -> float'a yukselir)
+np.array([1, 'x']).dtype                   # '<U21' (hepsi metne dondu!)
+\end{lstlisting}
+
+\uyari{\textbf{Tam sayı taşması (overflow) sessizdir!} Sabit boyutlu tipler
+sınırı aşınca döner (wrap-around) --- hata vermez. \code{int8} en fazla 127
+tutar; \code{np.int8(127) + 1} sonucu \code{-128} olur. Büyük değerlerle
+çalışırken \code{int64} veya \code{float64} kullan.}
+
+\begin{lstlisting}
+x = np.array([127], dtype=np.int8)
+x + 1                    # array([-128])  <- SESSIZ TASMA!
+
+# astype ile guvenli donusum
+big = x.astype(np.int64) + 1   # array([128])  dogru
+
+# float -> int donusumunde ondalik ATILIR (yuvarlanmaz)
+np.array([1.9, 2.1, -1.9]).astype(int)     # array([ 1,  2, -1])
+np.round([1.9, 2.1]).astype(int)           # array([2, 2])  once yuvarla
+\end{lstlisting}
+
+\gsub{Görünüm (View) mü, Kopya (Copy) mı?}
+
+Bu, NumPy'daki en sık ``neden değişti?!'' hatasının kaynağıdır. \textbf{Dilimleme
+(slicing) bir görünüm döndürür} --- aynı belleğe bakan yeni bir pencere.
+Görünümü değiştirmek orijinali de değiştirir. \textbf{Süslü/boole indeksleme ise
+kopya döndürür.}
+
+\begin{lstlisting}
+a = np.arange(10)                # [0 1 2 3 4 5 6 7 8 9]
+
+# DILIM = GORUNUM (ayni bellek)
+s = a[2:5]                       # [2 3 4]
+s[0] = 999
+a                                # [0 1 999 3 4 5 6 7 8 9]  <- a DEGISTI!
+
+# .copy() ile bagimsiz kopya
+s2 = a[2:5].copy()
+s2[0] = -1                       # a etkilenmez
+
+# Bir dizinin gorunum mu oldugunu kontrol et
+s.base is a                      # True  -> s, a'nin gorunumu
+s2.base is a                     # False -> bagimsiz kopya
+
+# SUSLU/BOOLE indeksleme her zaman KOPYA doner
+f = a[[1, 3, 5]]                 # kopya
+m = a[a > 5]                     # kopya
+f[0] = 0                         # a'yi ETKILEMEZ
+\end{lstlisting}
+
+\notk[Neden önemli?]{Fonksiyona dizi geçirip içinde dilimleyerek değiştirirsen,
+çağıranın verisini farkında olmadan bozabilirsin. Kural: veriyi değiştirecek bir
+fonksiyon yazıyorsan ya baştan \code{arr.copy()} al, ya da davranışı belgele.
+Tersine, büyük veride gereksiz \code{.copy()} bellek israfıdır --- görünümler
+bedavadır.}
+
+\gsub{Bir Diziyi Yerinde Değiştirmek}
+
+Görünümler, koşullu güncellemeyi çok verimli kılar: yeni dizi oluşturmadan.
+
+\begin{lstlisting}
+a = np.array([-3, 5, -1, 8, -7, 2])
+
+# Boole maske ile YERINDE atama (negatifleri sifirla)
+a[a < 0] = 0                     # [0 5 0 8 0 2]
+
+# np.clip: degerleri bir araliga sikistir
+np.clip(a, 0, 5)                 # [0 5 0 5 0 2]
+
+# np.where: kosullu SECIM (if-else vektorlestirilmis)
+b = np.array([10, -2, 7, -5])
+np.where(b > 0, b, 0)           # pozitifse kendisi, degilse 0
+np.where(b > 0, 'arti', 'eksi')# [arti eksi arti eksi]
+
+# np.select: cok kosullu (elif zinciri gibi)
+notlar = np.array([95, 82, 60, 45])
+kosullar = [notlar >= 90, notlar >= 70, notlar >= 50]
+sonuc = np.select(kosullar, ['A', 'B', 'C'], default='F')
+# ['A' 'B' 'C' 'F']
+\end{lstlisting}
+
+% =====================================================================
+\gsec{NumPy Derinlemesine: Vektörizasyon ve Performans}
+% =====================================================================
+
+\gsub{Evrensel Fonksiyonlar (ufunc) ve Vektörizasyon}
+
+NumPy'ın gücü \emph{vektörizasyondan} gelir: bir işlemi tüm diziye tek seferde,
+derlenmiş C döngüsüyle uygulamak. Python \code{for} döngüsünden kaçındığın her
+yerde büyük hız kazanırsın. \code{np.sin}, \code{+}, \code{**} gibi eleman bazlı
+çalışan fonksiyonlara \emph{ufunc} denir.
+
+\begin{lstlisting}
+x = np.linspace(0, 2*np.pi, 1_000_000)
+
+# YAVAS: Python dongusu (kacin!)
+# y = np.array([np.sin(v) for v in x])
+
+# HIZLI: vektorlestirilmis (10-100x daha hizli)
+y = np.sin(x)
+
+# Eleman bazli ufunc'lar zincirlenebilir
+z = np.exp(-x) * np.cos(x) + 1
+
+# Matematiksel yardimcilar
+np.sqrt([1, 4, 9])              # [1. 2. 3.]
+np.log(np.e)                    # 1.0
+np.abs([-2, 3, -5])             # [2 3 5]
+np.maximum([1, 5], [4, 2])      # [4 5]  eleman bazli maks
+\end{lstlisting}
+
+\ornek[Örnek: Vektörizasyonun Gücü]{İki nokta kümesi arasındaki tüm mesafeleri
+tek satırda, döngüsüz hesaplamak --- yayınlama + ufunc birleşimi:}
+
+\begin{lstlisting}
+noktalar = np.array([[0, 0], [3, 4], [6, 8]])   # (3, 2)
+
+# Her ciftin oklit mesafesi (yayinlama ile)
+fark = noktalar[:, None, :] - noktalar[None, :, :]   # (3, 3, 2)
+mesafe = np.sqrt((fark ** 2).sum(axis=2))            # (3, 3)
+# mesafe[i, j] = i. ve j. nokta arasi uzaklik
+\end{lstlisting}
+
+\bilgi{\code{np.vectorize} bir Python fonksiyonunu diziye uygular ama içeride
+gerçek bir döngü çalıştırır --- \emph{hız kazandırmaz}, sadece kolaylık sağlar.
+Gerçek hız için işlemi NumPy ufunc'larıyla ifade et.}
+
+\gsub{Dizi Birleştirme ve Bölme}
+
+Veriyi yan yana veya üst üste eklemek, ML'de özellik matrisleri kurmanın
+temelidir.
+
+\begin{lstlisting}
+a = np.array([[1, 2], [3, 4]])
+b = np.array([[5, 6], [7, 8]])
+
+np.concatenate([a, b], axis=0)  # dikey (satir ekle) -> (4, 2)
+np.concatenate([a, b], axis=1)  # yatay (sutun ekle) -> (2, 4)
+np.vstack([a, b])               # dikey (v = vertical)
+np.hstack([a, b])               # yatay (h = horizontal)
+
+# stack: YENI bir eksen ekler
+np.stack([a, b])                # (2, 2, 2) -> ustuste yeni katman
+
+# Bir sutunu/satiri diziye ekleme icin newaxis
+v = np.array([1, 2])            # (2,)
+v[:, None]                      # (2, 1) sutun vektoru
+v[None, :]                      # (1, 2) satir vektoru
+
+# Bolme
+c = np.arange(12).reshape(3, 4)
+np.split(c, 2, axis=1)          # 4 sutunu 2 esit parcaya ([:,:2],[:,2:])
+\end{lstlisting}
+
+\gsub{Sıralama, Arama ve Faydalı İşlemler}
+
+\begin{lstlisting}
+a = np.array([3, 1, 4, 1, 5, 9, 2, 6])
+
+np.sort(a)                      # [1 1 2 3 4 5 6 9] (kopya doner)
+np.argsort(a)                   # siralayan INDEKSLER -> [1 3 6 0 2 7 4 5]
+a.argmax(), a.argmin()          # (5, 1) en buyuk/kucuk indeksi
+
+np.unique(a)                    # [1 2 3 4 5 6 9] tekrarsiz
+np.unique(a, return_counts=True)# degerler + kac kez gectikleri
+
+# En buyuk 3 degeri getir (argsort ile)
+a[np.argsort(a)[-3:]]           # [5 6 9]
+
+# Kosula uyan elemanlarin INDEKSLERI
+np.nonzero(a > 3)               # (array([2, 4, 5, 7]),)
+
+# Kumulatif ve istatistik
+a.cumsum()                      # kumulatif toplam
+np.percentile(a, [25, 50, 75])  # ceyrekler
+np.isnan(np.array([1, np.nan])) # [False True] -> eksik deger bulma
+\end{lstlisting}
+
+\gsub{Neden Bu Kadar Hızlı? Bellek Düzeni}
+
+NumPy hızının sırrı: veri bellekte \emph{tek bir bitişik blokta} durur ve
+işlemler CPU'ya yakın, önbellek dostu şekilde çalışır. \code{strides}, bir
+eksende bir adım atmak için kaç bayt atlanacağını söyler; \code{reshape} ve
+transpoz genelde veriyi kopyalamaz, sadece bu ``adım'' bilgisini değiştirir.
+
+\begin{lstlisting}
+a = np.arange(12).reshape(3, 4)
+a.strides            # (32, 8) -> satir atla=32 bayt, sutun atla=8 bayt
+a.flags['C_CONTIGUOUS']  # True -> satir-oncelikli (C duzeni)
+
+# Transpoz veriyi KOPYALAMAZ, sadece strides'i takas eder (bedava)
+a.T.strides          # (8, 32)
+
+# .ravel() bitisikse gorunum, degilse kopya doner
+a.ravel()            # duzlestir (mumkunse gorunum)
+np.ascontiguousarray(a.T)  # gerekince bellekte gercekten sirala
+\end{lstlisting}
+
+\ipucu{Pratik özet: (1) \textbf{Döngü yazma} --- işlemi tüm diziye uygula.
+(2) \textbf{Doğru dtype seç} --- gereksiz \code{float64} bellek yer.
+(3) \textbf{Görünüm/kopya farkını bil} --- beklenmedik değişiklikleri önler.
+(4) Aradığın işlem muhtemelen zaten \code{np.} altında vardır --- önce ara,
+sonra elle yazma.}
+
 % #####################################################################
 \gpart{2}{Pandas ile Veri İşleme}
 % #####################################################################
@@ -922,6 +1158,218 @@ ax.annotate('tepe', xy=(1.57, 1), xytext=(3, 1.2),
 (stateful) arayüz hızlı denemeler için pratiktir, ama karmaşık grafiklerde
 kafa karıştırır. Ciddi işte her zaman \code{fig, ax = plt.subplots()} ile
 başlayıp \code{ax} üzerinden çalış --- daha okunaklı ve kontrol edilebilirdir.}
+
+% =====================================================================
+\gsec{Matplotlib Derinlemesine: Grafik Türleri Kataloğu}
+% =====================================================================
+
+Yukarıdaki temeller grafik iskeletini kurar. Şimdi her grafik türünü
+\emph{çalışan, tam örneklerle} inceleyelim. Her örnek kendi başına çalışır ---
+kopyala, çalıştır, değiştirerek öğren.
+
+\gsub{Çizgi Grafik: Birden Çok Seri ve Stil}
+
+\begin{lstlisting}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 200)
+fig, ax = plt.subplots(figsize=(8, 4))
+
+ax.plot(x, np.sin(x), color='#2E6DA4', lw=2, label='sin')
+ax.plot(x, np.cos(x), color='#D9701E', lw=2, ls='--', label='cos')
+ax.plot(x, np.sin(x)*np.exp(-x/5), color='#2E7D32', lw=2,
+        ls=':', label='sonumlu')
+
+ax.fill_between(x, np.sin(x), 0, alpha=0.1, color='#2E6DA4')  # alan doldur
+ax.set(title='Cizgi Grafikleri', xlabel='x', ylabel='y')
+ax.legend(loc='upper right', frameon=True)
+ax.grid(True, alpha=0.3)
+plt.show()
+\end{lstlisting}
+
+\gsub{Dağılım Grafiği: Renk ve Boyutla Kodlama}
+
+Bir dağılım grafiğinde 4 boyutu aynı anda gösterebilirsin: x, y, renk (\code{c})
+ve nokta boyutu (\code{s}).
+
+\begin{lstlisting}
+rng = np.random.default_rng(0)
+x = rng.random(80); y = rng.random(80)
+renk = rng.random(80)              # 3. boyut -> renk
+boyut = rng.random(80) * 400       # 4. boyut -> alan
+
+fig, ax = plt.subplots(figsize=(7, 5))
+sc = ax.scatter(x, y, c=renk, s=boyut, cmap='viridis',
+                alpha=0.7, edgecolors='white', linewidth=0.5)
+fig.colorbar(sc, ax=ax, label='renk degeri')  # renk olcegi
+ax.set(title='Dagilim: 4 boyut', xlabel='x', ylabel='y')
+plt.show()
+\end{lstlisting}
+
+\gsub{Çubuk Grafik: Gruplu ve Yığılmış}
+
+\begin{lstlisting}
+kategoriler = ['Ocak', 'Subat', 'Mart', 'Nisan']
+urun_a = [20, 34, 30, 35]
+urun_b = [25, 32, 34, 20]
+x = np.arange(len(kategoriler))
+w = 0.35
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+
+# Gruplu (yan yana)
+ax1.bar(x - w/2, urun_a, w, label='A', color='#2E6DA4')
+ax1.bar(x + w/2, urun_b, w, label='B', color='#D9701E')
+ax1.set_xticks(x); ax1.set_xticklabels(kategoriler)
+ax1.set_title('Gruplu Cubuk'); ax1.legend()
+
+# Yigilmis (ust uste)
+ax2.bar(kategoriler, urun_a, label='A', color='#2E6DA4')
+ax2.bar(kategoriler, urun_b, bottom=urun_a, label='B', color='#D9701E')
+ax2.set_title('Yigilmis Cubuk'); ax2.legend()
+
+fig.tight_layout(); plt.show()
+\end{lstlisting}
+
+\gsub{Histogram ve Yoğunluk: Dağılımı Görmek}
+
+\begin{lstlisting}
+veri1 = np.random.default_rng(1).normal(60, 10, 1000)
+veri2 = np.random.default_rng(2).normal(75, 8, 1000)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.hist(veri1, bins=30, alpha=0.6, color='#2E6DA4', label='Grup 1',
+        density=True)                          # density: alan=1
+ax.hist(veri2, bins=30, alpha=0.6, color='#D9701E', label='Grup 2',
+        density=True)
+ax.axvline(veri1.mean(), color='#2E6DA4', ls='--', lw=2)  # ortalama cizgisi
+ax.axvline(veri2.mean(), color='#D9701E', ls='--', lw=2)
+ax.set(title='Iki Grubun Dagilimi', xlabel='puan', ylabel='yogunluk')
+ax.legend(); plt.show()
+\end{lstlisting}
+
+\gsub{Kutu ve Keman: Grupları Karşılaştırmak}
+
+\begin{lstlisting}
+gruplar = [np.random.default_rng(i).normal(50+i*10, 8, 100)
+           for i in range(4)]
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+ax1.boxplot(gruplar, tick_labels=['A', 'B', 'C', 'D'])
+ax1.set_title('Kutu Grafigi (medyan, ceyrek, aykiri)')
+
+parts = ax2.violinplot(gruplar, showmeans=True)  # keman: dagilim sekli
+ax2.set_xticks([1, 2, 3, 4]); ax2.set_xticklabels(['A','B','C','D'])
+ax2.set_title('Keman Grafigi')
+fig.tight_layout(); plt.show()
+\end{lstlisting}
+
+% =====================================================================
+\gsec{Matplotlib Derinlemesine: Eksen, Yazı ve Kaydetme}
+% =====================================================================
+
+\gsub{Eksenleri Tam Kontrol: Sınırlar, İşaretler, Ölçek}
+
+\begin{lstlisting}
+import matplotlib.ticker as mticker
+
+fig, ax = plt.subplots(figsize=(8, 4))
+x = np.linspace(1, 100, 100)
+ax.plot(x, x**2)
+
+ax.set_xlim(0, 100); ax.set_ylim(1, 1e4)
+ax.set_yscale('log')                       # logaritmik eksen
+ax.set_xticks([0, 25, 50, 75, 100])
+ax.set_xticklabels(['0', 'ceyrek', 'yari', '3/4', 'tam'], rotation=45)
+
+# Ekseni yuzde/para birimi olarak bicimle
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(
+    lambda v, _: f'{v:,.0f} TL'))
+ax.tick_params(axis='both', labelsize=9)
+plt.show()
+\end{lstlisting}
+
+\gsub{Metin, Ok ve Vurgulama (Annotation)}
+
+Bir grafiği anlatan şey çoğu zaman üzerindeki açıklamalardır: bir zirveyi
+işaretlemek, bir eşiği göstermek.
+
+\begin{lstlisting}
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(x, y, color='#2E6DA4', lw=2)
+
+# Bir noktaya ok ile aciklama
+tepe_x = np.pi/2
+ax.annotate('en yuksek nokta',
+            xy=(tepe_x, 1), xytext=(4, 1.3),
+            arrowprops=dict(arrowstyle='->', color='#C0392B'),
+            fontsize=11, color='#C0392B')
+
+# Serbest metin ve referans cizgileri
+ax.text(7, -0.8, r'$y=\sin(x)$', fontsize=12)  # LaTeX matematik
+ax.axhline(0, color='gray', lw=0.8)
+ax.axvspan(3, 6, alpha=0.1, color='#D9701E')   # dikey bant vurgusu
+ax.set(title='Aciklamali Grafik', ylim=(-1.5, 1.6))
+plt.show()
+\end{lstlisting}
+
+\gsub{İkiz Eksen (Twin Axes): Farklı Birimler}
+
+Sıcaklık ve satış gibi farklı ölçekli iki seriyi tek grafikte göstermek için.
+
+\begin{lstlisting}
+aylar = np.arange(1, 13)
+sicaklik = [5, 6, 10, 15, 20, 25, 28, 27, 22, 16, 10, 6]
+satis = [200, 180, 220, 300, 450, 600, 700, 680, 500, 350, 250, 210]
+
+fig, ax1 = plt.subplots(figsize=(8, 4))
+ax1.plot(aylar, sicaklik, 'o-', color='#C0392B')
+ax1.set_xlabel('ay'); ax1.set_ylabel('sicaklik (C)', color='#C0392B')
+ax1.tick_params(axis='y', labelcolor='#C0392B')
+
+ax2 = ax1.twinx()                          # ayni x, farkli y ekseni
+ax2.bar(aylar, satis, alpha=0.3, color='#2E6DA4')
+ax2.set_ylabel('satis (adet)', color='#2E6DA4')
+ax2.tick_params(axis='y', labelcolor='#2E6DA4')
+fig.suptitle('Sicaklik vs Satis')
+plt.show()
+\end{lstlisting}
+
+\gsub{Karmaşık Yerleşim ve Yüksek Kaliteli Kaydetme}
+
+\begin{lstlisting}
+# Farkli boyutlarda paneller icin mosaic (en pratik yontem)
+fig, axd = plt.subplot_mosaic(
+    [['ust', 'ust'],
+     ['sol', 'sag']], figsize=(9, 6))
+axd['ust'].plot(np.random.default_rng(0).random(50).cumsum())
+axd['sol'].hist(np.random.default_rng(1).normal(size=200))
+axd['sag'].scatter(np.random.default_rng(2).random(50),
+                   np.random.default_rng(3).random(50))
+for ad, ax in axd.items():
+    ax.set_title(ad)
+fig.tight_layout()
+
+# Yayina uygun kaydetme
+fig.savefig('rapor.png', dpi=300, bbox_inches='tight')  # yuksek cozunurluk
+fig.savefig('rapor.pdf', bbox_inches='tight')           # vektorel (olcek bozulmaz)
+fig.savefig('rapor.svg')                                 # web/duzenlenebilir
+\end{lstlisting}
+
+\bilgi{\textbf{Kaydetme ipuçları:} Raporlar için \code{dpi=300} kullan; sunum ve
+web için \code{bbox\_inches='tight'} kenar boşluklarını kırpar. Ölçeklendiğinde
+bulanıklaşmaması gereken grafikleri (dergi, poster) \code{.pdf} veya \code{.svg}
+olarak vektörel kaydet --- \code{.png} pikseldir, büyütünce bozulur.}
+
+\ipucu{Matplotlib'i ezberlemeye çalışma; mantığını kavra: her şey bir
+\code{Figure} (tuval) ve bir veya çok \code{Axes} (grafik alanı) üzerinedir. Bir
+grafik türü lazım olduğunda ``matplotlib \emph{[grafik adı}] example'' diye ara
+--- galeri (\href{https://matplotlib.org/stable/gallery/}%
+{matplotlib.org/stable/gallery}) neredeyse her ihtiyaca hazır, kopyalanabilir
+örnek sunar.}
 
 % =====================================================================
 \gsec{Pandas ile Hızlı Çizim}
@@ -1528,6 +1976,303 @@ pipeline.predict(X_test)          # tum zincir uygulanir
 adımlarını modelle birleştirmek; veri sızıntısını önler, kodu tekrardan kurtarır
 ve modeli tek parça olarak kaydedip (\code{joblib.dump}) üretime almayı
 kolaylaştırır. ``Manuel'' ön işleme, hataya en açık kısımdır.}
+
+% =====================================================================
+% #####################################################################
+\gpart{6}{Uygulamalı Projeler: Gerçek Veri Setleri}
+% #####################################################################
+
+Buraya kadar araçları tek tek öğrendik. Şimdi hepsini \emph{gerçek, adı belli,
+indirilebilir} veri setleri üzerinde birleştiriyoruz. Aşağıdaki projelerin her
+biri kendi başına çalışır: veri seti bir tek satırla yüklenir (hepsi \code{seaborn}
+veya \code{scikit-learn} ile birlikte gelir ya da internetten çekilir), böylece
+kopyala--çalıştır--öğren yapabilirsin. Her projenin başında verinin kaynağı ve
+resmî linki verilmiştir.
+
+\bilgi{Kullanılan veri setleri ve kaynakları:
+\begin{itemize}\setlength{\itemsep}{2pt}
+\item \textbf{Palmer Penguins} --- \href{https://allisonhorst.github.io/palmerpenguins/}{allisonhorst.github.io/palmerpenguins} \\(seaborn: \code{sns.load\_dataset('penguins')})
+\item \textbf{Titanic} --- \href{https://www.kaggle.com/c/titanic}{kaggle.com/c/titanic} \\(seaborn: \code{sns.load\_dataset('titanic')})
+\item \textbf{Tips (Bahşiş)} --- \href{https://github.com/mwaskom/seaborn-data}{github.com/mwaskom/seaborn-data} \\(seaborn: \code{sns.load\_dataset('tips')})
+\item \textbf{California Housing} --- \href{https://scikit-learn.org/stable/datasets/real_world.html\#california-housing-dataset}{scikit-learn --- California Housing} \\(\code{sklearn.datasets.fetch\_california\_housing})
+\end{itemize}}
+
+\ipucu{\code{sns.load\_dataset()} veriyi internetten çeker (bir kereliğine
+indirir). İnternet yoksa aynı CSV'leri
+\href{https://github.com/mwaskom/seaborn-data}{github.com/mwaskom/seaborn-data}
+adresinden indirip \code{pd.read\_csv('penguins.csv')} ile açabilirsin.}
+
+% =====================================================================
+\gsec{Proje 1 --- Palmer Penguins: Keşifsel Veri Analizi}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Palmer Penguins}: Antarktika'daki üç penguen türünün
+(Adelie, Chinstrap, Gentoo) gaga uzunluğu, kanat boyu, kütle gibi ölçümleri.
+Iris'e modern bir alternatif. Kaynak:
+\href{https://allisonhorst.github.io/palmerpenguins/}{allisonhorst.github.io/palmerpenguins}.}
+
+Amaç: yeni bir veri setiyle ilk karşılaşmada izlenen \emph{keşif} adımlarını
+(yükle $\to$ tanı $\to$ temizle $\to$ görselleştir $\to$ grupla) baştan sona
+uygulamak.
+
+\begin{lstlisting}
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# 1. YUKLE
+df = sns.load_dataset('penguins')
+
+# 2. ILK BAKIS
+print(df.shape)          # (344, 7)
+print(df.head())
+print(df.info())         # sutun tipleri + eksik degerler
+print(df.describe())     # sayisal ozet
+print(df['species'].value_counts())
+
+# 3. EKSIK VERI ANALIZI VE TEMIZLEME
+print(df.isna().sum())               # her sutunda kac eksik?
+df = df.dropna().reset_index(drop=True)  # basit yol: eksikleri at
+# (Alternatif: sayisallari medyan, kategorikleri mod ile doldurmak)
+\end{lstlisting}
+
+\begin{lstlisting}
+# 4. GRUPLA & TOPLULASTIR: tur bazinda ortalama olcumler
+ozet = df.groupby('species')[['bill_length_mm', 'flipper_length_mm',
+                               'body_mass_g']].mean().round(1)
+print(ozet)
+
+# Tur + cinsiyet kiriliminda ortalama kutle
+print(df.pivot_table(values='body_mass_g',
+                     index='species', columns='sex', aggfunc='mean'))
+
+# 5. GORSELLESTIR: dagilimlar ve iliskiler
+sns.set_theme(style='whitegrid')
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+sns.scatterplot(data=df, x='bill_length_mm', y='flipper_length_mm',
+                hue='species', style='species', s=60, ax=axes[0])
+axes[0].set_title('Gaga vs Kanat: turler ayrisir mi?')
+
+sns.boxplot(data=df, x='species', y='body_mass_g', ax=axes[1])
+axes[1].set_title('Ture gore vucut kutlesi')
+fig.tight_layout(); plt.show()
+
+# Tum sayisal ciftler + tur rengi (tek bakista kesif)
+sns.pairplot(df, hue='species', height=1.8)
+plt.show()
+\end{lstlisting}
+
+\ipucu{Dağılım grafiğinde türlerin net kümeler oluşturduğunu göreceksin ---
+bu, bir sınıflandırma modelinin türü ölçümlerden \emph{kolayca} tahmin
+edebileceğinin işaretidir. Keşif aşaması, modellemeden önce ``bu problem
+çözülebilir mi?'' sorusunu yanıtlar.}
+
+% =====================================================================
+\gsec{Proje 2 --- Titanic: Temizleme ve Sınıflandırma}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Titanic}: 1912 kazasındaki yolcuların yaş, cinsiyet,
+bilet sınıfı, ücret gibi bilgileri ve hayatta kalıp kalmadıkları. Makine
+öğrenmesinin ``merhaba dünya''sı. Kaynak:
+\href{https://www.kaggle.com/c/titanic}{kaggle.com/c/titanic}.}
+
+Amaç: \emph{gerçekçi biçimde dağınık} bir veriyi (eksik yaşlar, kategorik
+sütunlar) temizleyip özellik üretmek ve bir yolcunun hayatta kalıp kalmayacağını
+tahmin eden bir model kurmak.
+
+\begin{lstlisting}
+import seaborn as sns
+import pandas as pd
+
+df = sns.load_dataset('titanic')
+print(df[['survived','pclass','sex','age','fare','embarked']].head())
+print(df.isna().sum())     # age ve deck cok eksik
+
+# --- TEMIZLEME & OZELLIK MUHENDISLIGI ---
+d = df[['survived','pclass','sex','age','sibsp','parch','fare','embarked']].copy()
+
+# Eksik yasi, ayni pclass+sex grubunun MEDYANI ile doldur (akilli imputation)
+d['age'] = d.groupby(['pclass','sex'])['age'].transform(
+    lambda s: s.fillna(s.median()))
+d['embarked'] = d['embarked'].fillna(d['embarked'].mode()[0])
+
+# Yeni ozellikler: aile buyuklugu ve yalniz mi?
+d['family_size'] = d['sibsp'] + d['parch'] + 1
+d['is_alone'] = (d['family_size'] == 1).astype(int)
+
+# Kategorikleri sayisala cevir (one-hot)
+d = pd.get_dummies(d, columns=['sex','embarked'], drop_first=True)
+print(d.head())
+\end{lstlisting}
+
+\begin{lstlisting}
+# --- KESIF: hayatta kalma oranlari ---
+print(df.groupby('sex')['survived'].mean())      # kadinlar cok daha yuksek
+print(df.groupby('pclass')['survived'].mean())   # 1. sinif avantajli
+
+import matplotlib.pyplot as plt
+sns.barplot(data=df, x='pclass', y='survived', hue='sex')
+plt.title('Sinif ve cinsiyete gore hayatta kalma orani'); plt.show()
+
+# --- MODELLEME: Lojistik Regresyon ---
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, confusion_matrix
+
+X = d.drop(columns='survived')
+y = d['survived']
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)
+
+model = Pipeline([('scale', StandardScaler()),
+                  ('clf', LogisticRegression(max_iter=1000))])
+model.fit(X_tr, y_tr)
+
+print(f"Test dogrulugu: {model.score(X_te, y_te):.3f}")
+print(classification_report(y_te, model.predict(X_te)))
+print(confusion_matrix(y_te, model.predict(X_te)))
+
+# Hangi ozellik ne kadar etkili? (katsayilar)
+katsayilar = pd.Series(model.named_steps['clf'].coef_[0], index=X.columns)
+print(katsayilar.sort_values())
+\end{lstlisting}
+
+\uyari{Eksik \code{age} değerlerini \emph{tüm} sütunun ortalamasıyla doldurmak
+kolaydır ama kabadır. Yukarıdaki gibi \code{groupby(['pclass','sex'])} medyanıyla
+doldurmak, birinci sınıf bir kadının yaşını üçüncü sınıf bir erkeğinkinden farklı
+tahmin ederek çok daha gerçekçi olur. İyi \emph{imputation} model başarısını
+doğrudan artırır.}
+
+% =====================================================================
+\gsec{Proje 3 --- Tips: İstatistik ve Görselleştirme}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Tips (Bahşiş)}: Bir restoranda 244 hesabın tutarı,
+bahşiş, gün, öğün, masa büyüklüğü. Görselleştirme ve ilişki analizi için ideal.
+Kaynak:
+\href{https://github.com/mwaskom/seaborn-data}{github.com/mwaskom/seaborn-data}.}
+
+Amaç: sürekli iki değişken (hesap tutarı ve bahşiş) arasındaki ilişkiyi
+görselleştirmek, korelasyonu ölçmek ve ``bahşiş yüzdesi neye bağlı?'' sorusunu
+gruplama ile yanıtlamak.
+
+\begin{lstlisting}
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+tips = sns.load_dataset('tips')
+tips['tip_pct'] = tips['tip'] / tips['total_bill'] * 100   # bahsis yuzdesi
+
+# --- KORELASYON ---
+print(tips[['total_bill','tip','size','tip_pct']].corr().round(2))
+# total_bill ile tip guclu pozitif; ama tip_pct ile zayif!
+
+# --- GORSELLESTIR ---
+sns.set_theme(style='whitegrid')
+fig, ax = plt.subplots(1, 3, figsize=(15, 4))
+
+# 1) Hesap vs bahsis + regresyon dogrusu, cinsiyete gore
+sns.regplot(data=tips, x='total_bill', y='tip', ax=ax[0])
+ax[0].set_title('Hesap arttikca bahsis artar')
+
+# 2) Gune ve ogune gore ortalama bahsis yuzdesi
+sns.barplot(data=tips, x='day', y='tip_pct', hue='time', ax=ax[1])
+ax[1].set_title('Gun/ogune gore bahsis %')
+
+# 3) Sigara icen/icmeyen dagilimi
+sns.violinplot(data=tips, x='smoker', y='tip_pct', ax=ax[2])
+ax[2].set_title('Sigara ve bahsis %')
+fig.tight_layout(); plt.show()
+\end{lstlisting}
+
+\begin{lstlisting}
+# --- GRUPLAMA ile ICGORU ---
+print(tips.groupby('day')['tip_pct'].agg(['mean','count']).round(2))
+print(tips.groupby(['time','sex'])['tip_pct'].mean().round(2))
+
+# Basit hipotez: ogle mi aksam mi daha comert?
+from scipy import stats
+ogle = tips.loc[tips['time']=='Lunch', 'tip_pct']
+aksam = tips.loc[tips['time']=='Dinner', 'tip_pct']
+t, p = stats.ttest_ind(ogle, aksam, equal_var=False)
+print(f"t={t:.2f}, p={p:.3f}  ->  p<0.05 ise fark anlamli")
+\end{lstlisting}
+
+\ipucu{Dikkat çekici bulgu: \code{total\_bill} ile \code{tip} güçlü ilişkilidir
+(büyük hesap $\to$ büyük bahşiş), ama bahşiş \emph{yüzdesi} hesap tutarından
+neredeyse bağımsızdır. Ham korelasyon ile ``oran'' bazlı analiz farklı hikâyeler
+anlatır --- doğru soruyu sormak, doğru grafiği seçmek kadar önemlidir.}
+
+% =====================================================================
+\gsec{Proje 4 --- California Housing: Regresyon}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{California Housing}: 1990 nüfus sayımından 20.640
+bölgenin medyan gelir, ev yaşı, oda sayısı, konum bilgisi ve \emph{medyan ev
+fiyatı}. Sürekli bir hedefi (fiyat) tahmin etmek için klasik regresyon verisi.
+Kaynak:
+\href{https://scikit-learn.org/stable/datasets/real_world.html\#california-housing-dataset}{scikit-learn --- California Housing}.}
+
+Amaç: sürekli bir değeri (ev fiyatı) tahmin eden bir regresyon modeli kurmak,
+doğru metriklerle (MAE, RMSE, $R^2$) değerlendirmek ve hangi özelliğin fiyatı en
+çok belirlediğini bulmak.
+
+\begin{lstlisting}
+from sklearn.datasets import fetch_california_housing
+import pandas as pd
+
+data = fetch_california_housing(as_frame=True)
+df = data.frame
+print(df.head())
+print(df.describe())
+# Hedef: MedHouseVal (100.000 dolar biriminde medyan ev degeri)
+
+# Hangi ozellik fiyatla en iliskili?
+print(df.corr()['MedHouseVal'].sort_values(ascending=False))
+# MedInc (medyan gelir) acik ara en guclu belirleyici
+\end{lstlisting}
+
+\begin{lstlisting}
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import numpy as np
+
+X = df.drop(columns='MedHouseVal')
+y = df['MedHouseVal']
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Iki modeli karsilastir: dogrusal (basit) vs random forest (guclu)
+modeller = {
+    'Linear': Pipeline([('sc', StandardScaler()), ('m', LinearRegression())]),
+    'RandomForest': RandomForestRegressor(n_estimators=100, random_state=42,
+                                          n_jobs=-1),
+}
+for ad, model in modeller.items():
+    model.fit(X_tr, y_tr)
+    tahmin = model.predict(X_te)
+    mae = mean_absolute_error(y_te, tahmin)
+    rmse = np.sqrt(mean_squared_error(y_te, tahmin))
+    r2 = r2_score(y_te, tahmin)
+    print(f"{ad:14s} MAE={mae:.3f}  RMSE={rmse:.3f}  R2={r2:.3f}")
+
+# En iyi modelin ozellik onemleri
+rf = modeller['RandomForest']
+onem = pd.Series(rf.feature_importances_, index=X.columns)
+print(onem.sort_values(ascending=False))
+\end{lstlisting}
+
+\ipucu{İki modeli karşılaştırınca Random Forest'ın doğrusal modeli belirgin
+biçimde geçtiğini göreceksin --- çünkü fiyat, özelliklerle doğrusal olmayan ve
+etkileşimli bir ilişki içinde (örn. konumun etkisi gelire bağlı değişir).
+Regresyonda da ``basit bir temel çizgi (Linear) kur, sonra güçlü bir modelle
+kıyasla'' altın kuraldır.}
 
 % =====================================================================
 \gsec{Kapanış: Uçtan Uca Bir Proje}

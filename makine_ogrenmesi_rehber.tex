@@ -1971,6 +1971,331 @@ olduğunu bilmek, ağları hata ayıklamak, yeni katmanlar tasarlamak ve neyin
 neden çalışmadığını anlamak için vazgeçilmezdir.}
 
 % =====================================================================
+% #####################################################################
+\gpart{7}{Uçtan Uca Uygulamalı Projeler}
+% #####################################################################
+
+Teoriyi kurduk; şimdi onu \emph{gerçek, adı belli, indirilebilir} veri setleri
+üzerinde çalıştırıyoruz. Aşağıdaki beş proje, rehberin ana yaylarını
+(regülarizasyon, sınıflandırma metrikleri, topluluk yöntemleri, denetimsiz
+öğrenme, sinir ağları) somut kodla eşler. Seçilen veri setlerinin \emph{hepsi}
+\code{scikit-learn} ile birlikte gelir --- tek satırla, internet gerekmeden
+yüklenir --- ama her birinin resmî (UCI/sklearn) kaynağı da verilmiştir.
+
+\bilgi{Projeler ve veri kaynakları:
+\begin{itemize}\setlength{\itemsep}{2pt}
+\item \textbf{Diabetes} (regresyon, Ridge/Lasso) --- \href{https://scikit-learn.org/stable/datasets/toy_dataset.html\#diabetes-dataset}{sklearn --- Diabetes}
+\item \textbf{Breast Cancer Wisconsin} (ikili sınıflandırma, ROC) --- \href{https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic}{UCI 17}
+\item \textbf{Iris} (çok sınıflı, topluluk) --- \href{https://archive.ics.uci.edu/dataset/53/iris}{UCI 53}
+\item \textbf{Wine} (denetimsiz: K-Means + PCA) --- \href{https://archive.ics.uci.edu/dataset/109/wine}{UCI 109}
+\item \textbf{Digits} (sinir ağı, MLP) --- \href{https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits}{UCI 80}
+\end{itemize}
+Hepsi \code{from sklearn.datasets import load\_*} ile yüklenir.}
+
+% =====================================================================
+\gsec{Proje 1 --- Diabetes: Ridge, Lasso ve Düzenlileştirme}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Diabetes}: 442 hastanın yaş, VKİ, kan basıncı ve altı
+kan serumu ölçümünden bir yıl sonraki hastalık ilerlemesini tahmin etme. 10
+özellik, sürekli hedef. Kaynak:
+\href{https://scikit-learn.org/stable/datasets/toy_dataset.html\#diabetes-dataset}{scikit-learn --- Diabetes}.}
+
+Amaç: \S3'te türettiğimiz Ridge ($L_2$) ve Lasso ($L_1$) cezalarının aşırı
+öğrenmeyi nasıl engellediğini ve Lasso'nun özellik seçimini nasıl yaptığını
+somut olarak görmek.
+
+\begin{lstlisting}
+from sklearn.datasets import load_diabetes
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.pipeline import make_pipeline
+import numpy as np, pandas as pd
+
+X, y = load_diabetes(return_X_y=True, as_frame=True)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+
+modeller = {
+    'OLS':   make_pipeline(StandardScaler(), LinearRegression()),
+    'Ridge': make_pipeline(StandardScaler(), Ridge(alpha=1.0)),
+    'Lasso': make_pipeline(StandardScaler(), Lasso(alpha=0.1)),
+}
+for ad, m in modeller.items():
+    m.fit(X_tr, y_tr)
+    cv = cross_val_score(m, X_tr, y_tr, cv=5, scoring='r2').mean()
+    print(f"{ad:6s} test R2={m.score(X_te, y_te):.3f}  CV R2={cv:.3f}")
+
+# Lasso bazi katsayilari TAM SIFIR yapar -> ozellik secimi
+lasso = modeller['Lasso'].named_steps['lasso']
+print(pd.Series(lasso.coef_, index=X.columns).round(1))
+\end{lstlisting}
+
+\begin{lstlisting}
+# alpha (ceza gucu) arttikca katsayilar nasil kuculur? (regularization path)
+import matplotlib.pyplot as plt
+alphalar = np.logspace(-2, 1, 30)
+yollar = []
+Xs = StandardScaler().fit_transform(X_tr)
+for a in alphalar:
+    yollar.append(Lasso(alpha=a).fit(Xs, y_tr).coef_)
+yollar = np.array(yollar)
+
+for i, ad in enumerate(X.columns):
+    plt.plot(alphalar, yollar[:, i], label=ad)
+plt.xscale('log'); plt.xlabel('alpha'); plt.ylabel('katsayi')
+plt.title('Lasso yolu: ceza arttikca katsayilar sifira gider')
+plt.legend(fontsize=7); plt.show()
+\end{lstlisting}
+
+\ipucu{\code{alpha} büyüdükçe Lasso katsayıları tek tek sıfıra iner ---
+grafikte bunu doğrudan görürsün. Bu, Lasso'nun neden aynı anda hem
+düzenlileştirme hem \emph{otomatik özellik seçimi} yaptığının görsel kanıtıdır.
+\code{alpha}'yı çapraz doğrulama ile seç (\code{LassoCV}).}
+
+% =====================================================================
+\gsec{Proje 2 --- Breast Cancer: İkili Sınıflandırma ve ROC}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Breast Cancer Wisconsin (Diagnostic)}: Meme kitlesi
+görüntülerinden çıkarılmış 30 özellik (yarıçap, doku, pürüzlülük\ldots) ile
+tümörün iyi (benign) mi kötü (malignant) mu huylu olduğunu tahmin. 569 örnek.
+Kaynak: \href{https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic}{UCI 17}.}
+
+Amaç: sağlık gibi \emph{yanlış negatifin pahalı} olduğu bir problemde neden
+doğruluğun (accuracy) tek başına yetmediğini; precision, recall ve ROC--AUC'nin
+ne anlattığını görmek.
+
+\begin{lstlisting}
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import (classification_report, confusion_matrix,
+                             roc_auc_score, RocCurveDisplay)
+
+X, y = load_breast_cancer(return_X_y=True, as_frame=True)
+# y: 0=malignant (kotu), 1=benign (iyi)
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)
+
+model = make_pipeline(StandardScaler(),
+                      LogisticRegression(max_iter=5000))
+model.fit(X_tr, y_tr)
+
+y_pred = model.predict(X_te)
+print(confusion_matrix(y_te, y_pred))
+print(classification_report(y_te, y_pred,
+      target_names=['malignant','benign']))
+
+# Olasilik tahmini + ROC-AUC (esik-bagimsiz performans)
+y_proba = model.predict_proba(X_te)[:, 1]
+print(f"ROC-AUC: {roc_auc_score(y_te, y_proba):.3f}")
+RocCurveDisplay.from_predictions(y_te, y_proba);
+import matplotlib.pyplot as plt; plt.show()
+\end{lstlisting}
+
+\begin{lstlisting}
+# ESIK (threshold) AYARI: kanser kacirmamak icin recall'u yukselt
+import numpy as np
+# Malignant (0) sinifina odaklanalim: iyi huylu olasiligi dusukse "kanser" de
+esik = 0.30                       # varsayilan 0.50 yerine
+y_pred_hassas = (y_proba >= esik).astype(int)
+print(confusion_matrix(y_te, y_pred_hassas))
+# Esigi dusurmek -> daha az yanlis negatif (kanser kacirma),
+# ama daha cok yanlis alarm. Bu bir DENGEDIR.
+\end{lstlisting}
+
+\uyari{Tıbbi teşhiste bir kanseri kaçırmak (yanlış negatif), yanlış alarmdan
+çok daha pahalıdır. Bu yüzden yüksek \emph{recall} hedeflenir ve karar eşiği
+0.5'ten düşürülür. ``\%97 doğruluk'' kulağa harika gelir ama kaçırılan
+malignant vakalar felakettir --- her zaman karmaşıklık matrisine ve probleme
+uygun metriğe bak.}
+
+% =====================================================================
+\gsec{Proje 3 --- Iris: Model Karşılaştırma ve Topluluklar}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Iris}: 150 çiçeğin çanak/taç yaprak ölçümlerinden üç
+tür (setosa, versicolor, virginica) tahmini. İstatistik ve ML'in en ünlü veri
+seti. Kaynak: \href{https://archive.ics.uci.edu/dataset/53/iris}{UCI 53}.}
+
+Amaç: \S4'te gördüğümüz sınıflandırıcıları (KNN, SVM, Karar Ağacı, Random
+Forest) aynı veride \emph{adil biçimde} kıyaslamak ve topluluk yöntemlerinin
+tek modeli neden geçtiğini görmek.
+
+\begin{lstlisting}
+from sklearn.datasets import load_iris
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
+X, y = load_iris(return_X_y=True)
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+modeller = {
+    'KNN':        make_pipeline(StandardScaler(), KNeighborsClassifier()),
+    'SVM':        make_pipeline(StandardScaler(), SVC()),
+    'KararAgaci': DecisionTreeClassifier(random_state=42),
+    'RandomForest': RandomForestClassifier(n_estimators=100, random_state=42),
+    'GradBoost':  GradientBoostingClassifier(random_state=42),
+}
+for ad, m in modeller.items():
+    s = cross_val_score(m, X, y, cv=cv, scoring='accuracy')
+    print(f"{ad:13s} dogruluk: {s.mean():.3f} +/- {s.std():.3f}")
+\end{lstlisting}
+
+\begin{lstlisting}
+# En iyi modeli GridSearch ile ayarla
+from sklearn.model_selection import GridSearchCV
+param = {'n_estimators': [50, 100, 200],
+         'max_depth': [None, 3, 5],
+         'max_features': ['sqrt', 'log2']}
+gs = GridSearchCV(RandomForestClassifier(random_state=42),
+                  param, cv=cv, scoring='accuracy', n_jobs=-1)
+gs.fit(X, y)
+print("En iyi parametreler:", gs.best_params_)
+print(f"En iyi CV dogruluk: {gs.best_score_:.3f}")
+
+# Random Forest'in ozellik onemleri
+import pandas as pd
+isimler = load_iris().feature_names
+print(pd.Series(gs.best_estimator_.feature_importances_,
+                index=isimler).sort_values(ascending=False))
+\end{lstlisting}
+
+\ipucu{Tek bir karar ağacı veriye aşırı uyar ve kararsızdır; yüzlerce ağacın
+oyunu birleştiren Random Forest ve Gradient Boosting hem daha doğru hem daha
+kararlıdır (düşük varyans). \S4.4'teki ``kalabalığın bilgeliği'' fikrinin
+sayısal kanıtını burada, çapraz doğrulama skorlarında görürsün.}
+
+% =====================================================================
+\gsec{Proje 4 --- Wine: K-Means Kümeleme ve PCA}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Wine}: Üç farklı üreticinin şaraplarına ait 13 kimyasal
+ölçüm (alkol, malik asit, renk yoğunluğu\ldots), 178 örnek. Denetimsiz öğrenme
+için idealdir. Kaynak: \href{https://archive.ics.uci.edu/dataset/109/wine}{UCI 109}.}
+
+Amaç: \emph{etiketleri kullanmadan} (denetimsiz) veriyi K-Means ile kümelemek,
+PCA ile 13 boyutu 2'ye indirip görselleştirmek ve bulunan kümelerin gerçek şarap
+sınıflarıyla ne kadar örtüştüğünü ölçmek.
+
+\begin{lstlisting}
+from sklearn.datasets import load_wine
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.metrics import adjusted_rand_score, silhouette_score
+import matplotlib.pyplot as plt
+
+data = load_wine()
+X = StandardScaler().fit_transform(data.data)   # olceklemek SART!
+y_gercek = data.target                          # sadece degerlendirmede kullan
+
+# PCA ile 2 boyuta indir (gorsellestirme icin)
+X2 = PCA(n_components=2).fit_transform(X)
+
+# K secimi: dirsek (elbow) + siluet
+for k in range(2, 6):
+    km = KMeans(n_clusters=k, random_state=42, n_init=10).fit(X)
+    print(f"k={k}  atalet={km.inertia_:.0f}  siluet={silhouette_score(X, km.labels_):.3f}")
+\end{lstlisting}
+
+\begin{lstlisting}
+# 3 kume ile kumele ve gercek etiketlerle karsilastir
+km = KMeans(n_clusters=3, random_state=42, n_init=10).fit(X)
+print(f"ARI (kume-gercek ortusme): {adjusted_rand_score(y_gercek, km.labels_):.3f}")
+# ARI ~1 -> etiket olmadan bulunan kumeler, gercek siniflarla neredeyse ayni!
+
+# PCA duzleminde gorsellestir
+fig, ax = plt.subplots(1, 2, figsize=(11, 4))
+ax[0].scatter(X2[:,0], X2[:,1], c=y_gercek, cmap='viridis')
+ax[0].set_title('Gercek siniflar')
+ax[1].scatter(X2[:,0], X2[:,1], c=km.labels_, cmap='viridis')
+ax[1].set_title('K-Means kumeleri')
+for a in ax: a.set(xlabel='PC1', ylabel='PC2')
+fig.tight_layout(); plt.show()
+
+# PCA ilk 2 bilesen varyansin ne kadarini tutuyor?
+pca = PCA().fit(X)
+print("Aciklanan varyans orani:", pca.explained_variance_ratio_[:2].round(3),
+      "-> toplam:", pca.explained_variance_ratio_[:2].sum().round(3))
+\end{lstlisting}
+
+\uyari{K-Means ve PCA uzaklık temellidir; \code{StandardScaler} ile
+\textbf{ölçeklemeyi atlarsan}, büyük değerli özellikler (örn. prolin, yüzlerce
+birim) küçük olanları (örn. flavanoidler) ezer ve kümeleme anlamsızlaşır.
+Denetimsiz öğrenmede standardizasyon isteğe bağlı değil, zorunludur.}
+
+% =====================================================================
+\gsec{Proje 5 --- Digits: Sinir Ağı ile Rakam Tanıma}
+% =====================================================================
+
+\notk[Veri seti]{\textbf{Digits}: El yazısı rakamların $8\times8$ piksellik
+gri tonlamalı görüntüleri (0--9), 1797 örnek. MNIST'in küçük, hızlı kardeşi;
+sinir ağı denemek için birebir. Kaynak:
+\href{https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits}{UCI 80}.}
+
+Amaç: \S6'da işlenen çok katmanlı algılayıcıyı (MLP) gerçek bir görüntü
+sınıflandırma probleminde çalıştırmak, öğrenme eğrisini izlemek ve hataları
+karmaşıklık matrisiyle incelemek.
+
+\begin{lstlisting}
+from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+digits = load_digits()
+print(digits.data.shape)          # (1797, 64) -> 8x8=64 piksel
+
+# Ornek rakamlari goster
+fig, axes = plt.subplots(2, 5, figsize=(9, 4))
+for ax, img, lbl in zip(axes.ravel(), digits.images, digits.target):
+    ax.imshow(img, cmap='gray_r'); ax.set_title(str(lbl)); ax.axis('off')
+plt.tight_layout(); plt.show()
+
+X_tr, X_te, y_tr, y_te = train_test_split(
+    digits.data, digits.target, test_size=0.2, random_state=42, stratify=digits.target)
+
+mlp = make_pipeline(
+    StandardScaler(),
+    MLPClassifier(hidden_layer_sizes=(64, 32), activation='relu',
+                  alpha=1e-3, max_iter=500, random_state=42))
+mlp.fit(X_tr, y_tr)
+print(f"Test dogrulugu: {mlp.score(X_te, y_te):.3f}")
+print(classification_report(y_te, mlp.predict(X_te)))
+\end{lstlisting}
+
+\begin{lstlisting}
+# Egitim sirasindaki kayip egrisi (loss curve) -> ogreniyor mu?
+net = mlp.named_steps['mlpclassifier']
+plt.plot(net.loss_curve_)
+plt.xlabel('devir (epoch)'); plt.ylabel('kayip'); plt.title('MLP ogrenme egrisi')
+plt.show()
+
+# Hangi rakamlar karistiriliyor? ( or. 3<->8, 4<->9)
+ConfusionMatrixDisplay.from_estimator(mlp, X_te, y_te)
+plt.show()
+\end{lstlisting}
+
+\ipucu{\code{loss\_curve\_} düzgün azalıp düzleşiyorsa ağ sağlıklı öğrenmiştir.
+Kayıp inmiyorsa öğrenme oranı/mimari; eğitim mükemmel ama test kötüyse aşırı
+öğrenme (\code{alpha}'yı artır, katmanı küçült) söz konusudur. Bu küçük MLP bile
+\%97+ doğruluğa ulaşır --- \S6'daki geri yayılım ve optimizasyon teorisinin
+pratikte çalıştığının kanıtı. Sıradaki adım: aynı fikri evrişimli ağlarla (CNN)
+tam boyutlu MNIST'e taşımak.}
+
+% =====================================================================
 \gsec{Kapanış: Bir Bütün Olarak Makine Öğrenmesi}
 % =====================================================================
 
